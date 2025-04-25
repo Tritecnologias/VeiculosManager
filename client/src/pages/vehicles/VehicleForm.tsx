@@ -17,6 +17,7 @@ import { ChevronLeft, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Brand, Model, Version, Color, FuelType, TransmissionType, VehicleSituation, Vehicle } from "@/lib/types";
+import { formatBRCurrency, parseBRCurrency } from "@/lib/formatters";
 
 const FUEL_TYPES = [
   { value: 'flex', label: 'Flex' },
@@ -39,17 +40,7 @@ const SITUATIONS = [
   { value: 'coming-soon', label: 'Em breve' }
 ];
 
-// Função para converter valores monetários em formato brasileiro para strings numéricas
-const parseBRCurrency = (value: string): string => {
-  if (!value) return "0";
-  
-  // Remove 'R$', pontos e substitui vírgula por ponto para que o JavaScript possa transformar em float
-  const numericValue = value.replace('R$', '').replace(/\./g, '').replace(',', '.');
-  const parsed = parseFloat(numericValue);
-  
-  // Retorna como string para o backend
-  return isNaN(parsed) ? "0" : parsed.toString();
-};
+// A função parseBRCurrency foi movida para lib/formatters.ts
 
 const formSchema = z.object({
   brandId: z.string().min(1, "Selecione uma marca"),
@@ -224,13 +215,7 @@ export default function VehicleForm() {
     }
   };
   
-  // Função para formatar números em formato monetário brasileiro
-  const formatBRCurrency = (value: number): string => {
-    return value.toLocaleString('pt-BR', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    });
-  };
+  // A função formatBRCurrency foi movida para lib/formatters.ts
 
   // Calculate tax exemption prices based on public price
   const handlePublicPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
