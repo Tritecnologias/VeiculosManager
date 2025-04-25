@@ -139,19 +139,25 @@ export async function deleteVersion(id: number) {
 // Colors
 export async function getColors() {
   return db.query.colors.findMany({
-    orderBy: colors.name
+    orderBy: colors.name,
+    with: {
+      paintType: true
+    }
   });
 }
 
 export async function getColorById(id: number) {
   return db.query.colors.findFirst({
-    where: eq(colors.id, id)
+    where: eq(colors.id, id),
+    with: {
+      paintType: true
+    }
   });
 }
 
 export async function createColor(data: ColorInsert) {
   const [newColor] = await db.insert(colors).values(data).returning();
-  return newColor;
+  return getColorById(newColor.id); // Retorna com a relação carregada
 }
 
 export async function updateColor(id: number, data: ColorInsert) {
@@ -160,7 +166,9 @@ export async function updateColor(id: number, data: ColorInsert) {
     .where(eq(colors.id, id))
     .returning();
   
-  return updatedColor;
+  if (!updatedColor) return null;
+  
+  return getColorById(updatedColor.id); // Retorna com a relação carregada
 }
 
 export async function deleteColor(id: number) {
