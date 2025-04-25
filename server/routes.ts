@@ -7,7 +7,8 @@ import {
   modelInsertSchema, 
   versionInsertSchema, 
   colorInsertSchema,
-  vehicleInsertSchema
+  vehicleInsertSchema,
+  versionColorInsertSchema
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -303,6 +304,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting color:", error);
       res.status(500).json({ message: "Failed to delete color" });
+    }
+  });
+
+  // Version Colors API
+  app.get(`${apiPrefix}/version-colors`, async (req, res) => {
+    try {
+      const modelId = req.query.modelId ? parseInt(req.query.modelId as string) : undefined;
+      const versionId = req.query.versionId ? parseInt(req.query.versionId as string) : undefined;
+      
+      const versionColors = await storage.getVersionColors({ modelId, versionId });
+      res.json(versionColors);
+    } catch (error) {
+      console.error("Error fetching version colors:", error);
+      res.status(500).json({ message: "Failed to fetch version colors" });
+    }
+  });
+
+  app.get(`${apiPrefix}/version-colors/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const versionColor = await storage.getVersionColorById(id);
+      
+      if (!versionColor) {
+        return res.status(404).json({ message: "Version color not found" });
+      }
+      
+      res.json(versionColor);
+    } catch (error) {
+      console.error("Error fetching version color:", error);
+      res.status(500).json({ message: "Failed to fetch version color" });
+    }
+  });
+
+  app.post(`${apiPrefix}/version-colors`, async (req, res) => {
+    try {
+      const validatedData = versionColorInsertSchema.parse(req.body);
+      const newVersionColor = await storage.createVersionColor(validatedData);
+      res.status(201).json(newVersionColor);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      console.error("Error creating version color:", error);
+      res.status(500).json({ message: "Failed to create version color" });
+    }
+  });
+
+  app.patch(`${apiPrefix}/version-colors/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = versionColorInsertSchema.parse(req.body);
+      
+      const updatedVersionColor = await storage.updateVersionColor(id, validatedData);
+      
+      if (!updatedVersionColor) {
+        return res.status(404).json({ message: "Version color not found" });
+      }
+      
+      res.json(updatedVersionColor);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      console.error("Error updating version color:", error);
+      res.status(500).json({ message: "Failed to update version color" });
+    }
+  });
+
+  app.delete(`${apiPrefix}/version-colors/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteVersionColor(id);
+      res.status(204).end();
+    } catch (error) {
+      console.error("Error deleting version color:", error);
+      res.status(500).json({ message: "Failed to delete version color" });
     }
   });
 

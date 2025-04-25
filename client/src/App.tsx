@@ -12,6 +12,7 @@ import ModelList from "@/pages/models/ModelList";
 import ModelForm from "@/pages/models/ModelForm";
 import VersionList from "@/pages/versions/VersionList";
 import VersionForm from "@/pages/versions/VersionForm";
+import ColorTabs from "@/pages/colors/ColorTabs";
 import ColorList from "@/pages/colors/ColorList";
 import ColorForm from "@/pages/colors/ColorForm";
 import VehicleList from "@/pages/vehicles/VehicleList";
@@ -32,9 +33,7 @@ function Router() {
         <Route path="/versions" component={VersionList} />
         <Route path="/versions/new" component={VersionForm} />
         <Route path="/versions/:id/edit" component={VersionForm} />
-        <Route path="/colors" component={ColorList} />
-        <Route path="/colors/new" component={ColorForm} />
-        <Route path="/colors/:id/edit" component={ColorForm} />
+        <Route path="/colors" component={ColorTabs} />
         <Route path="/vehicles" component={VehicleList} />
         <Route path="/vehicles/new" component={VehicleForm} />
         <Route path="/vehicles/:id/edit" component={VehicleForm} />

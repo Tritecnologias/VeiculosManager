@@ -190,7 +190,10 @@ export async function getVersionColors(options: { modelId?: number, versionId?: 
   
   // Filter by modelId if provided (needs to be done post-query due to relations)
   if (options.modelId && results.length > 0) {
-    return results.filter(vc => vc.version.modelId === options.modelId);
+    return results.filter(vc => {
+      if (!vc.version || !vc.version.modelId) return false;
+      return vc.version.modelId === options.modelId;
+    });
   }
   
   return results;
