@@ -228,9 +228,9 @@ export default function ColorForm({ id, onCancel }: ColorFormProps) {
                     <FormItem>
                       <FormLabel>Tipo de Pintura</FormLabel>
                       <Select
-                        onValueChange={(value) => field.onChange(value ? parseInt(value) : null)}
-                        value={field.value ? field.value.toString() : undefined}
-                        defaultValue={field.value ? field.value.toString() : undefined}
+                        onValueChange={(value) => field.onChange(value && value !== "none" ? parseInt(value) : null)}
+                        value={field.value ? field.value.toString() : "none"}
+                        defaultValue={field.value ? field.value.toString() : "none"}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -238,7 +238,7 @@ export default function ColorForm({ id, onCancel }: ColorFormProps) {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="">Nenhum tipo selecionado</SelectItem>
+                          <SelectItem value="none">Nenhum tipo selecionado</SelectItem>
                           {paintTypes.map((type) => (
                             <SelectItem key={type.id} value={type.id.toString()}>
                               {type.name}
