@@ -8,13 +8,15 @@ import {
   vehicles,
   versionColors,
   paintTypes,
+  settings,
   BrandInsert,
   ModelInsert,
   VersionInsert,
   ColorInsert,
   VehicleInsert,
   VersionColorInsert,
-  PaintTypeInsert
+  PaintTypeInsert,
+  SettingsInsert
 } from "@shared/schema";
 
 // Brands
@@ -336,6 +338,53 @@ export async function deleteVehicle(id: number) {
   await db.delete(vehicles).where(eq(vehicles.id, id));
 }
 
+// Funções para gerenciar configurações
+export async function getSettings() {
+  return await db.query.settings.findMany({
+    orderBy: (settings, { asc }) => [asc(settings.key)]
+  });
+}
+
+export async function getSettingByKey(key: string) {
+  return await db.query.settings.findFirst({
+    where: (settings, { eq }) => eq(settings.key, key)
+  });
+}
+
+export async function getSetting(id: number) {
+  return await db.query.settings.findFirst({
+    where: (settings, { eq }) => eq(settings.id, id)
+  });
+}
+
+export async function createSetting(data: SettingsInsert) {
+  const [setting] = await db.insert(settings).values(data).returning();
+  return setting;
+}
+
+export async function updateSetting(id: number, data: Partial<SettingsInsert>) {
+  const [setting] = await db.update(settings)
+    .set({ ...data, updatedAt: new Date() })
+    .where(eq(settings.id, id))
+    .returning();
+  return setting;
+}
+
+export async function updateSettingByKey(key: string, value: string) {
+  const [setting] = await db.update(settings)
+    .set({ value, updatedAt: new Date() })
+    .where(eq(settings.key, key))
+    .returning();
+  return setting;
+}
+
+export async function deleteSetting(id: number) {
+  const [setting] = await db.delete(settings)
+    .where(eq(settings.id, id))
+    .returning();
+  return setting;
+}
+
 export const storage = {
   getBrands,
   getBrandById,
@@ -377,5 +426,13 @@ export const storage = {
   getVehicleById,
   createVehicle,
   updateVehicle,
-  deleteVehicle
+  deleteVehicle,
+  
+  getSettings,
+  getSettingByKey,
+  getSetting,
+  createSetting,
+  updateSetting,
+  updateSettingByKey,
+  deleteSetting
 };

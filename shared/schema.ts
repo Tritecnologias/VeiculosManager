@@ -154,3 +154,23 @@ export const vehicleInsertSchema = createInsertSchema(vehicles, {
 export type VehicleInsert = z.infer<typeof vehicleInsertSchema>;
 export const vehicleSelectSchema = createSelectSchema(vehicles);
 export type Vehicle = z.infer<typeof vehicleSelectSchema>;
+
+// Definição da tabela de configurações
+export const settings = pgTable("settings", {
+  id: serial("id").primaryKey(),
+  key: text("key").notNull().unique(),
+  value: text("value").notNull(),
+  label: text("label").notNull(),
+  type: text("type").default("text").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull()
+});
+
+export const settingsInsertSchema = createInsertSchema(settings, {
+  key: (schema) => schema.min(2, "Chave deve ter pelo menos 2 caracteres"),
+  value: (schema) => schema.min(1, "Valor não pode estar vazio"),
+  label: (schema) => schema.min(2, "Rótulo deve ter pelo menos 2 caracteres")
+});
+export type SettingsInsert = z.infer<typeof settingsInsertSchema>;
+export const settingsSelectSchema = createSelectSchema(settings);
+export type Settings = z.infer<typeof settingsSelectSchema>;
