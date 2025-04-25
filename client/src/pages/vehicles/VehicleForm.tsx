@@ -252,6 +252,23 @@ export default function VehicleForm() {
   
   const handleSubmit = async (values: FormValues) => {
     try {
+      console.log("Form values:", values);
+      
+      // Verifica se os campos obrigatórios estão preenchidos
+      if (!values.brandId || !values.modelId || !values.versionId) {
+        console.error("Campos obrigatórios não preenchidos", { 
+          brandId: values.brandId, 
+          modelId: values.modelId, 
+          versionId: values.versionId 
+        });
+        toast({
+          title: "Campos obrigatórios",
+          description: "Preencha todos os campos obrigatórios",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       // Convert string values to appropriate types for the backend
       const vehicleData = {
         ...values,
@@ -259,7 +276,7 @@ export default function VehicleForm() {
         brandId: parseInt(values.brandId),
         modelId: parseInt(values.modelId),
         versionId: parseInt(values.versionId),
-        colorId: parseInt(values.colorId),
+        colorId: values.colorId ? parseInt(values.colorId) : undefined,
         // Convert string currency values to numbers
         publicPrice: parseBRCurrency(values.publicPrice),
         pcdIpiIcms: parseBRCurrency(values.pcdIpiIcms),
@@ -268,14 +285,20 @@ export default function VehicleForm() {
         taxiIpi: parseBRCurrency(values.taxiIpi)
       };
       
+      console.log("Vehicle data to send:", vehicleData);
+      
       if (isEditing) {
-        await apiRequest("PATCH", `/api/vehicles/${id}`, vehicleData);
+        console.log("Updating vehicle with ID:", id);
+        const response = await apiRequest("PATCH", `/api/vehicles/${id}`, vehicleData);
+        console.log("Update response:", response);
         toast({
           title: "Veículo atualizado",
           description: "O veículo foi atualizado com sucesso!",
         });
       } else {
-        await apiRequest("POST", "/api/vehicles", vehicleData);
+        console.log("Creating new vehicle");
+        const response = await apiRequest("POST", "/api/vehicles", vehicleData);
+        console.log("Create response:", response);
         toast({
           title: "Veículo cadastrado",
           description: "O veículo foi cadastrado com sucesso!",
