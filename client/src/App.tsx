@@ -17,7 +17,7 @@ import ColorTabs from "@/pages/colors/ColorTabs";
 import ColorList from "@/pages/colors/ColorList";
 import ColorForm from "@/pages/colors/ColorForm";
 import VehicleList from "@/pages/vehicles/VehicleList";
-import VehicleForm from "@/pages/vehicles/VehicleForm";
+import VehicleForm from "@/pages/vehicles/VehicleFormFixed";
 import PaintTypeList from "@/pages/paint-types/PaintTypeList";
 import PaintTypeForm from "@/pages/paint-types/PaintTypeForm";
 import Configurator from "@/pages/configurator";
