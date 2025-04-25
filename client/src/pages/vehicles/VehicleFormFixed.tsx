@@ -86,10 +86,10 @@ export default function VehicleFormFixed() {
       fuelType: "flex",
       transmission: "automatic",
       isActive: true,
-      pcdIpiIcms: "0",
-      pcdIpi: "0",
-      taxiIpiIcms: "0",
-      taxiIpi: "0"
+      pcdIpiIcms: "",
+      pcdIpi: "",
+      taxiIpiIcms: "",
+      taxiIpi: ""
     },
   });
   
@@ -315,10 +315,10 @@ export default function VehicleFormFixed() {
             fuelType: "flex",
             transmission: "automatic",
             isActive: true,
-            pcdIpiIcms: "0",
-            pcdIpi: "0",
-            taxiIpiIcms: "0",
-            taxiIpi: "0"
+            pcdIpiIcms: "",
+            pcdIpi: "",
+            taxiIpiIcms: "",
+            taxiIpi: ""
           });
           
           // Limpar os modelos e versões filtrados
@@ -483,44 +483,7 @@ export default function VehicleFormFixed() {
                       )}
                     />
                     
-                    {/* Campo: Cor (Opcional) */}
-                    <FormField
-                      control={form.control}
-                      name="colorId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Cor (Opcional)</FormLabel>
-                          <Select 
-                            value={field.value} 
-                            onValueChange={field.onChange}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecione uma cor (opcional)" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="0">Sem cor</SelectItem>
-                              {colors.map((color) => (
-                                <SelectItem key={color.id} value={color.id.toString()}>
-                                  <div className="flex items-center">
-                                    <div 
-                                      className="w-4 h-4 rounded-full mr-2" 
-                                      style={{ backgroundColor: color.hexCode }}
-                                    ></div>
-                                    {color.name}
-                                  </div>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormDescription>
-                            Este campo é opcional. Você pode deixá-lo em branco.
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    {/* Campo de cor removido - será null por padrão */}
                     
                     {/* Campo: Ano */}
                     <FormField
