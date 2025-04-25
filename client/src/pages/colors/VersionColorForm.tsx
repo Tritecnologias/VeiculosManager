@@ -89,11 +89,11 @@ export default function VersionColorForm() {
   
   const handleSubmit = async (values: FormValues) => {
     try {
-      // Convert string IDs to numbers
+      // Convert string IDs to numbers and ensure price is a string
       const data = {
         versionId: parseInt(values.versionId),
         colorId: parseInt(values.colorId),
-        price: values.price,
+        price: values.price.toString(), // Converter para string conforme esperado pelo schema
         imageUrl: values.imageUrl || null,
       };
       
