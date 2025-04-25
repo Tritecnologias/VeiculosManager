@@ -207,7 +207,7 @@ export default function VehicleFormFixed() {
     }
   };
   
-  // Função de submissão do formulário simplificada
+  // Função de submissão do formulário simplificada e robusta
   const onSubmit = async (data: FormValues) => {
     try {
       setIsSubmitting(true);
@@ -233,29 +233,60 @@ export default function VehicleFormFixed() {
         taxiIpi: parseBRCurrency(data.taxiIpi)
       };
       
-      console.log("Sending data to API:", vehicleData);
+      console.log("Preparando para enviar dados para a API:", vehicleData);
       
-      if (isEditing) {
-        await apiRequest("PATCH", `/api/vehicles/${id}`, vehicleData);
-        toast({
-          title: "Veículo atualizado",
-          description: "As alterações foram salvas com sucesso."
+      // Tentativa de submissão direta com fetch para diagnóstico
+      try {
+        const endpoint = isEditing ? `/api/vehicles/${id}` : "/api/vehicles";
+        const method = isEditing ? "PATCH" : "POST";
+        
+        console.log(`Enviando requisição ${method} para ${endpoint}`);
+        
+        const response = await fetch(endpoint, {
+          method: method,
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify(vehicleData),
+          credentials: "include"
         });
-      } else {
-        await apiRequest("POST", "/api/vehicles", vehicleData);
+        
+        console.log("Resposta da API:", response.status, response.statusText);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`Erro da API (${response.status}): ${errorText}`);
+          throw new Error(`Erro ao salvar: ${response.status} ${errorText || response.statusText}`);
+        }
+        
+        const responseData = await response.json();
+        console.log("Dados da resposta:", responseData);
+        
+        // Feedback de sucesso
         toast({
-          title: "Veículo criado",
-          description: "O novo veículo foi cadastrado com sucesso."
+          title: isEditing ? "Veículo atualizado" : "Veículo criado",
+          description: isEditing 
+            ? "As alterações foram salvas com sucesso." 
+            : "O novo veículo foi cadastrado com sucesso."
         });
+        
+        // Invalidar cache e navegar
+        queryClient.invalidateQueries({ queryKey: ["/api/vehicles"] });
+        navigate("/vehicles");
+        
+      } catch (fetchError) {
+        console.error("Erro na requisição fetch:", fetchError);
+        throw fetchError;
       }
       
-      queryClient.invalidateQueries({ queryKey: ["/api/vehicles"] });
-      navigate("/vehicles");
     } catch (error) {
       console.error("Erro ao salvar veículo:", error);
       toast({
-        title: "Erro",
-        description: error instanceof Error ? error.message : "Falha ao salvar o veículo",
+        title: "Erro ao salvar",
+        description: error instanceof Error 
+          ? error.message 
+          : "Falha ao comunicar com o servidor. Tente novamente.",
         variant: "destructive"
       });
     } finally {

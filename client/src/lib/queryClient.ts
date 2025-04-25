@@ -12,22 +12,43 @@ export async function apiRequest<T = any>(
   url: string,
   data?: unknown | undefined,
 ): Promise<T> {
-  const res = await fetch(url, {
-    method,
-    headers: data ? { "Content-Type": "application/json" } : {},
-    body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
-  });
+  try {
+    console.log(`Sending ${method} request to ${url}`, data);
+    
+    const res = await fetch(url, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Cache-Control": "no-cache"
+      },
+      body: data ? JSON.stringify(data) : undefined,
+      credentials: "include",
+      mode: "cors"
+    });
 
-  await throwIfResNotOk(res);
-  
-  // Se o método for DELETE, pode não ter corpo na resposta
-  if (method.toUpperCase() === 'DELETE') {
-    return {} as T;
+    console.log(`Response status: ${res.status} ${res.statusText}`);
+    
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error(`API Error (${res.status}): ${errorText}`);
+      throw new Error(`${res.status}: ${errorText || res.statusText}`);
+    }
+    
+    // Se o método for DELETE, pode não ter corpo na resposta
+    if (method.toUpperCase() === 'DELETE') {
+      return {} as T;
+    }
+    
+    const responseData = await res.json();
+    console.log("API Response:", responseData);
+    
+    // Para outros métodos, retorna o JSON da resposta
+    return responseData;
+  } catch (error) {
+    console.error("API Request failed:", error);
+    throw error;
   }
-  
-  // Para outros métodos, retorna o JSON da resposta
-  return await res.json();
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
