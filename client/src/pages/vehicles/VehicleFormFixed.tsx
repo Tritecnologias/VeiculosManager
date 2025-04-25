@@ -447,7 +447,40 @@ export default function VehicleFormFixed() {
                       )}
                     />
                     
-
+                    {/* Campo: Cor */}
+                    <FormField
+                      control={form.control}
+                      name="colorId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Cor</FormLabel>
+                          <Select 
+                            value={field.value} 
+                            onValueChange={field.onChange}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione uma cor" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {colors.map((color) => (
+                                <SelectItem key={color.id} value={color.id.toString()}>
+                                  <div className="flex items-center">
+                                    <div 
+                                      className="w-4 h-4 rounded-full mr-2" 
+                                      style={{ backgroundColor: color.hexCode }}
+                                    ></div>
+                                    {color.name}
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                     
                     {/* Campo: Ano */}
                     <FormField
@@ -714,8 +747,13 @@ export default function VehicleFormFixed() {
                     </Button>
                   </Link>
                   <Button 
-                    type="submit" 
+                    type="button" 
                     disabled={isSubmitting}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      console.log("Botão Salvar clicado manualmente");
+                      form.handleSubmit(onSubmit)(e);
+                    }}
                   >
                     {isSubmitting ? (
                       <>
