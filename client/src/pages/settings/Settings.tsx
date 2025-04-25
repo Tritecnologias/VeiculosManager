@@ -1,202 +1,207 @@
-import React from "react";
-import { apiRequest } from "@/lib/queryClient";
+import * as React from "react";
+import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
+import { apiRequest } from "@/lib/queryClient";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Loader2, Save } from "lucide-react";
+
+type Setting = {
+  id: number;
+  key: string;
+  value: string;
+  label: string;
+  type: string;
+  createdAt: string;
+  updatedAt: string;
+};
 
 export default function Settings() {
-  const [formData, setFormData] = React.useState({
-    title: '',
-    logo: '',
-    supportEmail: ''
-  });
-  const [loading, setLoading] = React.useState(true);
+  const { toast } = useToast();
   const [saving, setSaving] = React.useState(false);
-  const [message, setMessage] = React.useState({ type: '', text: '' });
+  const [formData, setFormData] = React.useState<Record<string, string | boolean>>({});
   
-  // Função para obter as configurações
+  // Buscar configurações do servidor
+  const { data: settings = [], isLoading, error } = useQuery<Setting[]>({
+    queryKey: ["/api/settings"],
+  });
+  
+  // Inicializa o formulário quando as configurações são carregadas
   React.useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const response = await apiRequest('GET', '/api/settings');
-        const data = await response.json();
-        if (data) {
-          const titleSetting = data.find((s: any) => s.key === 'title');
-          const logoSetting = data.find((s: any) => s.key === 'logo');
-          const emailSetting = data.find((s: any) => s.key === 'supportEmail');
-          
-          setFormData({
-            title: titleSetting?.value || '',
-            logo: logoSetting?.value || '',
-            supportEmail: emailSetting?.value || ''
-          });
+    if (settings.length > 0) {
+      const initialFormData: Record<string, string | boolean> = {};
+      settings.forEach(setting => {
+        if (setting.type === "boolean") {
+          initialFormData[setting.key] = setting.value.toLowerCase() === "true";
+        } else {
+          initialFormData[setting.key] = setting.value;
         }
-      } catch (error) {
-        console.error('Erro ao carregar configurações:', error);
-        setMessage({ 
-          type: 'error', 
-          text: 'Não foi possível carregar as configurações.' 
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchSettings();
-  }, []);
+      });
+      setFormData(initialFormData);
+    }
+  }, [settings]);
   
-  // Função para atualizar o estado do formulário
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Manipulador para campos de texto
+  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+  
+  // Manipulador para campos booleanos (switches)
+  const handleSwitchChange = (name: string, checked: boolean) => {
+    setFormData(prev => ({ ...prev, [name]: checked }));
   };
   
   // Função para salvar as configurações
   const handleSave = async () => {
     setSaving(true);
-    setMessage({ type: '', text: '' });
     
     try {
-      // Buscar configurações existentes
-      const settingsResponse = await apiRequest('GET', '/api/settings');
-      const settings = await settingsResponse.json();
-      
-      // Para cada campo, atualizar ou criar
-      const fieldUpdates = [
-        { key: 'title', value: formData.title, label: 'Título do Sistema' },
-        { key: 'logo', value: formData.logo, label: 'URL do Logo' },
-        { key: 'supportEmail', value: formData.supportEmail, label: 'E-mail de Suporte' }
-      ];
-      
-      for (const field of fieldUpdates) {
-        const existingSetting = settings?.find((s: any) => s.key === field.key);
+      // Para cada configuração, atualizar no servidor
+      for (const setting of settings) {
+        const value = formData[setting.key];
+        const valueStr = typeof value === "boolean" ? value.toString() : value as string;
         
-        if (existingSetting) {
-          // Atualizar configuração existente
-          await apiRequest('PATCH', `/api/settings/key/${field.key}`, { 
-            value: field.value 
-          });
-        } else {
-          // Criar nova configuração
-          await apiRequest('POST', '/api/settings', {
-            key: field.key,
-            value: field.value,
-            label: field.label,
-            type: field.key === 'supportEmail' ? 'email' : 'text'
-          });
-        }
+        await apiRequest("PATCH", `/api/settings/key/${setting.key}`, { 
+          value: valueStr
+        });
       }
       
-      setMessage({ 
-        type: 'success', 
-        text: 'Configurações salvas com sucesso!' 
+      // Mostrar mensagem de sucesso
+      toast({
+        title: "Configurações salvas",
+        description: "As configurações foram atualizadas com sucesso.",
       });
       
-      // Invalidar o cache para atualizar os dados
-      queryClient.invalidateQueries({ queryKey: ['/api/settings'] });
+      // Atualizar o cache para que os dados sejam recarregados
+      queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
     } catch (error) {
-      console.error('Erro ao salvar configurações:', error);
-      setMessage({ 
-        type: 'error', 
-        text: 'Ocorreu um erro ao salvar as configurações.' 
+      console.error("Erro ao salvar configurações:", error);
+      toast({
+        title: "Erro ao salvar",
+        description: "Ocorreu um erro ao salvar as configurações. Tente novamente.",
+        variant: "destructive",
       });
     } finally {
       setSaving(false);
     }
   };
   
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Loader2 className="animate-spin h-8 w-8 text-primary" />
+        <span className="ml-2">Carregando configurações...</span>
+      </div>
+    );
+  }
+  
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-md p-4 text-red-700">
+        <p className="font-medium">Erro ao carregar configurações</p>
+        <p className="text-sm mt-1">Por favor, tente novamente mais tarde.</p>
+      </div>
+    );
+  }
+  
+  // Agrupar configurações por tipo
+  const generalSettings = settings.filter(s => ["company_name", "admin_email", "default_currency"].includes(s.key));
+  const taxSettings = settings.filter(s => ["tax_rate", "enable_pcd_discounts"].includes(s.key));
+  
   return (
-    <div className="container mx-auto py-6">
-      <h1 className="text-3xl font-bold mb-6">Configurações do Sistema</h1>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold tracking-tight">Configurações do Sistema</h1>
+        <Button onClick={handleSave} disabled={saving}>
+          {saving ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Salvando...
+            </>
+          ) : (
+            <>
+              <Save className="mr-2 h-4 w-4" />
+              Salvar Configurações
+            </>
+          )}
+        </Button>
+      </div>
       
-      {loading ? (
-        <div className="bg-white shadow-md rounded-lg p-6 flex justify-center items-center">
-          <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            <p className="mt-2">Carregando configurações...</p>
-          </div>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="col-span-1 md:col-span-3">
-            <div className="bg-white shadow-md rounded-lg p-6">
-              <h2 className="text-2xl font-semibold mb-4">Informações gerais</h2>
-              <p className="text-gray-500 mb-6">
-                Configure as informações básicas do sistema, como título, logo e email de suporte.
-              </p>
-              
-              {message.text && (
-                <div className={`p-4 mb-6 rounded-md ${
-                  message.type === 'error' ? 'bg-red-50 border border-red-200 text-red-700' : 
-                  'bg-green-50 border border-green-200 text-green-700'
-                }`}>
-                  {message.text}
-                </div>
-              )}
-              
-              <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
-                <div className="space-y-2">
-                  <label htmlFor="title" className="text-sm font-medium">Título do Sistema</label>
-                  <input 
-                    id="title"
-                    name="title"
-                    type="text"
-                    value={formData.title}
-                    onChange={handleChange}
-                    className="w-full border-gray-300 rounded-md shadow-sm p-2 border"
-                    placeholder="Vendas Corporativas"
+      <Tabs defaultValue="general">
+        <TabsList>
+          <TabsTrigger value="general">Geral</TabsTrigger>
+          <TabsTrigger value="tax">Impostos</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="general" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Informações Gerais</CardTitle>
+              <CardDescription>
+                Configurações gerais do sistema
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {generalSettings.map(setting => (
+                <div key={setting.id} className="grid gap-2">
+                  <Label htmlFor={setting.key}>{setting.label}</Label>
+                  <Input
+                    id={setting.key}
+                    name={setting.key}
+                    type={setting.type === "email" ? "email" : "text"}
+                    value={formData[setting.key] as string || ""}
+                    onChange={handleTextChange}
                   />
                 </div>
-                <div className="space-y-2">
-                  <label htmlFor="logo" className="text-sm font-medium">URL do Logo</label>
-                  <input 
-                    id="logo"
-                    name="logo"
-                    type="text"
-                    value={formData.logo}
-                    onChange={handleChange}
-                    className="w-full border-gray-300 rounded-md shadow-sm p-2 border"
-                    placeholder="https://exemplo.com/logo.png"
-                  />
-                  {formData.logo && (
-                    <div className="mt-2 p-2 border rounded-md">
-                      <p className="text-xs font-medium mb-1">Prévia:</p>
-                      <div className="flex justify-center">
-                        <img 
-                          src={formData.logo}
-                          alt="Logo Preview"
-                          className="max-h-12 object-contain"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = "https://placehold.co/200x60?text=Logo+Inválido";
-                          }}
-                        />
-                      </div>
+              ))}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="tax" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Configurações de Impostos e Descontos</CardTitle>
+              <CardDescription>
+                Defina impostos e descontos para categorias especiais
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {taxSettings.map(setting => (
+                <div key={setting.id} className="grid gap-2">
+                  {setting.type === "boolean" ? (
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor={setting.key}>{setting.label}</Label>
+                      <Switch
+                        id={setting.key}
+                        checked={formData[setting.key] as boolean || false}
+                        onCheckedChange={(checked) => handleSwitchChange(setting.key, checked)}
+                      />
                     </div>
+                  ) : (
+                    <>
+                      <Label htmlFor={setting.key}>{setting.label}</Label>
+                      <Input
+                        id={setting.key}
+                        name={setting.key}
+                        type={setting.type === "number" ? "number" : "text"}
+                        value={formData[setting.key] as string || ""}
+                        onChange={handleTextChange}
+                      />
+                    </>
                   )}
                 </div>
-                <div className="space-y-2">
-                  <label htmlFor="supportEmail" className="text-sm font-medium">Email de Suporte</label>
-                  <input 
-                    id="supportEmail"
-                    name="supportEmail"
-                    type="email"
-                    value={formData.supportEmail}
-                    onChange={handleChange}
-                    className="w-full border-gray-300 rounded-md shadow-sm p-2 border"
-                    placeholder="suporte@exemplo.com" 
-                  />
-                </div>
-                <button 
-                  type="submit"
-                  disabled={saving}
-                  className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {saving ? 'Salvando...' : 'Salvar Configurações'}
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
+              ))}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

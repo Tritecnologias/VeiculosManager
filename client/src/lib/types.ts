@@ -2,12 +2,16 @@
 export interface Brand {
   id: number;
   name: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Model {
   id: number;
   name: string;
   brandId: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface ModelWithBrand extends Model {
@@ -37,6 +41,8 @@ export interface Color {
   imageUrl?: string;
   paintTypeId?: number | null;
   paintType?: PaintType;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // Vehicle related types
@@ -63,4 +69,6 @@ export interface Vehicle {
   taxiIpi: number;
   version: VersionWithModel;
   color?: Color;
+  createdAt?: string;
+  updatedAt?: string;
 }
