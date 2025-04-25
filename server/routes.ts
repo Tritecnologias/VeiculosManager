@@ -9,7 +9,8 @@ import {
   colorInsertSchema,
   vehicleInsertSchema,
   versionColorInsertSchema,
-  paintTypeInsertSchema
+  paintTypeInsertSchema,
+  settingsInsertSchema
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -527,6 +528,117 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting vehicle:", error);
       res.status(500).json({ message: "Failed to delete vehicle" });
+    }
+  });
+
+  // Settings API
+  app.get(`${apiPrefix}/settings`, async (req, res) => {
+    try {
+      const settings = await storage.getSettings();
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching settings:", error);
+      res.status(500).json({ message: "Failed to fetch settings" });
+    }
+  });
+
+  app.get(`${apiPrefix}/settings/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const setting = await storage.getSetting(id);
+      
+      if (!setting) {
+        return res.status(404).json({ message: "Setting not found" });
+      }
+      
+      res.json(setting);
+    } catch (error) {
+      console.error("Error fetching setting:", error);
+      res.status(500).json({ message: "Failed to fetch setting" });
+    }
+  });
+
+  app.get(`${apiPrefix}/settings/key/:key`, async (req, res) => {
+    try {
+      const key = req.params.key;
+      const setting = await storage.getSettingByKey(key);
+      
+      if (!setting) {
+        return res.status(404).json({ message: "Setting not found" });
+      }
+      
+      res.json(setting);
+    } catch (error) {
+      console.error("Error fetching setting by key:", error);
+      res.status(500).json({ message: "Failed to fetch setting" });
+    }
+  });
+
+  app.post(`${apiPrefix}/settings`, async (req, res) => {
+    try {
+      const validatedData = settingsInsertSchema.parse(req.body);
+      const newSetting = await storage.createSetting(validatedData);
+      res.status(201).json(newSetting);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      console.error("Error creating setting:", error);
+      res.status(500).json({ message: "Failed to create setting" });
+    }
+  });
+
+  app.patch(`${apiPrefix}/settings/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = settingsInsertSchema.parse(req.body);
+      
+      const updatedSetting = await storage.updateSetting(id, validatedData);
+      
+      if (!updatedSetting) {
+        return res.status(404).json({ message: "Setting not found" });
+      }
+      
+      res.json(updatedSetting);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      console.error("Error updating setting:", error);
+      res.status(500).json({ message: "Failed to update setting" });
+    }
+  });
+
+  app.patch(`${apiPrefix}/settings/key/:key`, async (req, res) => {
+    try {
+      const key = req.params.key;
+      const { value } = req.body;
+      
+      if (!value) {
+        return res.status(400).json({ message: "Value is required" });
+      }
+      
+      const updatedSetting = await storage.updateSettingByKey(key, value);
+      
+      if (!updatedSetting) {
+        return res.status(404).json({ message: "Setting not found" });
+      }
+      
+      res.json(updatedSetting);
+    } catch (error) {
+      console.error("Error updating setting by key:", error);
+      res.status(500).json({ message: "Failed to update setting" });
+    }
+  });
+
+  app.delete(`${apiPrefix}/settings/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteSetting(id);
+      res.status(204).end();
+    } catch (error) {
+      console.error("Error deleting setting:", error);
+      res.status(500).json({ message: "Failed to delete setting" });
     }
   });
 
