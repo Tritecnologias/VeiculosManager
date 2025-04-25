@@ -24,7 +24,6 @@ const formSchema = z.object({
   name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres"),
   hexCode: z.string().min(4, "Código de cor inválido"),
   additionalPrice: z.coerce.number().min(0, "O preço não pode ser negativo"),
-  imageUrl: z.string().optional(),
   paintTypeId: z.number().nullable().optional(),
 });
 
@@ -48,7 +47,6 @@ export default function ColorForm({ id, onCancel }: ColorFormProps) {
       name: "",
       hexCode: "#000000",
       additionalPrice: 0,
-      imageUrl: "",
       paintTypeId: null,
     },
   });
@@ -82,7 +80,6 @@ export default function ColorForm({ id, onCancel }: ColorFormProps) {
         name: color.name,
         hexCode: color.hexCode,
         additionalPrice: color.additionalPrice,
-        imageUrl: color.imageUrl || "",
         paintTypeId: color.paintTypeId || null,
       });
     }

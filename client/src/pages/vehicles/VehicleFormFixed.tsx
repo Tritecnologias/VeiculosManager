@@ -218,6 +218,20 @@ export default function VehicleFormFixed() {
     // Deixamos esses campos vazios conforme solicitado
   };
   
+  // Função para formatar valores em campos monetários
+  const formatMoneyField = (name: keyof FormValues) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value;
+    
+    // Remove o símbolo R$ e espaço, se presente
+    const cleanValue = rawValue.replace(/^R\$\s?/, '');
+    
+    // Formata o valor
+    const formattedValue = formatCurrencyInput(cleanValue);
+    
+    // Define o valor formatado no campo
+    form.setValue(name, formattedValue);
+  };
+  
   // Função de submissão do formulário simplificada e robusta
   const onSubmit = async (data: FormValues) => {
     try {
@@ -667,7 +681,11 @@ export default function VehicleFormFixed() {
                           <FormControl>
                             <div className="relative">
                               <span className="absolute left-3 top-2.5 text-gray-500">R$</span>
-                              <Input className="pl-8" {...field} />
+                              <Input 
+                                className="pl-8" 
+                                {...field} 
+                                onChange={formatMoneyField("pcdIpiIcms")}
+                              />
                             </div>
                           </FormControl>
                           <FormMessage />
@@ -685,7 +703,11 @@ export default function VehicleFormFixed() {
                           <FormControl>
                             <div className="relative">
                               <span className="absolute left-3 top-2.5 text-gray-500">R$</span>
-                              <Input className="pl-8" {...field} />
+                              <Input 
+                                className="pl-8" 
+                                {...field} 
+                                onChange={formatMoneyField("pcdIpi")}
+                              />
                             </div>
                           </FormControl>
                           <FormMessage />
@@ -703,7 +725,11 @@ export default function VehicleFormFixed() {
                           <FormControl>
                             <div className="relative">
                               <span className="absolute left-3 top-2.5 text-gray-500">R$</span>
-                              <Input className="pl-8" {...field} />
+                              <Input 
+                                className="pl-8" 
+                                {...field} 
+                                onChange={formatMoneyField("taxiIpiIcms")}
+                              />
                             </div>
                           </FormControl>
                           <FormMessage />
@@ -721,7 +747,11 @@ export default function VehicleFormFixed() {
                           <FormControl>
                             <div className="relative">
                               <span className="absolute left-3 top-2.5 text-gray-500">R$</span>
-                              <Input className="pl-8" {...field} />
+                              <Input 
+                                className="pl-8" 
+                                {...field} 
+                                onChange={formatMoneyField("taxiIpi")}
+                              />
                             </div>
                           </FormControl>
                           <FormMessage />
