@@ -39,15 +39,16 @@ const SITUATIONS = [
   { value: 'coming-soon', label: 'Em breve' }
 ];
 
-// Função para converter valores monetários em formato brasileiro para números
-const parseBRCurrency = (value: string): number => {
-  if (!value) return 0;
+// Função para converter valores monetários em formato brasileiro para strings numéricas
+const parseBRCurrency = (value: string): string => {
+  if (!value) return "0";
   
   // Remove 'R$', pontos e substitui vírgula por ponto para que o JavaScript possa transformar em float
   const numericValue = value.replace('R$', '').replace(/\./g, '').replace(',', '.');
   const parsed = parseFloat(numericValue);
   
-  return isNaN(parsed) ? 0 : parsed;
+  // Retorna como string para o backend
+  return isNaN(parsed) ? "0" : parsed.toString();
 };
 
 const formSchema = z.object({
@@ -58,7 +59,7 @@ const formSchema = z.object({
   year: z.coerce.number().min(1900, "Ano inválido").max(new Date().getFullYear() + 5, "Ano muito avançado"),
   publicPrice: z.string()
     .transform((val) => parseBRCurrency(val))
-    .refine((val) => val >= 0, "O preço deve ser um valor numérico positivo"),
+    .refine((val) => parseFloat(val) >= 0, "O preço deve ser um valor numérico positivo"),
   situation: z.enum(['available', 'unavailable', 'coming-soon']),
   description: z.string().min(10, "A descrição deve ter pelo menos 10 caracteres"),
   engine: z.string().min(2, "Informe o motor do veículo"),
@@ -67,16 +68,16 @@ const formSchema = z.object({
   isActive: z.boolean(),
   pcdIpiIcms: z.string()
     .transform((val) => parseBRCurrency(val))
-    .refine((val) => val >= 0, "O valor deve ser um valor numérico positivo"),
+    .refine((val) => parseFloat(val) >= 0, "O valor deve ser um valor numérico positivo"),
   pcdIpi: z.string()
     .transform((val) => parseBRCurrency(val))
-    .refine((val) => val >= 0, "O valor deve ser um valor numérico positivo"),
+    .refine((val) => parseFloat(val) >= 0, "O valor deve ser um valor numérico positivo"),
   taxiIpiIcms: z.string()
     .transform((val) => parseBRCurrency(val))
-    .refine((val) => val >= 0, "O valor deve ser um valor numérico positivo"),
+    .refine((val) => parseFloat(val) >= 0, "O valor deve ser um valor numérico positivo"),
   taxiIpi: z.string()
     .transform((val) => parseBRCurrency(val))
-    .refine((val) => val >= 0, "O valor deve ser um valor numérico positivo")
+    .refine((val) => parseFloat(val) >= 0, "O valor deve ser um valor numérico positivo")
 });
 
 type FormValues = {
@@ -236,8 +237,7 @@ export default function VehicleForm() {
     form.setValue("publicPrice", value);
     
     // Converte para float para cálculos
-    const publicPriceStr = parseBRCurrency(value);
-    const publicPrice = parseFloat(publicPriceStr);
+    const publicPrice = parseFloat(value.replace(/\./g, "").replace(",", "."));
     
     if (!isNaN(publicPrice)) {
       // These are just example calculations, adjust according to actual rules
