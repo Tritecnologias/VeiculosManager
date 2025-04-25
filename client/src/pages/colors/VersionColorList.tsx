@@ -83,9 +83,9 @@ export default function VersionColorList() {
       
       console.log("Buscando version-colors:", url);
       const response = await apiRequest("GET", url);
-      const data = await response.json();
-      console.log("Version colors carregados:", data);
-      return data;
+      // Não usar .json() aqui porque apiRequest já retorna os dados JSON
+      console.log("API Response:", response);
+      return response;
     },
     enabled: true,
   });
