@@ -8,7 +8,8 @@ import {
   versionInsertSchema, 
   colorInsertSchema,
   vehicleInsertSchema,
-  versionColorInsertSchema
+  versionColorInsertSchema,
+  paintTypeInsertSchema
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -304,6 +305,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting color:", error);
       res.status(500).json({ message: "Failed to delete color" });
+    }
+  });
+
+  // Paint Types API
+  app.get(`${apiPrefix}/paint-types`, async (req, res) => {
+    try {
+      const paintTypes = await storage.getPaintTypes();
+      res.json(paintTypes);
+    } catch (error) {
+      console.error("Error fetching paint types:", error);
+      res.status(500).json({ message: "Failed to fetch paint types" });
+    }
+  });
+
+  app.get(`${apiPrefix}/paint-types/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const paintType = await storage.getPaintTypeById(id);
+      
+      if (!paintType) {
+        return res.status(404).json({ message: "Paint type not found" });
+      }
+      
+      res.json(paintType);
+    } catch (error) {
+      console.error("Error fetching paint type:", error);
+      res.status(500).json({ message: "Failed to fetch paint type" });
+    }
+  });
+
+  app.post(`${apiPrefix}/paint-types`, async (req, res) => {
+    try {
+      const validatedData = paintTypeInsertSchema.parse(req.body);
+      const newPaintType = await storage.createPaintType(validatedData);
+      res.status(201).json(newPaintType);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      console.error("Error creating paint type:", error);
+      res.status(500).json({ message: "Failed to create paint type" });
+    }
+  });
+
+  app.patch(`${apiPrefix}/paint-types/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = paintTypeInsertSchema.parse(req.body);
+      
+      const updatedPaintType = await storage.updatePaintType(id, validatedData);
+      
+      if (!updatedPaintType) {
+        return res.status(404).json({ message: "Paint type not found" });
+      }
+      
+      res.json(updatedPaintType);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      console.error("Error updating paint type:", error);
+      res.status(500).json({ message: "Failed to update paint type" });
+    }
+  });
+
+  app.delete(`${apiPrefix}/paint-types/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deletePaintType(id);
+      res.status(204).end();
+    } catch (error) {
+      console.error("Error deleting paint type:", error);
+      res.status(500).json({ message: "Failed to delete paint type" });
     }
   });
 

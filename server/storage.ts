@@ -7,12 +7,14 @@ import {
   colors, 
   vehicles,
   versionColors,
+  paintTypes,
   BrandInsert,
   ModelInsert,
   VersionInsert,
   ColorInsert,
   VehicleInsert,
-  VersionColorInsert
+  VersionColorInsert,
+  PaintTypeInsert
 } from "@shared/schema";
 
 // Brands
@@ -161,6 +163,37 @@ export async function updateColor(id: number, data: ColorInsert) {
 
 export async function deleteColor(id: number) {
   await db.delete(colors).where(eq(colors.id, id));
+}
+
+// Paint Types
+export async function getPaintTypes() {
+  return db.query.paintTypes.findMany({
+    orderBy: paintTypes.name
+  });
+}
+
+export async function getPaintTypeById(id: number) {
+  return db.query.paintTypes.findFirst({
+    where: eq(paintTypes.id, id)
+  });
+}
+
+export async function createPaintType(data: PaintTypeInsert) {
+  const [newPaintType] = await db.insert(paintTypes).values(data).returning();
+  return newPaintType;
+}
+
+export async function updatePaintType(id: number, data: PaintTypeInsert) {
+  const [updatedPaintType] = await db.update(paintTypes)
+    .set(data)
+    .where(eq(paintTypes.id, id))
+    .returning();
+  
+  return updatedPaintType;
+}
+
+export async function deletePaintType(id: number) {
+  await db.delete(paintTypes).where(eq(paintTypes.id, id));
 }
 
 // Version Colors
@@ -327,6 +360,12 @@ export const storage = {
   createColor,
   updateColor,
   deleteColor,
+  
+  getPaintTypes,
+  getPaintTypeById,
+  createPaintType,
+  updatePaintType,
+  deletePaintType,
   
   getVersionColors,
   getVersionColorById,
