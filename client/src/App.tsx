@@ -18,6 +18,7 @@ import ColorForm from "@/pages/colors/ColorForm";
 import VehicleList from "@/pages/vehicles/VehicleList";
 import VehicleForm from "@/pages/vehicles/VehicleForm";
 import PaintTypeList from "@/pages/paint-types/PaintTypeList";
+import PaintTypeForm from "@/pages/paint-types/PaintTypeForm";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -36,6 +37,12 @@ function Router() {
         <Route path="/versions/:id/edit" component={VersionForm} />
         <Route path="/colors" component={ColorTabs} />
         <Route path="/paint-types" component={PaintTypeList} />
+        <Route path="/paint-types/new">
+          {() => <PaintTypeForm />}
+        </Route>
+        <Route path="/paint-types/:id/edit">
+          {(params) => <PaintTypeForm id={parseInt(params.id)} />}
+        </Route>
         <Route path="/vehicles" component={VehicleList} />
         <Route path="/vehicles/new" component={VehicleForm} />
         <Route path="/vehicles/:id/edit" component={VehicleForm} />

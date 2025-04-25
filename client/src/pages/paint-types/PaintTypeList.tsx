@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { PaintType } from "@/lib/types";
-import PaintTypeForm from "./PaintTypeForm";
+import PaintTypeForm from "@/pages/paint-types/PaintTypeForm";
 
 export default function PaintTypeList() {
   const [editingId, setEditingId] = useState<number | null>(null);
