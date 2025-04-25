@@ -10,6 +10,12 @@ export const brands = pgTable("brands", {
   createdAt: timestamp("created_at").defaultNow().notNull()
 });
 
+export const paintTypes = pgTable("paint_types", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  createdAt: timestamp("created_at").defaultNow().notNull()
+});
+
 export const models = pgTable("models", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
@@ -27,6 +33,7 @@ export const versions = pgTable("versions", {
 export const colors = pgTable("colors", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
+  paintTypeId: integer("paint_type_id").references(() => paintTypes.id),
   hexCode: text("hex_code").notNull(),
   additionalPrice: decimal("additional_price", { precision: 10, scale: 2 }).default("0").notNull(),
   imageUrl: text("image_url"),
@@ -79,7 +86,12 @@ export const versionsRelations = relations(versions, ({ one, many }) => ({
   versionColors: many(versionColors)
 }));
 
-export const colorsRelations = relations(colors, ({ many }) => ({
+export const paintTypesRelations = relations(paintTypes, ({ many }) => ({
+  colors: many(colors)
+}));
+
+export const colorsRelations = relations(colors, ({ one, many }) => ({
+  paintType: one(paintTypes, { fields: [colors.paintTypeId], references: [paintTypes.id] }),
   vehicles: many(vehicles),
   versionColors: many(versionColors)
 }));
@@ -101,6 +113,13 @@ export const brandInsertSchema = createInsertSchema(brands, {
 export type BrandInsert = z.infer<typeof brandInsertSchema>;
 export const brandSelectSchema = createSelectSchema(brands);
 export type Brand = z.infer<typeof brandSelectSchema>;
+
+export const paintTypeInsertSchema = createInsertSchema(paintTypes, {
+  name: (schema) => schema.min(2, "O nome deve ter pelo menos 2 caracteres")
+});
+export type PaintTypeInsert = z.infer<typeof paintTypeInsertSchema>;
+export const paintTypeSelectSchema = createSelectSchema(paintTypes);
+export type PaintType = z.infer<typeof paintTypeSelectSchema>;
 
 export const modelInsertSchema = createInsertSchema(models, {
   name: (schema) => schema.min(2, "O nome deve ter pelo menos 2 caracteres")

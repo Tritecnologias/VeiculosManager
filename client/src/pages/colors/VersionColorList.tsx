@@ -88,13 +88,13 @@ export default function VersionColorList() {
     enabled: true,
   });
   
-  const filteredModels = selectedBrandId 
+  const filteredModels = selectedBrandId && selectedBrandId !== "all"
     ? models.filter(model => model.brandId === parseInt(selectedBrandId))
-    : [];
+    : models;
     
-  const filteredVersions = selectedModelId
+  const filteredVersions = selectedModelId && selectedModelId !== "all"
     ? versions.filter(version => version.modelId === parseInt(selectedModelId))
-    : [];
+    : versions;
     
   const handleDeleteVersionColor = async (id: number) => {
     if (confirm("Tem certeza que deseja remover esta associação de cor?")) {
@@ -138,7 +138,7 @@ export default function VersionColorList() {
                 <SelectValue placeholder="Filtrar por marca" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas as marcas</SelectItem>
+                <SelectItem value="all">Todas as marcas</SelectItem>
                 {brands.map((brand) => (
                   <SelectItem key={brand.id} value={brand.id.toString()}>
                     {brand.name}
@@ -161,7 +161,7 @@ export default function VersionColorList() {
                 <SelectValue placeholder="Filtrar por modelo" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos os modelos</SelectItem>
+                <SelectItem value="all">Todos os modelos</SelectItem>
                 {filteredModels.map((model) => (
                   <SelectItem key={model.id} value={model.id.toString()}>
                     {model.name}
@@ -181,7 +181,7 @@ export default function VersionColorList() {
                 <SelectValue placeholder="Filtrar por versão" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas as versões</SelectItem>
+                <SelectItem value="all">Todas as versões</SelectItem>
                 {filteredVersions.map((version) => (
                   <SelectItem key={version.id} value={version.id.toString()}>
                     {version.name}
