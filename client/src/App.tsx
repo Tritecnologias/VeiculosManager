@@ -47,6 +47,7 @@ function Router() {
         <Route path="/vehicles" component={VehicleList} />
         <Route path="/vehicles/new" component={VehicleForm} />
         <Route path="/vehicles/:id/edit" component={VehicleForm} />
+        <Route path="/configurator" component={Configurator} />
         <Route component={NotFound} />
       </Switch>
     </AdminLayout>
