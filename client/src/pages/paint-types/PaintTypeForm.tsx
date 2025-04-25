@@ -42,6 +42,20 @@ export default function PaintTypeForm({ id, initialData, onCancel, onSuccess }: 
   
   const { data: paintType, isLoading: isLoadingPaintType } = useQuery<PaintType>({
     queryKey: [isEditing && !initialData ? `/api/paint-types/${paintTypeId}` : null],
+    queryFn: async () => {
+      try {
+        const response = await fetch(`api/paint-types/${paintTypeId}`);
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log("Paint Type Detail API Response:", data);
+        return data;
+      } catch (error) {
+        console.error(`Failed to fetch paint type ${paintTypeId}:`, error);
+        return null;
+      }
+    },
     enabled: isEditing && !initialData,
   });
   
@@ -56,13 +70,38 @@ export default function PaintTypeForm({ id, initialData, onCancel, onSuccess }: 
   const handleSubmit = async (values: FormValues) => {
     try {
       if (isEditing) {
-        await apiRequest("PATCH", `/api/paint-types/${paintTypeId}`, values);
+        const response = await fetch(`api/paint-types/${paintTypeId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(values)
+        });
+        
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+        
         toast({
           title: "Tipo de pintura atualizado",
           description: "O tipo de pintura foi atualizado com sucesso!",
         });
       } else {
-        await apiRequest("POST", "/api/paint-types", values);
+        const response = await fetch('api/paint-types', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(values)
+        });
+        
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Novo tipo de pintura criado:', data);
+        
         toast({
           title: "Tipo de pintura cadastrado",
           description: "O tipo de pintura foi cadastrado com sucesso!",

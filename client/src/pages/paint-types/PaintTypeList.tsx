@@ -31,7 +31,7 @@ export default function PaintTypeList() {
     queryKey: ["/api/paint-types"],
     queryFn: async () => {
       try {
-        const response = await fetch("/api/paint-types");
+        const response = await fetch("api/paint-types");
         if (!response.ok) {
           throw new Error(`API error: ${response.status}`);
         }
@@ -48,11 +48,19 @@ export default function PaintTypeList() {
   const handleDelete = async (id: number) => {
     if (confirm("Tem certeza que deseja remover este tipo de pintura?")) {
       try {
-        await apiRequest("DELETE", `/api/paint-types/${id}`);
+        const response = await fetch(`api/paint-types/${id}`, {
+          method: 'DELETE'
+        });
+        
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+        
         toast({
           title: "Tipo de pintura removido",
           description: "O tipo de pintura foi removido com sucesso.",
         });
+        
         queryClient.invalidateQueries({ queryKey: ["/api/paint-types"] });
       } catch (error) {
         console.error("Error deleting paint type:", error);

@@ -62,7 +62,7 @@ export default function ColorForm({ id, onCancel }: ColorFormProps) {
     queryKey: ["/api/paint-types"],
     queryFn: async () => {
       try {
-        const response = await fetch("/api/paint-types");
+        const response = await fetch("api/paint-types");
         if (!response.ok) {
           throw new Error(`API error: ${response.status}`);
         }
