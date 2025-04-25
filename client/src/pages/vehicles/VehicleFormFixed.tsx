@@ -16,7 +16,7 @@ import { ChevronLeft, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Brand, Model, Version, Color, FuelType, TransmissionType, VehicleSituation, Vehicle } from "@/lib/types";
-import { formatBRCurrency, parseBRCurrency } from "@/lib/formatters";
+import { formatBRCurrency, formatBRCurrencyWithSymbol, parseBRCurrency } from "@/lib/formatters";
 
 const FUEL_TYPES = [
   { value: 'flex', label: 'Flex' },
@@ -136,24 +136,24 @@ export default function VehicleFormFixed() {
       );
       setFilteredVersions(versionsForModel);
       
-      // Define todos os valores restantes
+      // Define todos os valores restantes com formatação adequada
       form.reset({
         brandId: vehicle.version.model.brandId.toString(),
         modelId: vehicle.version.modelId.toString(),
         versionId: vehicle.versionId.toString(),
         colorId: vehicle.colorId ? vehicle.colorId.toString() : "",
         year: vehicle.year,
-        publicPrice: vehicle.publicPrice.toString(),
+        publicPrice: formatBRCurrency(Number(vehicle.publicPrice)),
         situation: vehicle.situation,
         description: vehicle.description,
         engine: vehicle.engine,
         fuelType: vehicle.fuelType,
         transmission: vehicle.transmission,
         isActive: vehicle.isActive,
-        pcdIpiIcms: vehicle.pcdIpiIcms.toString(),
-        pcdIpi: vehicle.pcdIpi.toString(),
-        taxiIpiIcms: vehicle.taxiIpiIcms.toString(),
-        taxiIpi: vehicle.taxiIpi.toString()
+        pcdIpiIcms: formatBRCurrency(Number(vehicle.pcdIpiIcms)),
+        pcdIpi: formatBRCurrency(Number(vehicle.pcdIpi)),
+        taxiIpiIcms: formatBRCurrency(Number(vehicle.taxiIpiIcms)),
+        taxiIpi: formatBRCurrency(Number(vehicle.taxiIpi))
       });
     }
   }, [vehicle, form, models, versions]);
@@ -187,12 +187,35 @@ export default function VehicleFormFixed() {
     }
   };
   
+  // Formata um valor de entrada como moeda brasileira e retorna o valor formatado
+  const formatCurrencyInput = (value: string): string => {
+    // Remove tudo exceto números
+    let numericValue = value.replace(/\D/g, '');
+    
+    // Converte para centavos (divide por 100 para manter decimais)
+    const cents = parseInt(numericValue) / 100;
+    
+    // Formata como moeda brasileira sem o símbolo
+    if (cents === 0) return '';
+    
+    return formatBRCurrency(cents);
+  };
+  
   // Calcula preços de isenção com base no preço público
   const handlePublicPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    form.setValue("publicPrice", value);
+    const rawValue = e.target.value;
     
-    const numericValue = parseFloat(value.replace(/\./g, "").replace(",", "."));
+    // Remove o símbolo R$ e espaço, se presente
+    const cleanValue = rawValue.replace(/^R\$\s?/, '');
+    
+    // Formata o valor
+    const formattedValue = formatCurrencyInput(cleanValue);
+    
+    // Define o valor formatado no campo
+    form.setValue("publicPrice", formattedValue);
+    
+    // Converte para número para cálculos
+    const numericValue = parseFloat(formattedValue.replace(/\./g, "").replace(",", "."));
     
     if (!isNaN(numericValue)) {
       const pcdIpiIcms = numericValue * 0.88; // 12% desconto
@@ -424,40 +447,7 @@ export default function VehicleFormFixed() {
                       )}
                     />
                     
-                    {/* Campo: Cor */}
-                    <FormField
-                      control={form.control}
-                      name="colorId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Cor</FormLabel>
-                          <Select 
-                            value={field.value} 
-                            onValueChange={field.onChange}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecione uma cor" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {colors.map((color) => (
-                                <SelectItem key={color.id} value={color.id.toString()}>
-                                  <div className="flex items-center">
-                                    <div 
-                                      className="w-4 h-4 rounded-full mr-2" 
-                                      style={{ backgroundColor: color.hexCode }}
-                                    ></div>
-                                    {color.name}
-                                  </div>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+
                     
                     {/* Campo: Ano */}
                     <FormField

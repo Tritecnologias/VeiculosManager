@@ -19,6 +19,27 @@ export function parseCurrency(value: string): number {
 // Função para formatar valores monetários no formato brasileiro
 export function formatBRCurrency(value: number): string {
   return value.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).replace('R$', '').trim();
+}
+
+// Função para formatar valores monetários para exibição no formato brasileiro
+export function formatBRCurrencyWithSymbol(value: number | string): string {
+  // Se for string, converte para número primeiro
+  const numericValue = typeof value === 'string' ? parseFloat(value.replace(/[^\d.,]/g, '').replace(',', '.')) : value;
+  
+  // Se não for um número válido, retorna zero formatado
+  if (isNaN(numericValue)) {
+    return 'R$ 0,00';
+  }
+  
+  // Retorna o valor formatado com símbolo
+  return numericValue.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   });
@@ -27,11 +48,12 @@ export function formatBRCurrency(value: number): string {
 // Função para converter valores monetários formatados em BR para strings
 // que o backend aceita, mantendo como string para evitar problemas de precisão
 export function parseBRCurrency(value: string): string {
-  // Remove todos os caracteres que não são dígitos ou vírgula
-  const cleanValue = value.replace(/[^\d,]/g, '');
+  // Remove todos os caracteres que não são dígitos, vírgulas ou pontos
+  const cleanValue = value.replace(/[^\d,\.]/g, '');
   
-  // Substitui vírgula por ponto para formato de API
-  const formattedValue = cleanValue.replace(',', '.');
+  // Se estiver com formato brasileiro (1.234,56), converte para formato API (1234.56)
+  // Primeiro remove os pontos de milhar, depois troca vírgula decimal por ponto
+  const formattedValue = cleanValue.replace(/\./g, '').replace(',', '.');
   
   // Retorna o valor como string
   return formattedValue || "0";
