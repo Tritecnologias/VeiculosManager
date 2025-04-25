@@ -58,6 +58,7 @@ const formSchema = z.object({
   colorId: z.string().min(1, "Selecione uma cor"),
   year: z.coerce.number().min(1900, "Ano inválido").max(new Date().getFullYear() + 5, "Ano muito avançado"),
   publicPrice: z.string()
+    .min(1, "Informe o preço público")
     .transform((val) => parseBRCurrency(val))
     .refine((val) => parseFloat(val) >= 0, "O preço deve ser um valor numérico positivo"),
   situation: z.enum(['available', 'unavailable', 'coming-soon']),
@@ -258,18 +259,56 @@ export default function VehicleForm() {
     try {
       console.log("Form values:", values);
       
-      // Verifica se os campos obrigatórios estão preenchidos
-      if (!values.brandId || !values.modelId || !values.versionId) {
-        console.error("Campos obrigatórios não preenchidos", { 
-          brandId: values.brandId, 
-          modelId: values.modelId, 
-          versionId: values.versionId 
-        });
+      // Verifica se há erros de validação antes de enviar
+      const validationResult = formSchema.safeParse(values);
+      if (!validationResult.success) {
+        const errors = validationResult.error.format();
+        console.error("Validation errors:", errors);
+        
+        // Exibe mensagens de erro específicas
+        let errorMessages = [];
+        
+        if (errors.brandId?._errors?.length) {
+          errorMessages.push("Selecione uma marca");
+        }
+        
+        if (errors.modelId?._errors?.length) {
+          errorMessages.push("Selecione um modelo");
+        }
+        
+        if (errors.versionId?._errors?.length) {
+          errorMessages.push("Selecione uma versão");
+        }
+        
+        if (errors.publicPrice?._errors?.length) {
+          errorMessages.push("Informe o preço público");
+        }
+        
+        if (errors.description?._errors?.length) {
+          errorMessages.push("A descrição deve ter pelo menos 10 caracteres");
+        }
+        
+        if (errors.engine?._errors?.length) {
+          errorMessages.push("Informe o motor do veículo");
+        }
+        
+        if (errors.colorId?._errors?.length) {
+          errorMessages.push("Selecione uma cor");
+        }
+        
+        // Exibe toast com mensagens de erro
         toast({
           title: "Campos obrigatórios",
-          description: "Preencha todos os campos obrigatórios",
+          description: (
+            <ul className="list-disc pl-4">
+              {errorMessages.map((error, i) => (
+                <li key={i}>{error}</li>
+              ))}
+            </ul>
+          ),
           variant: "destructive",
         });
+        
         return;
       }
       
@@ -291,31 +330,53 @@ export default function VehicleForm() {
       
       console.log("Vehicle data to send:", vehicleData);
       
+      let response;
+      
       if (isEditing) {
         console.log("Updating vehicle with ID:", id);
-        const response = await apiRequest("PATCH", `/api/vehicles/${id}`, vehicleData);
+        response = await apiRequest("PATCH", `/api/vehicles/${id}`, vehicleData);
         console.log("Update response:", response);
-        toast({
-          title: "Veículo atualizado",
-          description: "O veículo foi atualizado com sucesso!",
-        });
+        
+        if (response) {
+          toast({
+            title: "Veículo atualizado",
+            description: "O veículo foi atualizado com sucesso!",
+          });
+          queryClient.invalidateQueries({ queryKey: ["/api/vehicles"] });
+          navigate("/vehicles");
+        } else {
+          throw new Error("Falha ao atualizar o veículo");
+        }
       } else {
         console.log("Creating new vehicle");
-        const response = await apiRequest("POST", "/api/vehicles", vehicleData);
+        response = await apiRequest("POST", "/api/vehicles", vehicleData);
         console.log("Create response:", response);
-        toast({
-          title: "Veículo cadastrado",
-          description: "O veículo foi cadastrado com sucesso!",
-        });
+        
+        if (response) {
+          toast({
+            title: "Veículo cadastrado",
+            description: "O veículo foi cadastrado com sucesso!",
+          });
+          queryClient.invalidateQueries({ queryKey: ["/api/vehicles"] });
+          navigate("/vehicles");
+        } else {
+          throw new Error("Falha ao cadastrar o veículo");
+        }
       }
-      
-      queryClient.invalidateQueries({ queryKey: ["/api/vehicles"] });
-      navigate("/vehicles");
     } catch (error) {
       console.error("Failed to save vehicle:", error);
+      
+      // Melhora a mensagem de erro
+      let errorMessage = "Ocorreu um erro ao salvar o veículo.";
+      
+      // Verifica se temos um erro com mensagem específica
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Erro ao salvar",
-        description: "Ocorreu um erro ao salvar o veículo.",
+        description: errorMessage,
         variant: "destructive",
       });
     }
