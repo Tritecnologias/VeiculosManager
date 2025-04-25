@@ -44,7 +44,7 @@ const formSchema = z.object({
   brandId: z.string().min(1, "Selecione uma marca"),
   modelId: z.string().min(1, "Selecione um modelo"),
   versionId: z.string().min(1, "Selecione uma versão"),
-  colorId: z.string().min(1, "Selecione uma cor"),
+  colorId: z.string().optional().default(""), // Tornando o campo cor opcional
   year: z.coerce.number().min(1900, "Ano inválido").max(new Date().getFullYear() + 5, "Ano muito avançado"),
   publicPrice: z.string().min(1, "Informe o preço público"),
   situation: z.enum(['available', 'unavailable', 'coming-soon']),
