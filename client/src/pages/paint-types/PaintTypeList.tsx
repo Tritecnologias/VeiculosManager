@@ -18,6 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { PaintType } from "@/lib/types";
 import PaintTypeForm from "./PaintTypeForm";
 
 export default function PaintTypeList() {
@@ -26,10 +27,10 @@ export default function PaintTypeList() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: paintTypes = [], isLoading } = useQuery({
+  const { data: paintTypes = [], isLoading } = useQuery<PaintType[]>({
     queryKey: ["/api/paint-types"],
     queryFn: async () => {
-      const response = await apiRequest("GET", "/api/paint-types");
+      const response = await apiRequest<PaintType[]>("GET", "/api/paint-types");
       return response || [];
     },
   });
@@ -89,7 +90,7 @@ export default function PaintTypeList() {
   }
 
   if (editingId !== null) {
-    const paintType = paintTypes.find((pt: any) => pt.id === editingId);
+    const paintType = paintTypes.find((pt) => pt.id === editingId);
     return (
       <Card>
         <CardHeader>
@@ -128,7 +129,7 @@ export default function PaintTypeList() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paintTypes.map((paintType: any) => (
+              {paintTypes.map((paintType) => (
                 <TableRow key={paintType.id}>
                   <TableCell>{paintType.name}</TableCell>
                   <TableCell className="text-right">
