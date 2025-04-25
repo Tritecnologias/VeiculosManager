@@ -6,11 +6,13 @@ import {
   versions, 
   colors, 
   vehicles,
+  versionColors,
   BrandInsert,
   ModelInsert,
   VersionInsert,
   ColorInsert,
-  VehicleInsert
+  VehicleInsert,
+  VersionColorInsert
 } from "@shared/schema";
 
 // Brands
@@ -161,6 +163,84 @@ export async function deleteColor(id: number) {
   await db.delete(colors).where(eq(colors.id, id));
 }
 
+// Version Colors
+export async function getVersionColors(options: { modelId?: number, versionId?: number } = {}) {
+  const query: any = {};
+  
+  if (options.versionId) {
+    query.where = eq(versionColors.versionId, options.versionId);
+  }
+  
+  const results = await db.query.versionColors.findMany({
+    ...query,
+    orderBy: desc(versionColors.createdAt),
+    with: {
+      version: {
+        with: {
+          model: {
+            with: {
+              brand: true
+            }
+          }
+        }
+      },
+      color: true
+    }
+  });
+  
+  // Filter by modelId if provided (needs to be done post-query due to relations)
+  if (options.modelId && results.length > 0) {
+    return results.filter(vc => vc.version.modelId === options.modelId);
+  }
+  
+  return results;
+}
+
+export async function getVersionColorById(id: number) {
+  return db.query.versionColors.findFirst({
+    where: eq(versionColors.id, id),
+    with: {
+      version: {
+        with: {
+          model: {
+            with: {
+              brand: true
+            }
+          }
+        }
+      },
+      color: true
+    }
+  });
+}
+
+export async function createVersionColor(data: VersionColorInsert) {
+  const [newVersionColor] = await db.insert(versionColors).values({
+    ...data,
+    updatedAt: new Date()
+  }).returning();
+  
+  return getVersionColorById(newVersionColor.id);
+}
+
+export async function updateVersionColor(id: number, data: VersionColorInsert) {
+  const [updatedVersionColor] = await db.update(versionColors)
+    .set({
+      ...data,
+      updatedAt: new Date()
+    })
+    .where(eq(versionColors.id, id))
+    .returning();
+  
+  if (!updatedVersionColor) return null;
+  
+  return getVersionColorById(updatedVersionColor.id);
+}
+
+export async function deleteVersionColor(id: number) {
+  await db.delete(versionColors).where(eq(versionColors.id, id));
+}
+
 // Vehicles
 export async function getVehicles() {
   return db.query.vehicles.findMany({
@@ -242,6 +322,12 @@ export const storage = {
   createColor,
   updateColor,
   deleteColor,
+  
+  getVersionColors,
+  getVersionColorById,
+  createVersionColor,
+  updateVersionColor,
+  deleteVersionColor,
   
   getVehicles,
   getVehicleById,

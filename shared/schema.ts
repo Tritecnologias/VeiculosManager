@@ -33,6 +33,16 @@ export const colors = pgTable("colors", {
   createdAt: timestamp("created_at").defaultNow().notNull()
 });
 
+export const versionColors = pgTable("version_colors", {
+  id: serial("id").primaryKey(),
+  versionId: integer("version_id").references(() => versions.id).notNull(),
+  colorId: integer("color_id").references(() => colors.id).notNull(),
+  price: decimal("price", { precision: 10, scale: 2 }).default("0").notNull(),
+  imageUrl: text("image_url"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull()
+});
+
 export const vehicles = pgTable("vehicles", {
   id: serial("id").primaryKey(),
   versionId: integer("version_id").references(() => versions.id).notNull(),
@@ -65,11 +75,18 @@ export const modelsRelations = relations(models, ({ one, many }) => ({
 
 export const versionsRelations = relations(versions, ({ one, many }) => ({
   model: one(models, { fields: [versions.modelId], references: [models.id] }),
-  vehicles: many(vehicles)
+  vehicles: many(vehicles),
+  versionColors: many(versionColors)
 }));
 
 export const colorsRelations = relations(colors, ({ many }) => ({
-  vehicles: many(vehicles)
+  vehicles: many(vehicles),
+  versionColors: many(versionColors)
+}));
+
+export const versionColorsRelations = relations(versionColors, ({ one }) => ({
+  version: one(versions, { fields: [versionColors.versionId], references: [versions.id] }),
+  color: one(colors, { fields: [versionColors.colorId], references: [colors.id] })
 }));
 
 export const vehiclesRelations = relations(vehicles, ({ one }) => ({
@@ -106,6 +123,11 @@ export const colorInsertSchema = createInsertSchema(colors, {
 export type ColorInsert = z.infer<typeof colorInsertSchema>;
 export const colorSelectSchema = createSelectSchema(colors);
 export type Color = z.infer<typeof colorSelectSchema>;
+
+export const versionColorInsertSchema = createInsertSchema(versionColors);
+export type VersionColorInsert = z.infer<typeof versionColorInsertSchema>;
+export const versionColorSelectSchema = createSelectSchema(versionColors);
+export type VersionColor = z.infer<typeof versionColorSelectSchema>;
 
 export const vehicleInsertSchema = createInsertSchema(vehicles, {
   description: (schema) => schema.min(10, "A descrição deve ter pelo menos 10 caracteres")
