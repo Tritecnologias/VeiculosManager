@@ -108,6 +108,7 @@ export default function VehicleForm() {
   
   const [filteredModels, setFilteredModels] = useState<Model[]>([]);
   const [filteredVersions, setFilteredVersions] = useState<Version[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -257,6 +258,11 @@ export default function VehicleForm() {
   
   const handleSubmit = async (values: FormValues) => {
     try {
+      // Já está em processo de envio, evita múltiplos envios
+      if (isSubmitting) {
+        return;
+      }
+      
       console.log("Form values:", values);
       
       // Verifica se há erros de validação antes de enviar
@@ -330,38 +336,44 @@ export default function VehicleForm() {
       
       console.log("Vehicle data to send:", vehicleData);
       
-      let response;
-      
-      if (isEditing) {
-        console.log("Updating vehicle with ID:", id);
-        response = await apiRequest("PATCH", `/api/vehicles/${id}`, vehicleData);
-        console.log("Update response:", response);
+      try {
+        let response;
         
-        if (response) {
-          toast({
-            title: "Veículo atualizado",
-            description: "O veículo foi atualizado com sucesso!",
-          });
-          queryClient.invalidateQueries({ queryKey: ["/api/vehicles"] });
-          navigate("/vehicles");
+        if (isEditing) {
+          console.log("Updating vehicle with ID:", id);
+          response = await apiRequest<Vehicle>("PATCH", `/api/vehicles/${id}`, vehicleData);
+          console.log("Update response:", response);
+          
+          if (response && response.id) {
+            toast({
+              title: "Veículo atualizado",
+              description: "O veículo foi atualizado com sucesso!",
+            });
+            queryClient.invalidateQueries({ queryKey: ["/api/vehicles"] });
+            navigate("/vehicles");
+          } else {
+            throw new Error("Falha ao atualizar o veículo");
+          }
         } else {
-          throw new Error("Falha ao atualizar o veículo");
+          console.log("Creating new vehicle");
+          setIsSubmitting(true);
+          response = await apiRequest<Vehicle>("POST", "/api/vehicles", vehicleData);
+          console.log("Create response:", response);
+          
+          if (response && response.id) {
+            toast({
+              title: "Veículo cadastrado",
+              description: "O veículo foi cadastrado com sucesso!",
+            });
+            queryClient.invalidateQueries({ queryKey: ["/api/vehicles"] });
+            navigate("/vehicles");
+          } else {
+            throw new Error("Falha ao cadastrar o veículo");
+          }
         }
-      } else {
-        console.log("Creating new vehicle");
-        response = await apiRequest("POST", "/api/vehicles", vehicleData);
-        console.log("Create response:", response);
-        
-        if (response) {
-          toast({
-            title: "Veículo cadastrado",
-            description: "O veículo foi cadastrado com sucesso!",
-          });
-          queryClient.invalidateQueries({ queryKey: ["/api/vehicles"] });
-          navigate("/vehicles");
-        } else {
-          throw new Error("Falha ao cadastrar o veículo");
-        }
+      } catch (error) {
+        console.error("API error:", error);
+        throw error; // Re-throw to be caught by the outer try/catch
       }
     } catch (error) {
       console.error("Failed to save vehicle:", error);
@@ -756,13 +768,22 @@ export default function VehicleForm() {
                 
                 <div className="flex justify-end space-x-2">
                   <Link href="/vehicles">
-                    <Button variant="outline" type="button">
+                    <Button variant="outline" type="button" disabled={isSubmitting}>
                       Cancelar
                     </Button>
                   </Link>
-                  <Button type="submit">
-                    <Save className="h-4 w-4 mr-2" />
-                    Salvar
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? (
+                      <>
+                        <span className="animate-spin mr-2">⏳</span>
+                        {isEditing ? "Salvando..." : "Cadastrando..."}
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4 mr-2" />
+                        Salvar
+                      </>
+                    )}
                   </Button>
                 </div>
               </form>
