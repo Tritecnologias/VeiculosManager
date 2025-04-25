@@ -56,9 +56,14 @@ export default function ColorTabs() {
 
         <TabsContent value="list" className="space-y-6">
           {activeTab === "form" ? (
-            <ColorForm id={editId} onCancel={handleCancel} />
+            <ColorForm 
+              id={editId} 
+              onCancel={handleCancel} 
+            />
           ) : (
-            <ColorList onEdit={handleEditColor} />
+            <ColorList 
+              onEdit={handleEditColor} 
+            />
           )}
         </TabsContent>
 

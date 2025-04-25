@@ -82,7 +82,7 @@ export default function VersionColorList() {
       }
       
       const response = await apiRequest("GET", url);
-      return response as VersionColor[];
+      return response;
     },
     enabled: true,
   });
