@@ -39,26 +39,61 @@ const SITUATIONS = [
   { value: 'coming-soon', label: 'Em breve' }
 ];
 
+// Função para converter valores monetários em formato brasileiro para números
+const parseBRCurrency = (value: string): number => {
+  if (!value) return 0;
+  // Remove 'R$', pontos e substitui vírgula por ponto para que o JavaScript possa transformar em float
+  const numericValue = value.replace('R$', '').replace(/\./g, '').replace(',', '.');
+  return parseFloat(numericValue);
+};
+
 const formSchema = z.object({
   brandId: z.string().min(1, "Selecione uma marca"),
   modelId: z.string().min(1, "Selecione um modelo"),
   versionId: z.string().min(1, "Selecione uma versão"),
   colorId: z.string().min(1, "Selecione uma cor"),
   year: z.coerce.number().min(1900, "Ano inválido").max(new Date().getFullYear() + 5, "Ano muito avançado"),
-  publicPrice: z.coerce.number().min(0, "O preço não pode ser negativo"),
+  publicPrice: z.string()
+    .transform((val) => parseBRCurrency(val))
+    .refine((val) => !isNaN(val) && val >= 0, "O preço deve ser um valor numérico positivo"),
   situation: z.enum(['available', 'unavailable', 'coming-soon']),
   description: z.string().min(10, "A descrição deve ter pelo menos 10 caracteres"),
   engine: z.string().min(2, "Informe o motor do veículo"),
   fuelType: z.enum(['flex', 'gasoline', 'diesel', 'electric', 'hybrid']),
   transmission: z.enum(['manual', 'automatic', 'cvt', 'dct']),
   isActive: z.boolean(),
-  pcdIpiIcms: z.coerce.number().min(0, "O valor não pode ser negativo"),
-  pcdIpi: z.coerce.number().min(0, "O valor não pode ser negativo"),
-  taxiIpiIcms: z.coerce.number().min(0, "O valor não pode ser negativo"),
-  taxiIpi: z.coerce.number().min(0, "O valor não pode ser negativo")
+  pcdIpiIcms: z.string()
+    .transform((val) => parseBRCurrency(val))
+    .refine((val) => !isNaN(val) && val >= 0, "O valor deve ser um valor numérico positivo"),
+  pcdIpi: z.string()
+    .transform((val) => parseBRCurrency(val))
+    .refine((val) => !isNaN(val) && val >= 0, "O valor deve ser um valor numérico positivo"),
+  taxiIpiIcms: z.string()
+    .transform((val) => parseBRCurrency(val))
+    .refine((val) => !isNaN(val) && val >= 0, "O valor deve ser um valor numérico positivo"),
+  taxiIpi: z.string()
+    .transform((val) => parseBRCurrency(val))
+    .refine((val) => !isNaN(val) && val >= 0, "O valor deve ser um valor numérico positivo")
 });
 
-type FormValues = z.infer<typeof formSchema>;
+type FormValues = {
+  brandId: string;
+  modelId: string;
+  versionId: string;
+  colorId: string;
+  year: number;
+  publicPrice: string;
+  situation: 'available' | 'unavailable' | 'coming-soon';
+  description: string;
+  engine: string;
+  fuelType: 'flex' | 'gasoline' | 'diesel' | 'electric' | 'hybrid';
+  transmission: 'manual' | 'automatic' | 'cvt' | 'dct';
+  isActive: boolean;
+  pcdIpiIcms: string;
+  pcdIpi: string;
+  taxiIpiIcms: string;
+  taxiIpi: string;
+};
 
 export default function VehicleForm() {
   const { id } = useParams();
@@ -77,17 +112,17 @@ export default function VehicleForm() {
       versionId: "",
       colorId: "",
       year: new Date().getFullYear(),
-      publicPrice: 0,
+      publicPrice: "0",
       situation: "available",
       description: "",
       engine: "",
       fuelType: "flex",
       transmission: "automatic",
       isActive: true,
-      pcdIpiIcms: 0,
-      pcdIpi: 0,
-      taxiIpiIcms: 0,
-      taxiIpi: 0
+      pcdIpiIcms: "0",
+      pcdIpi: "0",
+      taxiIpiIcms: "0",
+      taxiIpi: "0"
     },
   });
   
@@ -139,17 +174,17 @@ export default function VehicleForm() {
         versionId: vehicle.versionId.toString(),
         colorId: vehicle.colorId ? vehicle.colorId.toString() : "",
         year: vehicle.year,
-        publicPrice: vehicle.publicPrice,
+        publicPrice: vehicle.publicPrice.toString(),
         situation: vehicle.situation,
         description: vehicle.description,
         engine: vehicle.engine,
         fuelType: vehicle.fuelType,
         transmission: vehicle.transmission,
         isActive: vehicle.isActive,
-        pcdIpiIcms: vehicle.pcdIpiIcms,
-        pcdIpi: vehicle.pcdIpi,
-        taxiIpiIcms: vehicle.taxiIpiIcms,
-        taxiIpi: vehicle.taxiIpi
+        pcdIpiIcms: vehicle.pcdIpiIcms.toString(),
+        pcdIpi: vehicle.pcdIpi.toString(),
+        taxiIpiIcms: vehicle.taxiIpiIcms.toString(),
+        taxiIpi: vehicle.taxiIpi.toString()
       });
     }
   }, [vehicle, form, models, versions]);
@@ -183,9 +218,22 @@ export default function VehicleForm() {
     }
   };
   
+  // Função para formatar números em formato monetário brasileiro
+  const formatBRCurrency = (value: number): string => {
+    return value.toLocaleString('pt-BR', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  };
+
   // Calculate tax exemption prices based on public price
   const handlePublicPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const publicPrice = parseFloat(e.target.value);
+    const value = e.target.value;
+    // Aplica o valor não formatado no campo de entrada
+    form.setValue("publicPrice", value);
+    
+    // Converte para float para cálculos
+    const publicPrice = parseBRCurrency(value);
     
     if (!isNaN(publicPrice)) {
       // These are just example calculations, adjust according to actual rules
@@ -194,21 +242,30 @@ export default function VehicleForm() {
       const taxiIpiIcms = publicPrice * 0.85; // 15% discount
       const taxiIpi = publicPrice * 0.96; // 4% discount
       
-      form.setValue("pcdIpiIcms", parseFloat(pcdIpiIcms.toFixed(2)));
-      form.setValue("pcdIpi", parseFloat(pcdIpi.toFixed(2)));
-      form.setValue("taxiIpiIcms", parseFloat(taxiIpiIcms.toFixed(2)));
-      form.setValue("taxiIpi", parseFloat(pcdIpi.toFixed(2)));
+      // Define valores formatados nos campos respectivos
+      form.setValue("pcdIpiIcms", formatBRCurrency(pcdIpiIcms));
+      form.setValue("pcdIpi", formatBRCurrency(pcdIpi));
+      form.setValue("taxiIpiIcms", formatBRCurrency(taxiIpiIcms));
+      form.setValue("taxiIpi", formatBRCurrency(taxiIpi));
     }
   };
   
   const handleSubmit = async (values: FormValues) => {
     try {
+      // Convert string values to appropriate types for the backend
       const vehicleData = {
         ...values,
+        // Convert string IDs to numbers
         brandId: parseInt(values.brandId),
         modelId: parseInt(values.modelId),
         versionId: parseInt(values.versionId),
         colorId: parseInt(values.colorId),
+        // Convert string currency values to numbers
+        publicPrice: parseBRCurrency(values.publicPrice),
+        pcdIpiIcms: parseBRCurrency(values.pcdIpiIcms),
+        pcdIpi: parseBRCurrency(values.pcdIpi),
+        taxiIpiIcms: parseBRCurrency(values.taxiIpiIcms),
+        taxiIpi: parseBRCurrency(values.taxiIpi)
       };
       
       if (isEditing) {
@@ -534,55 +591,7 @@ export default function VehicleForm() {
                     />
                   </div>
                   
-                  <div className="space-y-4">
-                    <FormLabel>Cores Disponíveis</FormLabel>
-                    <FormField
-                      control={form.control}
-                      name="colorId"
-                      render={({ field }) => (
-                        <FormItem className="space-y-3">
-                          <FormControl>
-                            <RadioGroup
-                              onValueChange={field.onChange}
-                              value={field.value}
-                              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-                            >
-                              {colors.map((color) => (
-                                <div key={color.id} className="border border-gray-200 rounded-md p-4 hover:border-primary cursor-pointer">
-                                  <RadioGroupItem
-                                    value={color.id.toString()}
-                                    id={`color-${color.id}`}
-                                    className="hidden"
-                                  />
-                                  <label
-                                    htmlFor={`color-${color.id}`}
-                                    className="flex items-center cursor-pointer"
-                                  >
-                                    <div className="flex-shrink-0">
-                                      <span
-                                        className="h-10 w-10 rounded-full inline-block border border-gray-200"
-                                        style={{ backgroundColor: color.hexCode }}
-                                      />
-                                    </div>
-                                    <div className="ml-3">
-                                      <p className="text-sm font-medium text-gray-700">{color.name}</p>
-                                      <p className="text-sm text-gray-500">
-                                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(color.additionalPrice)}
-                                      </p>
-                                    </div>
-                                    <div className="ml-auto">
-                                      <div className={`h-4 w-4 rounded-full ${field.value === color.id.toString() ? 'bg-primary' : 'border border-gray-300'}`} />
-                                    </div>
-                                  </label>
-                                </div>
-                              ))}
-                            </RadioGroup>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                  {/* Seção de "Cores Disponíveis" foi removida conforme solicitado */}
                 </TabsContent>
                 
                 <TabsContent value="pricing" className="space-y-6">

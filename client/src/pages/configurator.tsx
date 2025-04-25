@@ -371,10 +371,7 @@ function Configurator() {
                       <div className="font-bold">{formatCurrency(basePrice)}</div>
                     </Card>
                     
-                    <Card className="p-4 bg-slate-100">
-                      <div className="text-xs mb-1">ZONA FRANCA</div>
-                      <div className="font-bold">{formatCurrency(basePrice * 0.85)}</div>
-                    </Card>
+                    {/* Card Zona Franca foi removido conforme solicitado */}
                     
                     <Card className="p-4 bg-slate-100">
                       <div className="text-xs mb-1">PCD IPI</div>
