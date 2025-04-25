@@ -54,13 +54,7 @@ function Configurator() {
       if (!selectedVersionId) return [];
       
       console.log("Buscando cores para a versão:", selectedVersionId);
-      const response = await fetch(`/api/version-colors?versionId=${selectedVersionId}`);
-      
-      if (!response.ok) {
-        console.error("Erro ao buscar cores para versão");
-        throw new Error('Failed to fetch version colors');
-      }
-      
+      const response = await apiRequest("GET", `/api/version-colors?versionId=${selectedVersionId}`);
       const data = await response.json();
       console.log("Dados de cores para versão recebidos:", data);
       return data;

@@ -69,11 +69,11 @@ export default function VersionColorList() {
       let url = "/api/version-colors";
       const params = [];
       
-      if (selectedModelId) {
+      if (selectedModelId && selectedModelId !== "all") {
         params.push(`modelId=${selectedModelId}`);
       }
       
-      if (selectedVersionId) {
+      if (selectedVersionId && selectedVersionId !== "all") {
         params.push(`versionId=${selectedVersionId}`);
       }
       
@@ -81,9 +81,11 @@ export default function VersionColorList() {
         url = `${url}?${params.join("&")}`;
       }
       
+      console.log("Buscando version-colors:", url);
       const response = await apiRequest("GET", url);
-      // The API returns a Response object, need to get the JSON data
-      return await response.json();
+      const data = await response.json();
+      console.log("Version colors carregados:", data);
+      return data;
     },
     enabled: true,
   });
