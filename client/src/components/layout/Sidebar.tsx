@@ -53,6 +53,12 @@ export default function Sidebar() {
               </Link>
             </li>
             <li>
+              <Link href="/configurator" className={`sidebar-item ${location.startsWith('/configurator') ? 'active' : ''}`}>
+                <Car className="h-5 w-5 mr-2" />
+                Configurador
+              </Link>
+            </li>
+            <li>
               <Link href="/settings" className={`sidebar-item ${location.startsWith('/settings') ? 'active' : ''}`}>
                 <Settings className="h-5 w-5 mr-2" />
                 Configurações

@@ -19,6 +19,7 @@ import VehicleList from "@/pages/vehicles/VehicleList";
 import VehicleForm from "@/pages/vehicles/VehicleForm";
 import PaintTypeList from "@/pages/paint-types/PaintTypeList";
 import PaintTypeForm from "@/pages/paint-types/PaintTypeForm";
+import Configurator from "@/pages/configurator/Configurator";
 import NotFound from "@/pages/not-found";
 
 function Router() {
