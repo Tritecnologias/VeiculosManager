@@ -24,12 +24,19 @@ export interface VersionWithModel extends Version {
   model: ModelWithBrand;
 }
 
+export interface PaintType {
+  id: number;
+  name: string;
+}
+
 export interface Color {
   id: number;
   name: string;
   hexCode: string;
   additionalPrice: number;
   imageUrl?: string;
+  paintTypeId?: number | null;
+  paintType?: PaintType;
 }
 
 // Vehicle related types

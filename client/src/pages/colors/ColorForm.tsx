@@ -11,13 +11,21 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { ChevronLeft, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Color } from "@/lib/types";
+import { Color, PaintType } from "@/lib/types";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const formSchema = z.object({
   name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres"),
   hexCode: z.string().min(4, "Código de cor inválido"),
   additionalPrice: z.coerce.number().min(0, "O preço não pode ser negativo"),
   imageUrl: z.string().optional(),
+  paintTypeId: z.number().nullable().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -41,12 +49,21 @@ export default function ColorForm({ id, onCancel }: ColorFormProps) {
       hexCode: "#000000",
       additionalPrice: 0,
       imageUrl: "",
+      paintTypeId: null,
     },
   });
   
   const { data: color, isLoading: isLoadingColor } = useQuery<Color>({
     queryKey: [isEditing ? `/api/colors/${colorId}` : null],
     enabled: isEditing,
+  });
+  
+  const { data: paintTypes = [], isLoading: isLoadingPaintTypes } = useQuery<PaintType[]>({
+    queryKey: ["/api/paint-types"],
+    queryFn: async () => {
+      const response = await apiRequest<PaintType[]>("GET", "/api/paint-types");
+      return response || [];
+    },
   });
   
   useEffect(() => {
@@ -56,6 +73,7 @@ export default function ColorForm({ id, onCancel }: ColorFormProps) {
         hexCode: color.hexCode,
         additionalPrice: color.additionalPrice,
         imageUrl: color.imageUrl || "",
+        paintTypeId: color.paintTypeId || null,
       });
     }
   }, [color, form]);
@@ -178,19 +196,51 @@ export default function ColorForm({ id, onCancel }: ColorFormProps) {
                 />
               </div>
               
-              <FormField
-                control={form.control}
-                name="imageUrl"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>URL da Imagem (opcional)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="URL da imagem da cor" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="imageUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>URL da Imagem (opcional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="URL da imagem da cor" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="paintTypeId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tipo de Pintura</FormLabel>
+                      <Select
+                        onValueChange={(value) => field.onChange(value ? parseInt(value) : null)}
+                        value={field.value ? field.value.toString() : undefined}
+                        defaultValue={field.value ? field.value.toString() : undefined}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione o tipo de pintura" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="">Nenhum tipo selecionado</SelectItem>
+                          {paintTypes.map((type) => (
+                            <SelectItem key={type.id} value={type.id.toString()}>
+                              {type.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
               
               <div className="flex justify-end space-x-2">
                 {onCancel ? (
