@@ -27,13 +27,17 @@ export default function PaintTypeList() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: paintTypes = [], isLoading } = useQuery<PaintType[]>({
+  const { data: paintTypes = [], isLoading } = useQuery({
     queryKey: ["/api/paint-types"],
     queryFn: async () => {
       try {
-        const response = await apiRequest<PaintType[]>("GET", "/api/paint-types");
-        console.log("Paint Types API Response:", response);
-        return response || [];
+        const response = await fetch("/api/paint-types");
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log("Paint Types API Response:", data);
+        return data || [];
       } catch (error) {
         console.error("Failed to fetch paint types:", error);
         return [];

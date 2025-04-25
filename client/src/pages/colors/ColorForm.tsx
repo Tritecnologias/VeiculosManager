@@ -58,11 +58,21 @@ export default function ColorForm({ id, onCancel }: ColorFormProps) {
     enabled: isEditing,
   });
   
-  const { data: paintTypes = [], isLoading: isLoadingPaintTypes } = useQuery<PaintType[]>({
+  const { data: paintTypes = [], isLoading: isLoadingPaintTypes } = useQuery({
     queryKey: ["/api/paint-types"],
     queryFn: async () => {
-      const response = await apiRequest<PaintType[]>("GET", "/api/paint-types");
-      return response || [];
+      try {
+        const response = await fetch("/api/paint-types");
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log("Paint Types in ColorForm:", data);
+        return data || [];
+      } catch (error) {
+        console.error("Failed to fetch paint types:", error);
+        return [];
+      }
     },
   });
   
