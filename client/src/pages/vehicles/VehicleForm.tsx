@@ -40,11 +40,15 @@ const SITUATIONS = [
 ];
 
 // Função para converter valores monetários em formato brasileiro para números
-const parseBRCurrency = (value: string): number => {
-  if (!value) return 0;
+const parseBRCurrency = (value: string): string => {
+  if (!value) return "0";
+  
   // Remove 'R$', pontos e substitui vírgula por ponto para que o JavaScript possa transformar em float
   const numericValue = value.replace('R$', '').replace(/\./g, '').replace(',', '.');
-  return parseFloat(numericValue);
+  const parsed = parseFloat(numericValue);
+  
+  // Return as string for the server since our schema expects string values
+  return isNaN(parsed) ? "0" : parsed.toString();
 };
 
 const formSchema = z.object({
@@ -233,7 +237,8 @@ export default function VehicleForm() {
     form.setValue("publicPrice", value);
     
     // Converte para float para cálculos
-    const publicPrice = parseBRCurrency(value);
+    const publicPriceStr = parseBRCurrency(value);
+    const publicPrice = parseFloat(publicPriceStr);
     
     if (!isNaN(publicPrice)) {
       // These are just example calculations, adjust according to actual rules
