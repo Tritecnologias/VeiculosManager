@@ -58,7 +58,7 @@ export default function ColorForm({ id, onCancel }: ColorFormProps) {
     enabled: isEditing,
   });
   
-  const { data: paintTypes = [], isLoading: isLoadingPaintTypes } = useQuery({
+  const { data: paintTypes = [], isLoading: isLoadingPaintTypes } = useQuery<PaintType[]>({
     queryKey: ["/api/paint-types"],
     queryFn: async () => {
       try {
@@ -90,14 +90,21 @@ export default function ColorForm({ id, onCancel }: ColorFormProps) {
   
   const handleSubmit = async (values: FormValues) => {
     try {
+      // Definir valores padrão para os campos ocultos
+      const dataToSubmit = {
+        ...values,
+        hexCode: values.hexCode || "#000000", // Código hexadecimal preto como padrão
+        additionalPrice: values.additionalPrice || 0, // Preço adicional zero como padrão
+      };
+      
       if (isEditing) {
-        await apiRequest("PATCH", `/api/colors/${colorId}`, values);
+        await apiRequest("PATCH", `/api/colors/${colorId}`, dataToSubmit);
         toast({
           title: "Cor atualizada",
           description: "A cor foi atualizada com sucesso!",
         });
       } else {
-        await apiRequest("POST", "/api/colors", values);
+        await apiRequest("POST", "/api/colors", dataToSubmit);
         toast({
           title: "Cor cadastrada",
           description: "A cor foi cadastrada com sucesso!",
@@ -170,41 +177,7 @@ export default function ColorForm({ id, onCancel }: ColorFormProps) {
                 )}
               />
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="hexCode"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Código Hexadecimal</FormLabel>
-                      <div className="flex items-center gap-2">
-                        <Input type="color" {...field} className="w-12 h-10 p-1" />
-                        <FormControl>
-                          <Input {...field} />
-                        </FormControl>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="additionalPrice"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Preço Adicional</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <span className="absolute left-3 top-2.5 text-gray-500">R$</span>
-                          <Input className="pl-8" {...field} />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              {/* Campos de hexCode e additionalPrice foram ocultados e são enviados com valores padrão */}
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField

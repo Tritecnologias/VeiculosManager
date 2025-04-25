@@ -201,7 +201,7 @@ export default function VehicleFormFixed() {
     return formatBRCurrency(cents);
   };
   
-  // Calcula preços de isenção com base no preço público
+  // Formatação do preço público sem cálculos automáticos de descontos
   const handlePublicPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawValue = e.target.value;
     
@@ -214,20 +214,8 @@ export default function VehicleFormFixed() {
     // Define o valor formatado no campo
     form.setValue("publicPrice", formattedValue);
     
-    // Converte para número para cálculos
-    const numericValue = parseFloat(formattedValue.replace(/\./g, "").replace(",", "."));
-    
-    if (!isNaN(numericValue)) {
-      const pcdIpiIcms = numericValue * 0.88; // 12% desconto
-      const pcdIpi = numericValue * 0.96; // 4% desconto
-      const taxiIpiIcms = numericValue * 0.85; // 15% desconto
-      const taxiIpi = numericValue * 0.96; // 4% desconto
-      
-      form.setValue("pcdIpiIcms", formatBRCurrency(pcdIpiIcms));
-      form.setValue("pcdIpi", formatBRCurrency(pcdIpi));
-      form.setValue("taxiIpiIcms", formatBRCurrency(taxiIpiIcms));
-      form.setValue("taxiIpi", formatBRCurrency(taxiIpi));
-    }
+    // Não calculamos mais os preços automaticamente para PCD e Taxi
+    // Deixamos esses campos vazios conforme solicitado
   };
   
   // Função de submissão do formulário simplificada e robusta
