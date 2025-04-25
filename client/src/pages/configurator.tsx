@@ -79,6 +79,22 @@ function Configurator() {
       console.log("Version colors loaded:", versionColors);
     }
   }, [brands, allModels, allVersions, allColors, allVehicles, versionColors]);
+  
+  // Atualizar as cores disponíveis quando versionColors mudar
+  useEffect(() => {
+    if (versionColors && versionColors.length > 0 && selectedVersionId) {
+      console.log("Atualizando cores disponíveis com base em versionColors");
+      // Extrai os IDs de cores dos versionColors
+      const versionColorIds = versionColors.map(vc => vc.colorId);
+      console.log("IDs de cores associadas:", versionColorIds);
+      
+      // Filtra as cores disponíveis pelo ID
+      const associatedColors = allColors.filter(c => versionColorIds.includes(c.id));
+      console.log("Cores associadas encontradas para mostrar:", associatedColors);
+      
+      setAvailableColors(associatedColors);
+    }
+  }, [versionColors, allColors, selectedVersionId]);
 
   // Filtered models based on selected brand
   const [filteredModels, setFilteredModels] = useState<Model[]>([]);
@@ -185,23 +201,9 @@ function Configurator() {
       setTaxiIpiIcmsPrice(parseFloat(demoVehicle.taxiIpiIcms.toString()));
       setTaxiIpiPrice(parseFloat(demoVehicle.taxiIpi.toString()));
       
-      // Filtra cores que estão associadas à versão
-      if (versionColors && versionColors.length > 0) {
-        console.log("Filtrando cores associadas à versão:", versionId);
-        // Extrai os IDs de cores dos versionColors
-        const versionColorIds = versionColors.map(vc => vc.colorId);
-        console.log("IDs de cores associadas:", versionColorIds);
-        
-        // Filtra as cores disponíveis pelo ID
-        const associatedColors = allColors.filter(c => versionColorIds.includes(c.id));
-        console.log("Cores associadas encontradas:", associatedColors);
-        
-        setAvailableColors(associatedColors);
-      } else {
-        console.log("Nenhuma cor associada encontrada, usando todas as cores disponíveis");
-        const colors = allColors;
-        setAvailableColors(colors);
-      }
+      // Inicializa o estado com uma lista vazia
+      // As cores associadas serão definidas pelo useEffect que observa versionColors
+      setAvailableColors([]);
     } else {
       setSelectedVehicle(null);
       setBasePrice(0);
