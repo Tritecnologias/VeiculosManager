@@ -22,8 +22,8 @@ import {
 
 const formSchema = z.object({
   name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres"),
-  hexCode: z.string().min(4, "Código de cor inválido"),
-  additionalPrice: z.coerce.number().min(0, "O preço não pode ser negativo"),
+  hexCode: z.string().default("#000000"),
+  additionalPrice: z.coerce.number().min(0, "O preço não pode ser negativo").default(0),
   paintTypeId: z.number().nullable().optional(),
 });
 
@@ -91,22 +91,29 @@ export default function ColorForm({ id, onCancel }: ColorFormProps) {
       const dataToSubmit = {
         ...values,
         hexCode: values.hexCode || "#000000", // Código hexadecimal preto como padrão
-        additionalPrice: values.additionalPrice || 0, // Preço adicional zero como padrão
+        additionalPrice: values.additionalPrice.toString() || "0", // Preço adicional como string para o backend
         imageUrl: null, // URL da imagem agora é sempre null
       };
       
-      if (isEditing) {
-        await apiRequest("PATCH", `/api/colors/${colorId}`, dataToSubmit);
-        toast({
-          title: "Cor atualizada",
-          description: "A cor foi atualizada com sucesso!",
-        });
-      } else {
-        await apiRequest("POST", "/api/colors", dataToSubmit);
-        toast({
-          title: "Cor cadastrada",
-          description: "A cor foi cadastrada com sucesso!",
-        });
+      console.log(`Sending ${isEditing ? 'PATCH' : 'POST'} request to ${isEditing ? `/api/colors/${colorId}` : '/api/colors'}`, dataToSubmit);
+      
+      try {
+        if (isEditing) {
+          await apiRequest("PATCH", `/api/colors/${colorId}`, dataToSubmit);
+          toast({
+            title: "Cor atualizada",
+            description: "A cor foi atualizada com sucesso!",
+          });
+        } else {
+          await apiRequest("POST", "/api/colors", dataToSubmit);
+          toast({
+            title: "Cor cadastrada",
+            description: "A cor foi cadastrada com sucesso!",
+          });
+        }
+      } catch (apiError) {
+        console.error("API Error:", apiError);
+        throw apiError;
       }
       
       queryClient.invalidateQueries({ queryKey: ["/api/colors"] });
@@ -120,9 +127,19 @@ export default function ColorForm({ id, onCancel }: ColorFormProps) {
       }
     } catch (error) {
       console.error("Failed to save color:", error);
+      
+      // Extrair mensagem de erro mais específica se disponível
+      let errorMessage = "Ocorreu um erro ao salvar a cor.";
+      
+      if (error instanceof Error) {
+        errorMessage = error.message || errorMessage;
+      } else if (typeof error === 'object' && error !== null) {
+        errorMessage = JSON.stringify(error) || errorMessage;
+      }
+      
       toast({
         title: "Erro ao salvar",
-        description: "Ocorreu um erro ao salvar a cor.",
+        description: errorMessage,
         variant: "destructive",
       });
     }
