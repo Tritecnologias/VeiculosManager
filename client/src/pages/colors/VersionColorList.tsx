@@ -63,7 +63,7 @@ export default function VersionColorList() {
     queryKey: ["/api/versions"],
   });
   
-  const { data: versionColors = [], isLoading } = useQuery<VersionColor[]>({
+  const { data: versionColors = [], isLoading } = useQuery({
     queryKey: ["/api/version-colors", selectedModelId, selectedVersionId],
     queryFn: async () => {
       let url = "/api/version-colors";
@@ -82,7 +82,8 @@ export default function VersionColorList() {
       }
       
       const response = await apiRequest("GET", url);
-      return response;
+      // The API returns a Response object, need to get the JSON data
+      return await response.json();
     },
     enabled: true,
   });
@@ -206,7 +207,7 @@ export default function VersionColorList() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {versionColors.map((versionColor) => (
+              {versionColors.map((versionColor: any) => (
                 <TableRow key={versionColor.id}>
                   <TableCell>{versionColor.version?.model?.name}</TableCell>
                   <TableCell>{versionColor.version?.name}</TableCell>
