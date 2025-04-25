@@ -47,6 +47,12 @@ function Configurator() {
     queryKey: ["/api/vehicles"],
   });
   
+  // Fetch version colors
+  const { data: versionColors = [], isLoading: versionColorsLoading } = useQuery<any[]>({
+    queryKey: ["/api/version-colors", selectedVersionId],
+    enabled: !!selectedVersionId,
+  });
+  
   // Debug logs
   useEffect(() => {
     console.log("Brands loaded:", brands.length);
@@ -54,7 +60,10 @@ function Configurator() {
     console.log("Versions loaded:", allVersions.length);
     console.log("Colors loaded:", allColors.length);
     console.log("Vehicles loaded:", allVehicles.length);
-  }, [brands, allModels, allVersions, allColors, allVehicles]);
+    if (versionColors.length > 0) {
+      console.log("Version colors loaded:", versionColors);
+    }
+  }, [brands, allModels, allVersions, allColors, allVehicles, versionColors]);
 
   // Filtered models based on selected brand
   const [filteredModels, setFilteredModels] = useState<Model[]>([]);
@@ -161,9 +170,23 @@ function Configurator() {
       setTaxiIpiIcmsPrice(parseFloat(demoVehicle.taxiIpiIcms.toString()));
       setTaxiIpiPrice(parseFloat(demoVehicle.taxiIpi.toString()));
       
-      // Find available colors for this version
-      const colors = allColors.filter(c => true); // In a real implementation, we would filter by version-specific colors
-      setAvailableColors(colors);
+      // Filtra cores que estão associadas à versão
+      if (versionColors && versionColors.length > 0) {
+        console.log("Filtrando cores associadas à versão:", versionId);
+        // Extrai os IDs de cores dos versionColors
+        const versionColorIds = versionColors.map(vc => vc.colorId);
+        console.log("IDs de cores associadas:", versionColorIds);
+        
+        // Filtra as cores disponíveis pelo ID
+        const associatedColors = allColors.filter(c => versionColorIds.includes(c.id));
+        console.log("Cores associadas encontradas:", associatedColors);
+        
+        setAvailableColors(associatedColors);
+      } else {
+        console.log("Nenhuma cor associada encontrada, usando todas as cores disponíveis");
+        const colors = allColors;
+        setAvailableColors(colors);
+      }
     } else {
       setSelectedVehicle(null);
       setBasePrice(0);
