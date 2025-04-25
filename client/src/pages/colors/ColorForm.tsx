@@ -22,11 +22,17 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export default function ColorForm() {
-  const { id } = useParams();
+interface ColorFormProps {
+  id?: number | null;
+  onCancel?: () => void;
+}
+
+export default function ColorForm({ id, onCancel }: ColorFormProps) {
+  const params = useParams();
   const [, navigate] = useLocation();
   const { toast } = useToast();
-  const isEditing = Boolean(id);
+  const isEditing = Boolean(id || params.id);
+  const colorId = id || params.id;
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -39,7 +45,7 @@ export default function ColorForm() {
   });
   
   const { data: color, isLoading: isLoadingColor } = useQuery<Color>({
-    queryKey: [isEditing ? `/api/colors/${id}` : null],
+    queryKey: [isEditing ? `/api/colors/${colorId}` : null],
     enabled: isEditing,
   });
   
@@ -57,7 +63,7 @@ export default function ColorForm() {
   const handleSubmit = async (values: FormValues) => {
     try {
       if (isEditing) {
-        await apiRequest("PATCH", `/api/colors/${id}`, values);
+        await apiRequest("PATCH", `/api/colors/${colorId}`, values);
         toast({
           title: "Cor atualizada",
           description: "A cor foi atualizada com sucesso!",
@@ -71,7 +77,14 @@ export default function ColorForm() {
       }
       
       queryClient.invalidateQueries({ queryKey: ["/api/colors"] });
-      navigate("/colors");
+      
+      if (onCancel) {
+        // If we're inside the ColorTabs component
+        onCancel();
+      } else {
+        // If we're on the standalone page
+        navigate("/colors");
+      }
     } catch (error) {
       console.error("Failed to save color:", error);
       toast({
@@ -88,17 +101,19 @@ export default function ColorForm() {
   
   return (
     <div>
-      <div className="flex items-center mb-6">
-        <Link href="/colors" className="mr-4">
-          <Button variant="outline" size="sm">
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            Voltar
-          </Button>
-        </Link>
-        <h1 className="text-2xl font-semibold text-gray-800">
-          {isEditing ? "Editar Cor" : "Nova Cor"}
-        </h1>
-      </div>
+      {!onCancel && (
+        <div className="flex items-center mb-6">
+          <Link href="/colors" className="mr-4">
+            <Button variant="outline" size="sm">
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Voltar
+            </Button>
+          </Link>
+          <h1 className="text-2xl font-semibold text-gray-800">
+            {isEditing ? "Editar Cor" : "Nova Cor"}
+          </h1>
+        </div>
+      )}
       
       <Card>
         <CardHeader>
@@ -178,11 +193,17 @@ export default function ColorForm() {
               />
               
               <div className="flex justify-end space-x-2">
-                <Link href="/colors">
-                  <Button variant="outline" type="button">
+                {onCancel ? (
+                  <Button variant="outline" type="button" onClick={onCancel}>
                     Cancelar
                   </Button>
-                </Link>
+                ) : (
+                  <Link href="/colors">
+                    <Button variant="outline" type="button">
+                      Cancelar
+                    </Button>
+                  </Link>
+                )}
                 <Button type="submit">
                   <Save className="h-4 w-4 mr-2" />
                   Salvar

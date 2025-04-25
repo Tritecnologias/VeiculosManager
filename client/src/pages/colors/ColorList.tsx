@@ -11,7 +11,11 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Color } from "@/lib/types";
 import { formatCurrency } from "@/lib/formatters";
 
-export default function ColorList() {
+interface ColorListProps {
+  onEdit?: (id: number) => void;
+}
+
+export default function ColorList({ onEdit }: ColorListProps) {
   const [searchQuery, setSearchQuery] = useState("");
   
   const { data: colors = [], isLoading } = useQuery<Color[]>({
@@ -96,11 +100,17 @@ export default function ColorList() {
                     <TableCell>{formatCurrency(color.additionalPrice)}</TableCell>
                     <TableCell>
                       <div className="flex gap-2">
-                        <Link href={`/colors/${color.id}/edit`}>
-                          <Button variant="outline" size="sm">
+                        {onEdit ? (
+                          <Button variant="outline" size="sm" onClick={() => onEdit(color.id)}>
                             <Pencil className="h-4 w-4" />
                           </Button>
-                        </Link>
+                        ) : (
+                          <Link href={`/colors/${color.id}/edit`}>
+                            <Button variant="outline" size="sm">
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          </Link>
+                        )}
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button variant="destructive" size="sm">
