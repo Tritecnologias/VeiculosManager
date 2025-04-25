@@ -65,11 +65,12 @@ function Router() {
             React.useEffect(() => {
               const fetchSettings = async () => {
                 try {
-                  const response = await apiRequest('/api/settings');
-                  if (response) {
-                    const titleSetting = response.find((s: any) => s.key === 'title');
-                    const logoSetting = response.find((s: any) => s.key === 'logo');
-                    const emailSetting = response.find((s: any) => s.key === 'supportEmail');
+                  const response = await apiRequest('GET', '/api/settings');
+                  const data = await response.json();
+                  if (data) {
+                    const titleSetting = data.find((s: any) => s.key === 'title');
+                    const logoSetting = data.find((s: any) => s.key === 'logo');
+                    const emailSetting = data.find((s: any) => s.key === 'supportEmail');
                     
                     setFormData({
                       title: titleSetting?.value || '',
@@ -104,7 +105,8 @@ function Router() {
               
               try {
                 // Buscar configurações existentes
-                const settings = await apiRequest('/api/settings');
+                const settingsResponse = await apiRequest('GET', '/api/settings');
+                const settings = await settingsResponse.json();
                 
                 // Para cada campo, atualizar ou criar
                 const fieldUpdates = [
@@ -118,12 +120,12 @@ function Router() {
                   
                   if (existingSetting) {
                     // Atualizar configuração existente
-                    await apiRequest(`/api/settings/key/${field.key}`, 'PATCH', { 
+                    await apiRequest('PATCH', `/api/settings/key/${field.key}`, { 
                       value: field.value 
                     });
                   } else {
                     // Criar nova configuração
-                    await apiRequest('/api/settings', 'POST', {
+                    await apiRequest('POST', '/api/settings', {
                       key: field.key,
                       value: field.value,
                       label: field.label,
