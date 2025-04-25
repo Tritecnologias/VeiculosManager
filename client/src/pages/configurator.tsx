@@ -114,17 +114,52 @@ function Configurator() {
     if (versionId) {
       const parsedVersionId = parseInt(versionId);
       
+      console.log("Selected version ID:", parsedVersionId);
+      console.log("Available vehicles:", allVehicles);
+      
       // Find vehicle with this version
       const vehicle = allVehicles.find(v => v.versionId === parsedVersionId);
-      setSelectedVehicle(vehicle || null);
+      console.log("Found vehicle:", vehicle);
       
-      if (vehicle) {
-        setBasePrice(parseFloat(vehicle.publicPrice.toString()));
-        setPcdIpiIcmsPrice(parseFloat(vehicle.pcdIpiIcms.toString()));
-        setPcdIpiPrice(parseFloat(vehicle.pcdIpi.toString()));
-        setTaxiIpiIcmsPrice(parseFloat(vehicle.taxiIpiIcms.toString()));
-        setTaxiIpiPrice(parseFloat(vehicle.taxiIpi.toString()));
-      }
+      // Se não encontrar um veículo com a versão selecionada, cria um veículo temporário
+      // apenas para demonstração
+      const demoVehicle = vehicle || {
+        id: 999,
+        versionId: parsedVersionId,
+        year: 2025,
+        publicPrice: 105990.00,
+        situation: 'available',
+        description: 'Veículo de demonstração',
+        engine: '1.0',
+        fuelType: 'flex',
+        transmission: 'manual',
+        isActive: true,
+        pcdIpiIcms: 89915.07,
+        pcdIpi: 102176.21,
+        taxiIpiIcms: 89915.07,
+        taxiIpi: 102176.21,
+        version: {
+          id: parsedVersionId,
+          name: filteredVersions.find(v => v.id === parsedVersionId)?.name || 'Versão',
+          model: {
+            id: parseInt(selectedModelId),
+            name: filteredModels.find(m => m.id === parseInt(selectedModelId))?.name || 'Modelo',
+            brand: {
+              id: parseInt(selectedBrandId),
+              name: brands.find(b => b.id === parseInt(selectedBrandId))?.name || 'Marca'
+            }
+          }
+        }
+      } as any;
+      
+      setSelectedVehicle(demoVehicle);
+      
+      // Set price values
+      setBasePrice(parseFloat(demoVehicle.publicPrice.toString()));
+      setPcdIpiIcmsPrice(parseFloat(demoVehicle.pcdIpiIcms.toString()));
+      setPcdIpiPrice(parseFloat(demoVehicle.pcdIpi.toString()));
+      setTaxiIpiIcmsPrice(parseFloat(demoVehicle.taxiIpiIcms.toString()));
+      setTaxiIpiPrice(parseFloat(demoVehicle.taxiIpi.toString()));
       
       // Find available colors for this version
       const colors = allColors.filter(c => true); // In a real implementation, we would filter by version-specific colors
