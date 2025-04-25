@@ -48,23 +48,22 @@ export default function ColorTabs() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="bg-muted grid w-full max-w-2xl grid-cols-3">
+        <TabsList className="bg-muted grid w-full max-w-2xl grid-cols-4">
           <TabsTrigger value="list">Lista de Cores</TabsTrigger>
+          {activeTab === "form" && <TabsTrigger value="form">Nova/Editar Cor</TabsTrigger>}
           <TabsTrigger value="associate">Associar Versão</TabsTrigger>
           <TabsTrigger value="associations">Cores Associadas</TabsTrigger>
         </TabsList>
 
         <TabsContent value="list" className="space-y-6">
-          {activeTab === "form" ? (
-            <ColorForm 
-              id={editId} 
-              onCancel={handleCancel} 
-            />
-          ) : (
-            <ColorList 
-              onEdit={handleEditColor} 
-            />
-          )}
+          <ColorList onEdit={handleEditColor} />
+        </TabsContent>
+        
+        <TabsContent value="form" className="space-y-6">
+          <ColorForm 
+            id={editId} 
+            onCancel={handleCancel} 
+          />
         </TabsContent>
 
         <TabsContent value="associate" className="space-y-6">

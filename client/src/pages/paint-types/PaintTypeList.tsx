@@ -30,8 +30,14 @@ export default function PaintTypeList() {
   const { data: paintTypes = [], isLoading } = useQuery<PaintType[]>({
     queryKey: ["/api/paint-types"],
     queryFn: async () => {
-      const response = await apiRequest<PaintType[]>("GET", "/api/paint-types");
-      return response || [];
+      try {
+        const response = await apiRequest<PaintType[]>("GET", "/api/paint-types");
+        console.log("Paint Types API Response:", response);
+        return response || [];
+      } catch (error) {
+        console.error("Failed to fetch paint types:", error);
+        return [];
+      }
     },
   });
 
