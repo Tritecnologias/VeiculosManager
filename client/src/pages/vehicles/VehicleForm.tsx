@@ -416,7 +416,13 @@ export default function VehicleForm() {
             </TabsList>
             
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+              <form 
+                className="space-y-6"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  console.log("Formulário submetido");
+                  form.handleSubmit(handleSubmit)(e);
+                }}>
                 <TabsContent value="basic" className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <FormField
@@ -757,7 +763,15 @@ export default function VehicleForm() {
                       Cancelar
                     </Button>
                   </Link>
-                  <Button type="submit" disabled={isSubmitting}>
+                  <Button 
+                    type="button" 
+                    disabled={isSubmitting}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      console.log("Botão salvar clicado manualmente");
+                      form.handleSubmit(handleSubmit)(e);
+                    }}
+                  >
                     {isSubmitting ? (
                       <>
                         <span className="animate-spin mr-2">⏳</span>
