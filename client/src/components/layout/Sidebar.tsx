@@ -47,6 +47,12 @@ export default function Sidebar() {
               </Link>
             </li>
             <li>
+              <Link href="/paint-types" className={`sidebar-item ${location.startsWith('/paint-types') ? 'active' : ''}`}>
+                <Palette className="h-5 w-5 mr-2" />
+                Tipos de Pintura
+              </Link>
+            </li>
+            <li>
               <Link href="/settings" className={`sidebar-item ${location.startsWith('/settings') ? 'active' : ''}`}>
                 <Settings className="h-5 w-5 mr-2" />
                 Configurações

@@ -17,6 +17,7 @@ import ColorList from "@/pages/colors/ColorList";
 import ColorForm from "@/pages/colors/ColorForm";
 import VehicleList from "@/pages/vehicles/VehicleList";
 import VehicleForm from "@/pages/vehicles/VehicleForm";
+import PaintTypeList from "@/pages/paint-types/PaintTypeList";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -34,6 +35,7 @@ function Router() {
         <Route path="/versions/new" component={VersionForm} />
         <Route path="/versions/:id/edit" component={VersionForm} />
         <Route path="/colors" component={ColorTabs} />
+        <Route path="/paint-types" component={PaintTypeList} />
         <Route path="/vehicles" component={VehicleList} />
         <Route path="/vehicles/new" component={VehicleForm} />
         <Route path="/vehicles/:id/edit" component={VehicleForm} />
