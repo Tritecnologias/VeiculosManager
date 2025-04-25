@@ -241,7 +241,7 @@ export default function VehicleFormFixed() {
         brandId: parseInt(data.brandId),
         modelId: parseInt(data.modelId),
         versionId: parseInt(data.versionId),
-        colorId: data.colorId ? parseInt(data.colorId) : null,
+        colorId: data.colorId && data.colorId !== "0" ? parseInt(data.colorId) : null,
         year: data.year,
         publicPrice: parseBRCurrency(data.publicPrice),
         situation: data.situation,
@@ -294,9 +294,45 @@ export default function VehicleFormFixed() {
             : "O novo veículo foi cadastrado com sucesso."
         });
         
-        // Invalidar cache e navegar
+        // Invalidar cache
         queryClient.invalidateQueries({ queryKey: ["/api/vehicles"] });
-        navigate("/vehicles");
+        
+        if (isEditing) {
+          // Se estiver editando, navegue de volta para a lista
+          navigate("/vehicles");
+        } else {
+          // Se estiver criando um novo, limpe o formulário
+          form.reset({
+            brandId: "",
+            modelId: "",
+            versionId: "",
+            colorId: "",
+            year: new Date().getFullYear(),
+            publicPrice: "0",
+            situation: "available",
+            description: "",
+            engine: "",
+            fuelType: "flex",
+            transmission: "automatic",
+            isActive: true,
+            pcdIpiIcms: "0",
+            pcdIpi: "0",
+            taxiIpiIcms: "0",
+            taxiIpi: "0"
+          });
+          
+          // Limpar os modelos e versões filtrados
+          setFilteredModels([]);
+          setFilteredVersions([]);
+          
+          // Rolar para o topo do formulário
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          
+          toast({
+            title: "Formulário limpo",
+            description: "O formulário foi limpo para um novo cadastro.",
+          });
+        }
         
       } catch (fetchError) {
         console.error("Erro na requisição fetch:", fetchError);
@@ -447,23 +483,24 @@ export default function VehicleFormFixed() {
                       )}
                     />
                     
-                    {/* Campo: Cor */}
+                    {/* Campo: Cor (Opcional) */}
                     <FormField
                       control={form.control}
                       name="colorId"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Cor</FormLabel>
+                          <FormLabel>Cor (Opcional)</FormLabel>
                           <Select 
                             value={field.value} 
                             onValueChange={field.onChange}
                           >
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Selecione uma cor" />
+                                <SelectValue placeholder="Selecione uma cor (opcional)" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
+                              <SelectItem value="0">Sem cor</SelectItem>
                               {colors.map((color) => (
                                 <SelectItem key={color.id} value={color.id.toString()}>
                                   <div className="flex items-center">
@@ -477,6 +514,9 @@ export default function VehicleFormFixed() {
                               ))}
                             </SelectContent>
                           </Select>
+                          <FormDescription>
+                            Este campo é opcional. Você pode deixá-lo em branco.
+                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
