@@ -231,13 +231,7 @@ export default function VersionColorList() {
                   <TableCell>{versionColor.version?.model?.name || "N/A"}</TableCell>
                   <TableCell>{versionColor.version?.name || "N/A"}</TableCell>
                   <TableCell>
-                    <div className="flex items-center">
-                      <span 
-                        className="w-4 h-4 mr-2 rounded-full" 
-                        style={{ backgroundColor: versionColor.color?.hexCode || '#CCCCCC' }}
-                      ></span>
-                      {versionColor.color?.name || "N/A"}
-                    </div>
+                    {versionColor.color?.name || "N/A"}
                   </TableCell>
                   <TableCell>
                     {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parseFloat(versionColor.price) || 0)}

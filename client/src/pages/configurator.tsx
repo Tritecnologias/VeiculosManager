@@ -215,9 +215,10 @@ function Configurator() {
     setSelectedColorId(colorId);
     
     if (colorId) {
-      const color = allColors.find(c => c.id === parseInt(colorId));
-      if (color) {
-        setColorPrice(parseFloat(color.additionalPrice.toString()));
+      // Buscar o preço da relação versão-cor
+      const versionColor = versionColors.find(vc => vc.colorId === parseInt(colorId));
+      if (versionColor) {
+        setColorPrice(parseFloat(versionColor.price));
       } else {
         setColorPrice(0);
       }
@@ -500,10 +501,12 @@ function Configurator() {
                         className={`p-2 border rounded ${selectedColorId === color.id.toString() ? 'border-primary ring-2 ring-primary ring-opacity-50' : 'border-gray-200'}`}
                         onClick={() => handleColorChange(color.id.toString())}
                       >
-                        <div style={getColorStyle(color.hexCode)} />
                         <div className="text-sm font-medium">{color.name}</div>
                         <div className="text-xs text-gray-500">{color.paintType?.name || 'Sem tipo'}</div>
-                        <div className="text-sm">{formatCurrency(parseFloat(color.additionalPrice.toString()))}</div>
+                        <div className="text-sm">
+                          {/* Usar preço da relação colorVersion em vez do additionalPrice da cor */}
+                          {formatCurrency(parseFloat(versionColors.find(vc => vc.colorId === color.id)?.price || "0"))}
+                        </div>
                       </button>
                     ))}
                   </div>
