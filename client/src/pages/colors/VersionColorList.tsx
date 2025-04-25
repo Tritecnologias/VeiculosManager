@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, RefreshCw } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Brand, Model, Version } from "@/lib/types";
@@ -120,6 +120,11 @@ export default function VersionColorList() {
     }
   };
   
+  // Verificar dados recebidos para debugging
+  useEffect(() => {
+    console.log("VersionColors recebidos:", versionColors);
+  }, [versionColors]);
+
   return (
     <Card>
       <CardHeader>
@@ -140,7 +145,7 @@ export default function VersionColorList() {
                 <SelectValue placeholder="Filtrar por marca" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todas as marcas</SelectItem>
+                <SelectItem value="">Todas as marcas</SelectItem>
                 {brands.map((brand) => (
                   <SelectItem key={brand.id} value={brand.id.toString()}>
                     {brand.name}
@@ -157,13 +162,13 @@ export default function VersionColorList() {
                 setSelectedModelId(value);
                 setSelectedVersionId("");
               }}
-              disabled={!selectedBrandId}
+              disabled={!selectedBrandId && selectedBrandId !== ""}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Filtrar por modelo" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos os modelos</SelectItem>
+                <SelectItem value="">Todos os modelos</SelectItem>
                 {filteredModels.map((model) => (
                   <SelectItem key={model.id} value={model.id.toString()}>
                     {model.name}
@@ -177,13 +182,13 @@ export default function VersionColorList() {
             <Select
               value={selectedVersionId}
               onValueChange={setSelectedVersionId}
-              disabled={!selectedModelId}
+              disabled={!selectedModelId && selectedModelId !== ""}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Filtrar por versão" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todas as versões</SelectItem>
+                <SelectItem value="">Todas as versões</SelectItem>
                 {filteredVersions.map((version) => (
                   <SelectItem key={version.id} value={version.id.toString()}>
                     {version.name}
@@ -194,9 +199,21 @@ export default function VersionColorList() {
           </div>
         </div>
         
+        <Button 
+          variant="outline" 
+          className="mb-4"
+          onClick={() => {
+            // Forçar atualização dos dados
+            queryClient.invalidateQueries({ queryKey: ["/api/version-colors"] });
+          }}
+        >
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Atualizar
+        </Button>
+        
         {isLoading ? (
           <div>Carregando...</div>
-        ) : versionColors.length > 0 ? (
+        ) : Array.isArray(versionColors) && versionColors.length > 0 ? (
           <Table>
             <TableHeader>
               <TableRow>
@@ -211,25 +228,25 @@ export default function VersionColorList() {
             <TableBody>
               {versionColors.map((versionColor: any) => (
                 <TableRow key={versionColor.id}>
-                  <TableCell>{versionColor.version?.model?.name}</TableCell>
-                  <TableCell>{versionColor.version?.name}</TableCell>
+                  <TableCell>{versionColor.version?.model?.name || "N/A"}</TableCell>
+                  <TableCell>{versionColor.version?.name || "N/A"}</TableCell>
                   <TableCell>
                     <div className="flex items-center">
                       <span 
                         className="w-4 h-4 mr-2 rounded-full" 
                         style={{ backgroundColor: versionColor.color?.hexCode || '#CCCCCC' }}
                       ></span>
-                      {versionColor.color?.name}
+                      {versionColor.color?.name || "N/A"}
                     </div>
                   </TableCell>
                   <TableCell>
-                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(versionColor.price || 0)}
+                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parseFloat(versionColor.price) || 0)}
                   </TableCell>
                   <TableCell>
                     {versionColor.imageUrl ? (
                       <img 
                         src={versionColor.imageUrl} 
-                        alt={`${versionColor.version?.name} - ${versionColor.color?.name}`} 
+                        alt={`${versionColor.version?.name || ""} - ${versionColor.color?.name || ""}`} 
                         className="w-16 h-12 object-cover rounded"
                       />
                     ) : (
