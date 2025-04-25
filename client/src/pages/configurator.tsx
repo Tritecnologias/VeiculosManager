@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Brand, Model, Version, Color, Vehicle } from "@/lib/types";
 import { formatCurrency } from "@/lib/formatters";
+import { apiRequest } from "@/lib/queryClient";
 import { Label } from "@/components/ui/label";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
@@ -55,9 +56,9 @@ function Configurator() {
       
       console.log("Buscando cores para a versão:", selectedVersionId);
       const response = await apiRequest("GET", `/api/version-colors?versionId=${selectedVersionId}`);
-      const data = await response.json();
-      console.log("Dados de cores para versão recebidos:", data);
-      return data;
+      // Não é necessário chamar response.json() aqui, pois apiRequest já retorna os dados processados
+      console.log("Dados de cores para versão recebidos:", response);
+      return response;
     },
     enabled: !!selectedVersionId,
   });
