@@ -95,6 +95,7 @@ export default function ColorForm({ id, onCancel }: ColorFormProps) {
         ...values,
         hexCode: values.hexCode || "#000000", // Código hexadecimal preto como padrão
         additionalPrice: values.additionalPrice || 0, // Preço adicional zero como padrão
+        imageUrl: null, // URL da imagem agora é sempre null
       };
       
       if (isEditing) {
@@ -179,21 +180,7 @@ export default function ColorForm({ id, onCancel }: ColorFormProps) {
               
               {/* Campos de hexCode e additionalPrice foram ocultados e são enviados com valores padrão */}
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="imageUrl"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>URL da Imagem (opcional)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="URL da imagem da cor" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
+              {/* Campo URL da imagem removido e será salvo como null */}
                 <FormField
                   control={form.control}
                   name="paintTypeId"
@@ -223,7 +210,6 @@ export default function ColorForm({ id, onCancel }: ColorFormProps) {
                     </FormItem>
                   )}
                 />
-              </div>
               
               <div className="flex justify-end space-x-2">
                 {onCancel ? (

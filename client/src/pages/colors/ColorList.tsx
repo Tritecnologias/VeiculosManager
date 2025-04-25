@@ -87,9 +87,8 @@ export default function ColorList({ onEdit }: ColorListProps) {
               <TableHeader>
                 <TableRow>
                   <TableHead>ID</TableHead>
-                  <TableHead>Cor</TableHead>
                   <TableHead>Nome</TableHead>
-                  <TableHead>Preço Adicional</TableHead>
+                  <TableHead>Tipo de Pintura</TableHead>
                   <TableHead>Ações</TableHead>
                 </TableRow>
               </TableHeader>
@@ -97,14 +96,8 @@ export default function ColorList({ onEdit }: ColorListProps) {
                 {filteredColors.map((color) => (
                   <TableRow key={color.id}>
                     <TableCell>{color.id}</TableCell>
-                    <TableCell>
-                      <div 
-                        className="h-8 w-8 rounded-full border border-gray-200" 
-                        style={{ backgroundColor: color.hexCode }}
-                      />
-                    </TableCell>
                     <TableCell>{color.name}</TableCell>
-                    <TableCell>{formatCurrency(color.additionalPrice)}</TableCell>
+                    <TableCell>{color.paintType?.name || "Não definido"}</TableCell>
                     <TableCell>
                       <div className="flex gap-2">
                         {onEdit ? (
