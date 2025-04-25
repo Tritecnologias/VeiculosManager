@@ -47,9 +47,9 @@ interface VersionColor {
 
 export default function VersionColorList() {
   const { toast } = useToast();
-  const [selectedBrandId, setSelectedBrandId] = useState<string>("");
-  const [selectedModelId, setSelectedModelId] = useState<string>("");
-  const [selectedVersionId, setSelectedVersionId] = useState<string>("");
+  const [selectedBrandId, setSelectedBrandId] = useState<string>("all");
+  const [selectedModelId, setSelectedModelId] = useState<string>("all");
+  const [selectedVersionId, setSelectedVersionId] = useState<string>("all");
   
   const { data: brands = [] } = useQuery<Brand[]>({
     queryKey: ["/api/brands"],
@@ -137,15 +137,15 @@ export default function VersionColorList() {
               value={selectedBrandId} 
               onValueChange={(value) => {
                 setSelectedBrandId(value);
-                setSelectedModelId("");
-                setSelectedVersionId("");
+                setSelectedModelId("all");
+                setSelectedVersionId("all");
               }}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Filtrar por marca" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas as marcas</SelectItem>
+                <SelectItem value="all">Todas as marcas</SelectItem>
                 {brands.map((brand) => (
                   <SelectItem key={brand.id} value={brand.id.toString()}>
                     {brand.name}
@@ -160,15 +160,15 @@ export default function VersionColorList() {
               value={selectedModelId}
               onValueChange={(value) => {
                 setSelectedModelId(value);
-                setSelectedVersionId("");
+                setSelectedVersionId("all");
               }}
-              disabled={!selectedBrandId && selectedBrandId !== ""}
+              disabled={!selectedBrandId}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Filtrar por modelo" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos os modelos</SelectItem>
+                <SelectItem value="all">Todos os modelos</SelectItem>
                 {filteredModels.map((model) => (
                   <SelectItem key={model.id} value={model.id.toString()}>
                     {model.name}
@@ -182,13 +182,13 @@ export default function VersionColorList() {
             <Select
               value={selectedVersionId}
               onValueChange={setSelectedVersionId}
-              disabled={!selectedModelId && selectedModelId !== ""}
+              disabled={!selectedModelId}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Filtrar por versão" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas as versões</SelectItem>
+                <SelectItem value="all">Todas as versões</SelectItem>
                 {filteredVersions.map((version) => (
                   <SelectItem key={version.id} value={version.id.toString()}>
                     {version.name}
