@@ -1,0 +1,383 @@
+import type { Express } from "express";
+import { createServer, type Server } from "http";
+import { storage } from "./storage";
+import { z } from "zod";
+import { 
+  brandInsertSchema, 
+  modelInsertSchema, 
+  versionInsertSchema, 
+  colorInsertSchema,
+  vehicleInsertSchema
+} from "@shared/schema";
+
+export async function registerRoutes(app: Express): Promise<Server> {
+  const apiPrefix = '/api';
+  const httpServer = createServer(app);
+
+  // Brands API
+  app.get(`${apiPrefix}/brands`, async (req, res) => {
+    try {
+      const brands = await storage.getBrands();
+      res.json(brands);
+    } catch (error) {
+      console.error("Error fetching brands:", error);
+      res.status(500).json({ message: "Failed to fetch brands" });
+    }
+  });
+
+  app.get(`${apiPrefix}/brands/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const brand = await storage.getBrandById(id);
+      
+      if (!brand) {
+        return res.status(404).json({ message: "Brand not found" });
+      }
+      
+      res.json(brand);
+    } catch (error) {
+      console.error("Error fetching brand:", error);
+      res.status(500).json({ message: "Failed to fetch brand" });
+    }
+  });
+
+  app.post(`${apiPrefix}/brands`, async (req, res) => {
+    try {
+      const validatedData = brandInsertSchema.parse(req.body);
+      const newBrand = await storage.createBrand(validatedData);
+      res.status(201).json(newBrand);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      console.error("Error creating brand:", error);
+      res.status(500).json({ message: "Failed to create brand" });
+    }
+  });
+
+  app.patch(`${apiPrefix}/brands/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = brandInsertSchema.parse(req.body);
+      
+      const updatedBrand = await storage.updateBrand(id, validatedData);
+      
+      if (!updatedBrand) {
+        return res.status(404).json({ message: "Brand not found" });
+      }
+      
+      res.json(updatedBrand);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      console.error("Error updating brand:", error);
+      res.status(500).json({ message: "Failed to update brand" });
+    }
+  });
+
+  app.delete(`${apiPrefix}/brands/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteBrand(id);
+      res.status(204).end();
+    } catch (error) {
+      console.error("Error deleting brand:", error);
+      res.status(500).json({ message: "Failed to delete brand" });
+    }
+  });
+
+  // Models API
+  app.get(`${apiPrefix}/models`, async (req, res) => {
+    try {
+      const models = await storage.getModels();
+      res.json(models);
+    } catch (error) {
+      console.error("Error fetching models:", error);
+      res.status(500).json({ message: "Failed to fetch models" });
+    }
+  });
+
+  app.get(`${apiPrefix}/models/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const model = await storage.getModelById(id);
+      
+      if (!model) {
+        return res.status(404).json({ message: "Model not found" });
+      }
+      
+      res.json(model);
+    } catch (error) {
+      console.error("Error fetching model:", error);
+      res.status(500).json({ message: "Failed to fetch model" });
+    }
+  });
+
+  app.post(`${apiPrefix}/models`, async (req, res) => {
+    try {
+      const validatedData = modelInsertSchema.parse(req.body);
+      const newModel = await storage.createModel(validatedData);
+      res.status(201).json(newModel);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      console.error("Error creating model:", error);
+      res.status(500).json({ message: "Failed to create model" });
+    }
+  });
+
+  app.patch(`${apiPrefix}/models/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = modelInsertSchema.parse(req.body);
+      
+      const updatedModel = await storage.updateModel(id, validatedData);
+      
+      if (!updatedModel) {
+        return res.status(404).json({ message: "Model not found" });
+      }
+      
+      res.json(updatedModel);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      console.error("Error updating model:", error);
+      res.status(500).json({ message: "Failed to update model" });
+    }
+  });
+
+  app.delete(`${apiPrefix}/models/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteModel(id);
+      res.status(204).end();
+    } catch (error) {
+      console.error("Error deleting model:", error);
+      res.status(500).json({ message: "Failed to delete model" });
+    }
+  });
+
+  // Versions API
+  app.get(`${apiPrefix}/versions`, async (req, res) => {
+    try {
+      const versions = await storage.getVersions();
+      res.json(versions);
+    } catch (error) {
+      console.error("Error fetching versions:", error);
+      res.status(500).json({ message: "Failed to fetch versions" });
+    }
+  });
+
+  app.get(`${apiPrefix}/versions/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const version = await storage.getVersionById(id);
+      
+      if (!version) {
+        return res.status(404).json({ message: "Version not found" });
+      }
+      
+      res.json(version);
+    } catch (error) {
+      console.error("Error fetching version:", error);
+      res.status(500).json({ message: "Failed to fetch version" });
+    }
+  });
+
+  app.post(`${apiPrefix}/versions`, async (req, res) => {
+    try {
+      const validatedData = versionInsertSchema.parse(req.body);
+      const newVersion = await storage.createVersion(validatedData);
+      res.status(201).json(newVersion);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      console.error("Error creating version:", error);
+      res.status(500).json({ message: "Failed to create version" });
+    }
+  });
+
+  app.patch(`${apiPrefix}/versions/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = versionInsertSchema.parse(req.body);
+      
+      const updatedVersion = await storage.updateVersion(id, validatedData);
+      
+      if (!updatedVersion) {
+        return res.status(404).json({ message: "Version not found" });
+      }
+      
+      res.json(updatedVersion);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      console.error("Error updating version:", error);
+      res.status(500).json({ message: "Failed to update version" });
+    }
+  });
+
+  app.delete(`${apiPrefix}/versions/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteVersion(id);
+      res.status(204).end();
+    } catch (error) {
+      console.error("Error deleting version:", error);
+      res.status(500).json({ message: "Failed to delete version" });
+    }
+  });
+
+  // Colors API
+  app.get(`${apiPrefix}/colors`, async (req, res) => {
+    try {
+      const colors = await storage.getColors();
+      res.json(colors);
+    } catch (error) {
+      console.error("Error fetching colors:", error);
+      res.status(500).json({ message: "Failed to fetch colors" });
+    }
+  });
+
+  app.get(`${apiPrefix}/colors/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const color = await storage.getColorById(id);
+      
+      if (!color) {
+        return res.status(404).json({ message: "Color not found" });
+      }
+      
+      res.json(color);
+    } catch (error) {
+      console.error("Error fetching color:", error);
+      res.status(500).json({ message: "Failed to fetch color" });
+    }
+  });
+
+  app.post(`${apiPrefix}/colors`, async (req, res) => {
+    try {
+      const validatedData = colorInsertSchema.parse(req.body);
+      const newColor = await storage.createColor(validatedData);
+      res.status(201).json(newColor);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      console.error("Error creating color:", error);
+      res.status(500).json({ message: "Failed to create color" });
+    }
+  });
+
+  app.patch(`${apiPrefix}/colors/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = colorInsertSchema.parse(req.body);
+      
+      const updatedColor = await storage.updateColor(id, validatedData);
+      
+      if (!updatedColor) {
+        return res.status(404).json({ message: "Color not found" });
+      }
+      
+      res.json(updatedColor);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      console.error("Error updating color:", error);
+      res.status(500).json({ message: "Failed to update color" });
+    }
+  });
+
+  app.delete(`${apiPrefix}/colors/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteColor(id);
+      res.status(204).end();
+    } catch (error) {
+      console.error("Error deleting color:", error);
+      res.status(500).json({ message: "Failed to delete color" });
+    }
+  });
+
+  // Vehicles API
+  app.get(`${apiPrefix}/vehicles`, async (req, res) => {
+    try {
+      const vehicles = await storage.getVehicles();
+      res.json(vehicles);
+    } catch (error) {
+      console.error("Error fetching vehicles:", error);
+      res.status(500).json({ message: "Failed to fetch vehicles" });
+    }
+  });
+
+  app.get(`${apiPrefix}/vehicles/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const vehicle = await storage.getVehicleById(id);
+      
+      if (!vehicle) {
+        return res.status(404).json({ message: "Vehicle not found" });
+      }
+      
+      res.json(vehicle);
+    } catch (error) {
+      console.error("Error fetching vehicle:", error);
+      res.status(500).json({ message: "Failed to fetch vehicle" });
+    }
+  });
+
+  app.post(`${apiPrefix}/vehicles`, async (req, res) => {
+    try {
+      const validatedData = vehicleInsertSchema.parse(req.body);
+      const newVehicle = await storage.createVehicle(validatedData);
+      res.status(201).json(newVehicle);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      console.error("Error creating vehicle:", error);
+      res.status(500).json({ message: "Failed to create vehicle" });
+    }
+  });
+
+  app.patch(`${apiPrefix}/vehicles/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = vehicleInsertSchema.parse(req.body);
+      
+      const updatedVehicle = await storage.updateVehicle(id, validatedData);
+      
+      if (!updatedVehicle) {
+        return res.status(404).json({ message: "Vehicle not found" });
+      }
+      
+      res.json(updatedVehicle);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      console.error("Error updating vehicle:", error);
+      res.status(500).json({ message: "Failed to update vehicle" });
+    }
+  });
+
+  app.delete(`${apiPrefix}/vehicles/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteVehicle(id);
+      res.status(204).end();
+    } catch (error) {
+      console.error("Error deleting vehicle:", error);
+      res.status(500).json({ message: "Failed to delete vehicle" });
+    }
+  });
+
+  return httpServer;
+}

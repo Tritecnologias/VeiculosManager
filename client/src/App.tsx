@@ -1,0 +1,56 @@
+import { Switch, Route } from "wouter";
+import { queryClient } from "./lib/queryClient";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "@/components/ui/toaster";
+import AdminLayout from "@/components/layout/AdminLayout";
+
+// Pages
+import Dashboard from "@/pages/dashboard/Dashboard";
+import BrandList from "@/pages/brands/BrandList";
+import BrandForm from "@/pages/brands/BrandForm";
+import ModelList from "@/pages/models/ModelList";
+import ModelForm from "@/pages/models/ModelForm";
+import VersionList from "@/pages/versions/VersionList";
+import VersionForm from "@/pages/versions/VersionForm";
+import ColorList from "@/pages/colors/ColorList";
+import ColorForm from "@/pages/colors/ColorForm";
+import VehicleList from "@/pages/vehicles/VehicleList";
+import VehicleForm from "@/pages/vehicles/VehicleForm";
+import NotFound from "@/pages/not-found";
+
+function Router() {
+  return (
+    <AdminLayout>
+      <Switch>
+        <Route path="/" component={Dashboard} />
+        <Route path="/brands" component={BrandList} />
+        <Route path="/brands/new" component={BrandForm} />
+        <Route path="/brands/:id/edit" component={BrandForm} />
+        <Route path="/models" component={ModelList} />
+        <Route path="/models/new" component={ModelForm} />
+        <Route path="/models/:id/edit" component={ModelForm} />
+        <Route path="/versions" component={VersionList} />
+        <Route path="/versions/new" component={VersionForm} />
+        <Route path="/versions/:id/edit" component={VersionForm} />
+        <Route path="/colors" component={ColorList} />
+        <Route path="/colors/new" component={ColorForm} />
+        <Route path="/colors/:id/edit" component={ColorForm} />
+        <Route path="/vehicles" component={VehicleList} />
+        <Route path="/vehicles/new" component={VehicleForm} />
+        <Route path="/vehicles/:id/edit" component={VehicleForm} />
+        <Route component={NotFound} />
+      </Switch>
+    </AdminLayout>
+  );
+}
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Router />
+      <Toaster />
+    </QueryClientProvider>
+  );
+}
+
+export default App;
