@@ -23,29 +23,38 @@ function Configurator() {
   const [selectedTab, setSelectedTab] = useState("equipamentos");
 
   // Fetch brands
-  const { data: brands = [] } = useQuery<Brand[]>({
+  const { data: brands = [], isLoading: brandsLoading } = useQuery<Brand[]>({
     queryKey: ["/api/brands"],
   });
 
   // Fetch models
-  const { data: allModels = [] } = useQuery<Model[]>({
+  const { data: allModels = [], isLoading: modelsLoading } = useQuery<Model[]>({
     queryKey: ["/api/models"],
   });
 
   // Fetch versions
-  const { data: allVersions = [] } = useQuery<Version[]>({
+  const { data: allVersions = [], isLoading: versionsLoading } = useQuery<Version[]>({
     queryKey: ["/api/versions"],
   });
 
   // Fetch colors
-  const { data: allColors = [] } = useQuery<Color[]>({
+  const { data: allColors = [], isLoading: colorsLoading } = useQuery<Color[]>({
     queryKey: ["/api/colors"],
   });
 
   // Fetch vehicles
-  const { data: allVehicles = [] } = useQuery<Vehicle[]>({
+  const { data: allVehicles = [], isLoading: vehiclesLoading } = useQuery<Vehicle[]>({
     queryKey: ["/api/vehicles"],
   });
+  
+  // Debug logs
+  useEffect(() => {
+    console.log("Brands loaded:", brands.length);
+    console.log("Models loaded:", allModels.length);
+    console.log("Versions loaded:", allVersions.length);
+    console.log("Colors loaded:", allColors.length);
+    console.log("Vehicles loaded:", allVehicles.length);
+  }, [brands, allModels, allVersions, allColors, allVehicles]);
 
   // Filtered models based on selected brand
   const [filteredModels, setFilteredModels] = useState<Model[]>([]);
