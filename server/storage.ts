@@ -519,6 +519,51 @@ export async function deleteVersionOptional(id: number) {
   await db.delete(versionOptionals).where(eq(versionOptionals.id, id));
 }
 
+// Vendas Diretas
+export async function getDirectSales() {
+  return db.query.directSales.findMany({
+    orderBy: directSales.name,
+    with: {
+      brand: true
+    }
+  });
+}
+
+export async function getDirectSaleById(id: number) {
+  return db.query.directSales.findFirst({
+    where: eq(directSales.id, id),
+    with: {
+      brand: true
+    }
+  });
+}
+
+export async function createDirectSale(data: DirectSaleInsert) {
+  const [newDirectSale] = await db.insert(directSales).values({
+    ...data,
+    updatedAt: new Date()
+  }).returning();
+  return getDirectSaleById(newDirectSale.id);
+}
+
+export async function updateDirectSale(id: number, data: DirectSaleInsert) {
+  const [updatedDirectSale] = await db.update(directSales)
+    .set({
+      ...data,
+      updatedAt: new Date()
+    })
+    .where(eq(directSales.id, id))
+    .returning();
+  
+  if (!updatedDirectSale) return null;
+  
+  return getDirectSaleById(updatedDirectSale.id);
+}
+
+export async function deleteDirectSale(id: number) {
+  await db.delete(directSales).where(eq(directSales.id, id));
+}
+
 export const storage = {
   getBrands,
   getBrandById,
@@ -573,6 +618,12 @@ export const storage = {
   createVersionOptional,
   updateVersionOptional,
   deleteVersionOptional,
+  
+  getDirectSales,
+  getDirectSaleById,
+  createDirectSale,
+  updateDirectSale,
+  deleteDirectSale,
   
   getSettings,
   getSettingByKey,

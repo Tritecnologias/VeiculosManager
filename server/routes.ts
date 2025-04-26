@@ -12,7 +12,8 @@ import {
   paintTypeInsertSchema,
   settingsInsertSchema,
   optionalInsertSchema,
-  versionOptionalInsertSchema
+  versionOptionalInsertSchema,
+  directSalesInsertSchema
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -797,6 +798,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting version optional:", error);
       res.status(500).json({ message: "Failed to delete version optional" });
+    }
+  });
+
+  // Direct Sales API
+  app.get(`${apiPrefix}/direct-sales`, async (req, res) => {
+    try {
+      const directSales = await storage.getDirectSales();
+      res.json(directSales);
+    } catch (error) {
+      console.error("Error fetching direct sales:", error);
+      res.status(500).json({ message: "Failed to fetch direct sales" });
+    }
+  });
+
+  app.get(`${apiPrefix}/direct-sales/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const directSale = await storage.getDirectSaleById(id);
+      
+      if (!directSale) {
+        return res.status(404).json({ message: "Direct sale not found" });
+      }
+      
+      res.json(directSale);
+    } catch (error) {
+      console.error("Error fetching direct sale:", error);
+      res.status(500).json({ message: "Failed to fetch direct sale" });
+    }
+  });
+
+  app.post(`${apiPrefix}/direct-sales`, async (req, res) => {
+    try {
+      const validatedData = directSalesInsertSchema.parse(req.body);
+      const newDirectSale = await storage.createDirectSale(validatedData);
+      res.status(201).json(newDirectSale);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      console.error("Error creating direct sale:", error);
+      res.status(500).json({ message: "Failed to create direct sale" });
+    }
+  });
+
+  app.patch(`${apiPrefix}/direct-sales/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = directSalesInsertSchema.parse(req.body);
+      
+      const updatedDirectSale = await storage.updateDirectSale(id, validatedData);
+      
+      if (!updatedDirectSale) {
+        return res.status(404).json({ message: "Direct sale not found" });
+      }
+      
+      res.json(updatedDirectSale);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      console.error("Error updating direct sale:", error);
+      res.status(500).json({ message: "Failed to update direct sale" });
+    }
+  });
+
+  app.delete(`${apiPrefix}/direct-sales/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteDirectSale(id);
+      res.status(204).end();
+    } catch (error) {
+      console.error("Error deleting direct sale:", error);
+      res.status(500).json({ message: "Failed to delete direct sale" });
     }
   });
 
