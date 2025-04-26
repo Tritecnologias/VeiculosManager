@@ -6,22 +6,31 @@ import { useQuery } from "@tanstack/react-query";
 export default function Header() {
   const [location] = useLocation();
   
-  // Buscar o nome da empresa nas configurações
+  // Buscar todas as configurações
   const { data: settings = [] } = useQuery<Array<{key: string, value: string}>>({
     queryKey: ["/api/settings"],
   });
   
-  // Encontrar a configuração de nome da empresa
+  // Encontrar configurações da empresa
   const companyName = settings.find(setting => setting.key === "company_name")?.value || "Vendas Corporativas";
+  const companyLogoUrl = settings.find(setting => setting.key === "company_logo_url")?.value;
+  const removeDealer = settings.find(setting => setting.key === "remove_dealer_text")?.value === "true";
   
   return (
     <header className="bg-white shadow">
       <div className="flex justify-between items-center px-4 py-2">
         <div className="flex items-center">
           <div className="text-primary flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
-            </svg>
+            {companyLogoUrl ? (
+              <img src={companyLogoUrl} alt="Logo" className="h-8 w-auto" />
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                {!removeDealer && (
+                  <text x="0" y="23" className="text-xs" fill="currentColor">Dealers</text>
+                )}
+              </svg>
+            )}
             <span className="ml-2 text-xl font-semibold text-primary">{companyName}</span>
           </div>
         </div>

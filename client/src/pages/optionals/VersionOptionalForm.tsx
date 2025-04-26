@@ -98,14 +98,28 @@ export default function VersionOptionalForm() {
   };
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Remove caracteres inválidos, mantendo apenas números, vírgulas e pontos
-    let inputValue = e.target.value.replace(/[^\d,\.]/g, '');
-    
-    // Converte para o formato esperado pela API (com ponto decimal)
-    const formattedValue = parseBRCurrency(inputValue);
-    
-    // Define o valor no formulário como string
-    form.setValue("price", formattedValue);
+    try {
+      // Permite a digitação de valores formatados (com R$, pontos e vírgulas)
+      const rawInput = e.target.value;
+      
+      // Se o input estiver vazio, define como "0"
+      if (!rawInput.trim()) {
+        form.setValue("price", "0");
+        return;
+      }
+      
+      // Converte para o formato esperado pela API (com ponto decimal)
+      const formattedValue = parseBRCurrency(rawInput);
+      
+      // Define o valor no formulário como string
+      form.setValue("price", formattedValue);
+      
+      console.log("Valor formatado:", formattedValue);
+    } catch (error) {
+      console.error("Erro ao processar o valor:", error);
+      // Em caso de erro, mantém como "0"
+      form.setValue("price", "0");
+    }
   };
   
   return (

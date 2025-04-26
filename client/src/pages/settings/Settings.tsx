@@ -113,6 +113,7 @@ export default function Settings() {
   // Agrupar configurações por tipo
   const generalSettings = settings.filter(s => ["company_name", "admin_email", "default_currency"].includes(s.key));
   const taxSettings = settings.filter(s => ["tax_rate", "enable_pcd_discounts"].includes(s.key));
+  const companySettings = settings.filter(s => ["company_name", "company_logo_url", "remove_dealer_text"].includes(s.key));
   
   return (
     <div className="space-y-6">
@@ -234,6 +235,20 @@ export default function Settings() {
                   onChange={handleTextChange}
                   placeholder="URL da imagem do logo (opcional)"
                 />
+              </div>
+              
+              {/* Opção para remover texto "Dealers" do logo */}
+              <div className="flex items-center space-x-2 pt-2">
+                <Switch
+                  id="remove_dealer_text"
+                  checked={formData["remove_dealer_text"] === "true"}
+                  onCheckedChange={(checked) => 
+                    handleSwitchChange("remove_dealer_text", checked)
+                  }
+                />
+                <Label htmlFor="remove_dealer_text">
+                  Remover texto "Dealers" do logo padrão
+                </Label>
               </div>
             </CardContent>
           </Card>
