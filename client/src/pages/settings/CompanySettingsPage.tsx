@@ -1,12 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -19,44 +20,50 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+type Setting = {
+  id: number;
+  key: string;
+  value: string;
+  label: string;
+  type: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export default function CompanySettingsPage() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      company_name: "",
-      company_logo_url: "",
-    },
-  });
-  
-  type Setting = {
-    id: number;
-    key: string;
-    value: string;
-    label: string;
-    type: string;
-    createdAt: string;
-    updatedAt: string;
-  };
-
+  // Consulta configurações
   const { data: settings = [], isLoading: isLoadingSettings } = useQuery<Setting[]>({
     queryKey: ["/api/settings"],
   });
   
-  // Configurar os valores do formulário quando os dados são carregados
+  // Extrair valores das configurações
+  const companyName = settings.find(s => s.key === "company_name")?.value || "";
+  const companyLogoUrl = settings.find(s => s.key === "company_logo_url")?.value || "";
+  const removeDealerText = settings.find(s => s.key === "remove_dealer_text")?.value === "true";
+  
+  // Inicializa formulário
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      company_name: companyName,
+      company_logo_url: companyLogoUrl,
+      remove_dealer_text: removeDealerText,
+    },
+  });
+  
+  // Atualiza o formulário quando as configurações forem carregadas
   useEffect(() => {
     if (settings.length > 0) {
-      const companyName = settings.find(setting => setting.key === "company_name")?.value || "";
-      const companyLogoUrl = settings.find(setting => setting.key === "company_logo_url")?.value || "";
-      
       form.reset({
         company_name: companyName,
         company_logo_url: companyLogoUrl,
+        remove_dealer_text: removeDealerText,
       });
     }
-  }, [settings, form]);
+  }, [settings, form, companyName, companyLogoUrl, removeDealerText]);
   
   const onSubmit = async (data: FormValues) => {
     try {
@@ -73,6 +80,11 @@ export default function CompanySettingsPage() {
           value: data.company_logo_url 
         });
       }
+      
+      // Atualizar a configuração de remover texto do logo
+      await apiRequest("PATCH", "/api/settings/remove_dealer_text", { 
+        value: data.remove_dealer_text.toString() 
+      });
       
       toast({
         title: "Configurações salvas",
@@ -138,6 +150,27 @@ export default function CompanySettingsPage() {
                       <Input {...field} placeholder="URL da imagem do logo (opcional)" />
                     </FormControl>
                     <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="remove_dealer_text"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
+                    <div className="space-y-0.5">
+                      <FormLabel>Remover texto "Dealers" do logo</FormLabel>
+                      <FormDescription className="text-xs">
+                        Quando ativado, o texto "Dealers" não será exibido no logo padrão
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
                   </FormItem>
                 )}
               />
