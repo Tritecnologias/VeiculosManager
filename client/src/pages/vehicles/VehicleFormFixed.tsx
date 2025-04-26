@@ -120,46 +120,56 @@ export default function VehicleFormFixed() {
   
   // Preencher o formulário com os dados do veículo quando estiver editando
   useEffect(() => {
-    if (vehicle) {
-      // Primeiro definimos a marca para disparar a filtragem
-      form.setValue("brandId", vehicle.version.model.brandId.toString());
+    if (vehicle && isEditing) {
+      console.log("Carregando dados do veículo para edição:", vehicle);
       
-      // Filtra modelos pela marca
-      const modelsForBrand = models.filter(
-        model => model.brandId === vehicle.version.model.brandId
-      );
-      setFilteredModels(modelsForBrand);
-      
-      // Define o modelo
-      form.setValue("modelId", vehicle.version.modelId.toString());
-      
-      // Filtra versões pelo modelo
-      const versionsForModel = versions.filter(
-        version => version.modelId === vehicle.version.modelId
-      );
-      setFilteredVersions(versionsForModel);
-      
-      // Define todos os valores restantes com formatação adequada
-      form.reset({
-        brandId: vehicle.version.model.brandId.toString(),
-        modelId: vehicle.version.modelId.toString(),
-        versionId: vehicle.versionId.toString(),
-        colorId: vehicle.colorId ? vehicle.colorId.toString() : "",
-        year: vehicle.year,
-        publicPrice: formatBRCurrency(Number(vehicle.publicPrice)),
-        situation: vehicle.situation,
-        description: vehicle.description,
-        engine: vehicle.engine,
-        fuelType: vehicle.fuelType,
-        transmission: vehicle.transmission,
-        isActive: vehicle.isActive,
-        pcdIpiIcms: formatBRCurrency(Number(vehicle.pcdIpiIcms)),
-        pcdIpi: formatBRCurrency(Number(vehicle.pcdIpi)),
-        taxiIpiIcms: formatBRCurrency(Number(vehicle.taxiIpiIcms)),
-        taxiIpi: formatBRCurrency(Number(vehicle.taxiIpi))
-      });
+      try {
+        // Carregar dados relacionados de forma consistente
+        const brandId = vehicle.version.model.brandId.toString();
+        const modelId = vehicle.version.modelId.toString();
+        const versionId = vehicle.versionId.toString();
+        
+        // Primeiro definimos a marca para disparar a filtragem
+        form.setValue("brandId", brandId);
+        
+        // Filtra modelos pela marca manualmente para garantir que sejam carregados
+        const modelsForBrand = models.filter(model => model.brandId === vehicle.version.model.brandId);
+        setFilteredModels(modelsForBrand);
+        console.log("Modelos filtrados:", modelsForBrand);
+        
+        // Define o modelo manualmente
+        form.setValue("modelId", modelId);
+        
+        // Filtra versões pelo modelo manualmente
+        const versionsForModel = versions.filter(version => version.modelId === vehicle.version.modelId);
+        setFilteredVersions(versionsForModel);
+        console.log("Versões filtradas:", versionsForModel);
+        
+        // Define todos os valores restantes com formatação adequada em duas etapas
+        // Primeiro os campos de relacionamento
+        form.setValue("versionId", versionId);
+        form.setValue("colorId", vehicle.colorId ? vehicle.colorId.toString() : "");
+        
+        // Depois os outros campos
+        form.setValue("year", vehicle.year);
+        form.setValue("publicPrice", formatBRCurrency(Number(vehicle.publicPrice)));
+        form.setValue("situation", vehicle.situation);
+        form.setValue("description", vehicle.description);
+        form.setValue("engine", vehicle.engine);
+        form.setValue("fuelType", vehicle.fuelType);
+        form.setValue("transmission", vehicle.transmission);
+        form.setValue("isActive", vehicle.isActive);
+        form.setValue("pcdIpiIcms", formatBRCurrency(Number(vehicle.pcdIpiIcms)));
+        form.setValue("pcdIpi", formatBRCurrency(Number(vehicle.pcdIpi)));
+        form.setValue("taxiIpiIcms", formatBRCurrency(Number(vehicle.taxiIpiIcms)));
+        form.setValue("taxiIpi", formatBRCurrency(Number(vehicle.taxiIpi)));
+        
+        console.log("Formulário preenchido com dados do veículo");
+      } catch (error) {
+        console.error("Erro ao carregar dados do veículo:", error);
+      }
     }
-  }, [vehicle, form, models, versions]);
+  }, [vehicle, isEditing, form, models, versions]);
   
   // Atualiza modelos filtrados quando a marca muda
   const handleBrandChange = (brandId: string) => {
