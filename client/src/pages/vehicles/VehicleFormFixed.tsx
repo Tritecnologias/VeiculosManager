@@ -587,7 +587,9 @@ export default function VehicleFormFixed() {
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Selecione uma marca">
-                                  {selectedBrandName || (field.value && brands.find(b => b.id.toString() === field.value)?.name) || "Selecione uma marca"}
+                                  {field.value && brands.find(b => b.id.toString() === field.value) 
+                                    ? brands.find(b => b.id.toString() === field.value)?.name 
+                                    : selectedBrandName || "Selecione uma marca"}
                                 </SelectValue>
                               </SelectTrigger>
                             </FormControl>
@@ -626,7 +628,9 @@ export default function VehicleFormFixed() {
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Selecione um modelo">
-                                  {selectedModelName || (field.value && models.find(m => m.id.toString() === field.value)?.name) || "Selecione um modelo"}
+                                  {field.value && models.find(m => m.id.toString() === field.value) 
+                                    ? models.find(m => m.id.toString() === field.value)?.name 
+                                    : selectedModelName || "Selecione um modelo"}
                                 </SelectValue>
                               </SelectTrigger>
                             </FormControl>
@@ -665,7 +669,9 @@ export default function VehicleFormFixed() {
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Selecione uma versão">
-                                  {selectedVersionName || (field.value && versions.find(v => v.id.toString() === field.value)?.name) || "Selecione uma versão"}
+                                  {field.value && versions.find(v => v.id.toString() === field.value) 
+                                    ? versions.find(v => v.id.toString() === field.value)?.name 
+                                    : selectedVersionName || "Selecione uma versão"}
                                 </SelectValue>
                               </SelectTrigger>
                             </FormControl>
