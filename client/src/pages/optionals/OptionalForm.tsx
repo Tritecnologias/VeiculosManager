@@ -48,11 +48,22 @@ export default function OptionalForm({ id, onCancel }: OptionalFormProps) {
     },
   });
 
-  const { data: optional, isLoading } = useQuery<Optional>({
+  const { data: optional, isLoading } = useQuery({
     queryKey: ["/api/optionals", optionalId],
-    enabled: isEditing,
+    enabled: Boolean(optionalId) && isEditing,
     onSuccess: (data) => {
       console.log("Opcional carregado:", data);
+    },
+    queryFn: async () => {
+      if (!optionalId) return null;
+      console.log("Fazendo requisição para:", `/api/optionals/${optionalId}`);
+      const response = await fetch(`/api/optionals/${optionalId}`);
+      if (!response.ok) {
+        throw new Error("Erro ao buscar opcional");
+      }
+      const data = await response.json();
+      console.log("Dados recebidos:", data);
+      return data as Optional;
     }
   });
 
