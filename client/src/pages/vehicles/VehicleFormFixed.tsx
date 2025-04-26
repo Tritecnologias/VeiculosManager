@@ -129,6 +129,7 @@ export default function VehicleFormFixed() {
     if (isEditing && id) {
       // Resetar o estado para permitir carregar novos dados de outro veículo
       setDataWasLoaded(false);
+      setIsSubmitting(false); // Garantir que o estado de submissão esteja resetado
     }
   }, [id, isEditing]);
   
@@ -276,6 +277,12 @@ export default function VehicleFormFixed() {
   
   // Função de submissão do formulário simplificada e robusta
   const onSubmit = async (data: FormValues) => {
+    // Garante que não estamos tentando reenviar um formulário já em submissão
+    if (isSubmitting) {
+      console.log("Formulário já está sendo enviado, ignorando chamada duplicada");
+      return;
+    }
+    
     try {
       // Força o estado de submissão como true
       setIsSubmitting(true);
@@ -491,8 +498,12 @@ export default function VehicleFormFixed() {
         variant: "destructive"
       });
     } finally {
-      // Garante que o estado de submissão seja resetado
-      setIsSubmitting(false);
+      // Garante que o estado de submissão seja resetado após um breve delay
+      // para evitar problemas de estado
+      setTimeout(() => {
+        console.log('Resetando estado de submissão');
+        setIsSubmitting(false);
+      }, 500);
     }
   };
   
@@ -936,12 +947,16 @@ export default function VehicleFormFixed() {
                     </Button>
                   </Link>
                   <Button 
-                    type="button" 
+                    type="button"
+                    variant="default"
                     disabled={isSubmitting}
                     onClick={() => {
-                      // Forçar a submissão do formulário manualmente
+                      // Forçar a submissão do formulário manualmente utilizando outra abordagem
                       setIsSubmitting(true);
-                      form.handleSubmit(onSubmit)();
+                      
+                      // Tentativa de salvar diretamente
+                      const formData = form.getValues();
+                      onSubmit(formData);
                     }}
                   >
                     {isSubmitting ? (
