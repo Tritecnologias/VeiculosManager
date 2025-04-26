@@ -266,6 +266,7 @@ export default function VehicleFormFixed() {
         const method = isEditing ? "PATCH" : "POST";
         
         console.log(`Enviando requisição ${method} para ${endpoint}`);
+        console.log("Dados enviados:", JSON.stringify(vehicleData, null, 2));
         
         const response = await fetch(endpoint, {
           method: method,
