@@ -616,7 +616,7 @@ function Configurator() {
                   <Tabs defaultValue="equipamentos" value={selectedTab} onValueChange={setSelectedTab} className="mb-6">
                     <TabsList className="w-full">
                       <TabsTrigger value="equipamentos" className="flex-1">Equipamentos</TabsTrigger>
-                      <TabsTrigger value="diagrama" className="flex-1">Diagrama</TabsTrigger>
+                      <TabsTrigger value="diagrama" className="flex-1">Itens de Série</TabsTrigger>
                     </TabsList>
                     <TabsContent value="equipamentos" className="p-4 border rounded-md mt-2">
                       <Accordion type="single" collapsible>
@@ -696,6 +696,21 @@ function Configurator() {
                       </button>
                     ))}
                   </div>
+                  
+                  {/* Exibir imagem da cor selecionada */}
+                  {selectedColorId && (
+                    <div className="mb-6">
+                      {versionColors.find(vc => vc.colorId === parseInt(selectedColorId))?.imageUrl && (
+                        <div className="flex justify-center items-center">
+                          <img 
+                            src={versionColors.find(vc => vc.colorId === parseInt(selectedColorId))?.imageUrl} 
+                            alt="Imagem do veículo" 
+                            className="max-h-48 object-contain"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
                   
                   <div className="mt-auto">
                     <h4 className="text-lg font-semibold mb-4">Resumo e Valores Finais</h4>

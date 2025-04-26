@@ -252,6 +252,13 @@ export default function VersionColorList() {
                       <Button 
                         variant="outline" 
                         size="sm" 
+                        onClick={() => handleEditVersionColor(versionColor.id)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
                         onClick={() => handleDeleteVersionColor(versionColor.id)}
                         className="ml-2"
                       >
