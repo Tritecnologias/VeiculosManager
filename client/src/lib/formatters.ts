@@ -17,8 +17,11 @@ export function parseCurrency(value: string): number {
 }
 
 // Função para formatar valores monetários no formato brasileiro
-export function formatBRCurrency(value: number): string {
-  return value.toLocaleString('pt-BR', {
+export function formatBRCurrency(value: number | string): string {
+  const numValue = typeof value === 'string' ? parseFloat(value) : value;
+  if (isNaN(numValue)) return "0,00";
+  
+  return numValue.toLocaleString('pt-BR', {
     style: 'currency',
     currency: 'BRL',
     minimumFractionDigits: 2,

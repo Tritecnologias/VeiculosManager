@@ -18,7 +18,7 @@ import { parseBRCurrency, formatBRCurrency } from "@/lib/formatters";
 const formSchema = z.object({
   name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres"),
   description: z.string().min(5, "A descrição deve ter pelo menos 5 caracteres"),
-  price: z.coerce.number().min(0, "O preço não pode ser negativo").default(0),
+  price: z.string().default("0"),
   imageUrl: z.string().optional(),
 });
 
@@ -41,7 +41,7 @@ export default function OptionalForm({ id, onCancel }: OptionalFormProps) {
     defaultValues: {
       name: "",
       description: "",
-      price: 0,
+      price: "0",
       imageUrl: "",
     },
   });
@@ -56,7 +56,7 @@ export default function OptionalForm({ id, onCancel }: OptionalFormProps) {
       form.reset({
         name: optional.name,
         description: optional.description,
-        price: Number(optional.price) || 0,
+        price: optional.price || "0",
         imageUrl: optional.imageUrl || "",
       });
     }
@@ -96,7 +96,7 @@ export default function OptionalForm({ id, onCancel }: OptionalFormProps) {
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formattedValue = parseBRCurrency(e.target.value);
-    form.setValue("price", parseFloat(formattedValue) || 0);
+    form.setValue("price", formattedValue || "0");
   };
   
   if (isLoading && isEditing) {
