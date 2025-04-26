@@ -30,8 +30,15 @@ export default function OptionalForm({ id, onCancel }: OptionalFormProps) {
   const params = useParams();
   const [, navigate] = useLocation();
   const { toast } = useToast();
+  
+  console.log("Params recebidos:", params);
+  console.log("ID recebido:", id);
+  
   const isEditing = Boolean(id || params.id);
   const optionalId = id || params.id;
+  
+  console.log("isEditing:", isEditing);
+  console.log("optionalId:", optionalId);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -44,6 +51,9 @@ export default function OptionalForm({ id, onCancel }: OptionalFormProps) {
   const { data: optional, isLoading } = useQuery<Optional>({
     queryKey: ["/api/optionals", optionalId],
     enabled: isEditing,
+    onSuccess: (data) => {
+      console.log("Opcional carregado:", data);
+    }
   });
 
   useEffect(() => {
