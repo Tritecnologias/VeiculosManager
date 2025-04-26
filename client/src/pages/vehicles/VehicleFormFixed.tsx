@@ -238,7 +238,7 @@ export default function VehicleFormFixed() {
   // Função de submissão do formulário simplificada e robusta
   const onSubmit = async (data: FormValues) => {
     try {
-      setIsSubmitting(true);
+      // setIsSubmitting(true) já é chamado no onClick do botão agora
       console.log("Form submitted with values:", data);
       console.log("isEditing:", isEditing, "id:", id);
       
@@ -773,8 +773,14 @@ export default function VehicleFormFixed() {
                     </Button>
                   </Link>
                   <Button 
-                    type="submit" 
+                    type="button" 
                     disabled={isSubmitting}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setIsSubmitting(true);
+                      console.log("Botão Salvar clicado para " + (isEditing ? "editar" : "cadastrar"));
+                      form.handleSubmit(onSubmit)(e);
+                    }}
                   >
                     {isSubmitting ? (
                       <>
