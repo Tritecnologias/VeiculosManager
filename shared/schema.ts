@@ -50,6 +50,26 @@ export const versionColors = pgTable("version_colors", {
   updatedAt: timestamp("updated_at").defaultNow().notNull()
 });
 
+// Tabela para Opcionais
+export const optionals = pgTable("optionals", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  price: decimal("price", { precision: 10, scale: 2 }).default("0").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull()
+});
+
+// Tabela para associar opcionais às versões
+export const versionOptionals = pgTable("version_optionals", {
+  id: serial("id").primaryKey(),
+  versionId: integer("version_id").references(() => versions.id).notNull(),
+  optionalId: integer("optional_id").references(() => optionals.id).notNull(),
+  price: decimal("price", { precision: 10, scale: 2 }).default("0").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull()
+});
+
 export const vehicles = pgTable("vehicles", {
   id: serial("id").primaryKey(),
   versionId: integer("version_id").references(() => versions.id).notNull(),
@@ -83,7 +103,8 @@ export const modelsRelations = relations(models, ({ one, many }) => ({
 export const versionsRelations = relations(versions, ({ one, many }) => ({
   model: one(models, { fields: [versions.modelId], references: [models.id] }),
   vehicles: many(vehicles),
-  versionColors: many(versionColors)
+  versionColors: many(versionColors),
+  versionOptionals: many(versionOptionals)
 }));
 
 export const paintTypesRelations = relations(paintTypes, ({ many }) => ({
@@ -99,6 +120,16 @@ export const colorsRelations = relations(colors, ({ one, many }) => ({
 export const versionColorsRelations = relations(versionColors, ({ one }) => ({
   version: one(versions, { fields: [versionColors.versionId], references: [versions.id] }),
   color: one(colors, { fields: [versionColors.colorId], references: [colors.id] })
+}));
+
+// Relações para tabelas de opcionais
+export const optionalsRelations = relations(optionals, ({ many }) => ({
+  versionOptionals: many(versionOptionals)
+}));
+
+export const versionOptionalsRelations = relations(versionOptionals, ({ one }) => ({
+  version: one(versions, { fields: [versionOptionals.versionId], references: [versions.id] }),
+  optional: one(optionals, { fields: [versionOptionals.optionalId], references: [optionals.id] })
 }));
 
 export const vehiclesRelations = relations(vehicles, ({ one }) => ({
@@ -154,6 +185,21 @@ export const vehicleInsertSchema = createInsertSchema(vehicles, {
 export type VehicleInsert = z.infer<typeof vehicleInsertSchema>;
 export const vehicleSelectSchema = createSelectSchema(vehicles);
 export type Vehicle = z.infer<typeof vehicleSelectSchema>;
+
+// Schemas para Opcionais
+export const optionalInsertSchema = createInsertSchema(optionals, {
+  name: (schema) => schema.min(2, "O nome deve ter pelo menos 2 caracteres"),
+  description: (schema) => schema.optional()
+});
+export type OptionalInsert = z.infer<typeof optionalInsertSchema>;
+export const optionalSelectSchema = createSelectSchema(optionals);
+export type Optional = z.infer<typeof optionalSelectSchema>;
+
+// Schemas para Versão-Opcionais
+export const versionOptionalInsertSchema = createInsertSchema(versionOptionals);
+export type VersionOptionalInsert = z.infer<typeof versionOptionalInsertSchema>;
+export const versionOptionalSelectSchema = createSelectSchema(versionOptionals);
+export type VersionOptional = z.infer<typeof versionOptionalSelectSchema>;
 
 // Definição da tabela de configurações
 export const settings = pgTable("settings", {
