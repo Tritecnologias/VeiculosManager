@@ -716,7 +716,7 @@ function Configurator() {
                   
                   <div className="mt-auto">
                     <h4 className="text-lg font-semibold mb-4">Resumo e Valores Finais</h4>
-                    <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div className={`grid ${isMobile ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-2'} gap-4 mb-4`}>
                       <Card className="p-4">
                         <div className="text-xs mb-1">Preço Base</div>
                         <div className="font-bold">{formatCurrency(getCurrentBasePrice())}</div>
