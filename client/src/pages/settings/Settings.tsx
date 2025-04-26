@@ -65,11 +65,19 @@ export default function Settings() {
       // Para cada configuração, atualizar no servidor
       for (const setting of settings) {
         const value = formData[setting.key];
-        const valueStr = typeof value === "boolean" ? value.toString() : value as string;
+        // Converte valor para string se for boolean, ou usa string vazia se for undefined
+        const valueStr = typeof value === "boolean" 
+          ? value.toString() 
+          : (value === undefined || value === null ? "" : value as string);
         
-        await apiRequest("PATCH", `/api/settings/key/${setting.key}`, { 
-          value: valueStr
-        });
+        try {
+          await apiRequest("PATCH", `/api/settings/key/${setting.key}`, { 
+            value: valueStr
+          });
+        } catch (err) {
+          console.error(`Erro ao atualizar configuração ${setting.key}:`, err);
+          // Se uma configuração falhar, continua com as demais
+        }
       }
       
       // Mostrar mensagem de sucesso
