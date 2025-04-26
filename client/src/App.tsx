@@ -22,6 +22,7 @@ import PaintTypeList from "@/pages/paint-types/PaintTypeList";
 import PaintTypeForm from "@/pages/paint-types/PaintTypeForm";
 import OptionalTabs from "@/pages/optionals/OptionalTabs";
 import OptionalForm from "@/pages/optionals/OptionalForm";
+//import DirectSaleForm from "./pages/direct-sales/DirectSaleForm";
 import Configurator from "@/pages/configurator";
 import Settings from "@/pages/settings/Settings";
 import NotFound from "@/pages/not-found";
@@ -58,6 +59,13 @@ function Router() {
         <Route path="/vehicles" component={VehicleList} />
         <Route path="/vehicles/new" component={VehicleForm} />
         <Route path="/vehicles/:id/edit" component={VehicleForm} />
+        {/* Direct sales routes disabled until component is fixed */}
+        {/* <Route path="/direct-sales/new">
+          {() => <DirectSaleForm />}
+        </Route>
+        <Route path="/direct-sales/:id/edit">
+          {(params) => <DirectSaleForm id={parseInt(params.id)} />}
+        </Route> */}
         <Route path="/configurator" component={Configurator} />
         <Route path="/settings" component={Settings} />
         <Route component={NotFound} />

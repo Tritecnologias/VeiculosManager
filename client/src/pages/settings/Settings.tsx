@@ -3,6 +3,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { apiRequest } from "@/lib/queryClient";
+// import DirectSaleList from "../../pages/direct-sales/DirectSaleList";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -145,7 +146,7 @@ export default function Settings() {
       <Tabs defaultValue="general">
         <TabsList>
           <TabsTrigger value="general">Geral</TabsTrigger>
-          <TabsTrigger value="tax">Impostos</TabsTrigger>
+          <TabsTrigger value="direct-sales">Vendas Diretas</TabsTrigger>
           <TabsTrigger value="company">Empresa</TabsTrigger>
         </TabsList>
         
@@ -174,40 +175,20 @@ export default function Settings() {
           </Card>
         </TabsContent>
         
-        <TabsContent value="tax" className="space-y-4">
+        <TabsContent value="direct-sales" className="space-y-4">
+          {/* <DirectSaleList /> */}
           <Card>
             <CardHeader>
-              <CardTitle>Configurações de Impostos e Descontos</CardTitle>
+              <CardTitle>Vendas Diretas</CardTitle>
               <CardDescription>
-                Defina impostos e descontos para categorias especiais
+                Gerencie as vendas diretas com descontos específicos
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {taxSettings.map(setting => (
-                <div key={setting.id} className="grid gap-2">
-                  {setting.type === "boolean" ? (
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor={setting.key}>{setting.label}</Label>
-                      <Switch
-                        id={setting.key}
-                        checked={formData[setting.key] as boolean || false}
-                        onCheckedChange={(checked) => handleSwitchChange(setting.key, checked)}
-                      />
-                    </div>
-                  ) : (
-                    <>
-                      <Label htmlFor={setting.key}>{setting.label}</Label>
-                      <Input
-                        id={setting.key}
-                        name={setting.key}
-                        type={setting.type === "number" ? "number" : "text"}
-                        value={formData[setting.key] as string || ""}
-                        onChange={handleTextChange}
-                      />
-                    </>
-                  )}
-                </div>
-              ))}
+              <p>Funcionalidade de Vendas Diretas em desenvolvimento.</p>
+              <Button onClick={() => window.location.href = "/direct-sales/new"} disabled>
+                Nova Venda Direta
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>
