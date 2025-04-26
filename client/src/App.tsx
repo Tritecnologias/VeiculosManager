@@ -20,6 +20,8 @@ import VehicleList from "@/pages/vehicles/VehicleList";
 import VehicleForm from "@/pages/vehicles/VehicleFormFixed";
 import PaintTypeList from "@/pages/paint-types/PaintTypeList";
 import PaintTypeForm from "@/pages/paint-types/PaintTypeForm";
+import OptionalTabs from "@/pages/optionals/OptionalTabs";
+import OptionalForm from "@/pages/optionals/OptionalForm";
 import Configurator from "@/pages/configurator";
 import Settings from "@/pages/settings/Settings";
 import NotFound from "@/pages/not-found";
@@ -45,6 +47,13 @@ function Router() {
         </Route>
         <Route path="/paint-types/:id/edit">
           {(params) => <PaintTypeForm id={parseInt(params.id)} />}
+        </Route>
+        <Route path="/optionals" component={OptionalTabs} />
+        <Route path="/optionals/new">
+          {() => <OptionalForm />}
+        </Route>
+        <Route path="/optionals/:id/edit">
+          {(params) => <OptionalForm id={parseInt(params.id)} />}
         </Route>
         <Route path="/vehicles" component={VehicleList} />
         <Route path="/vehicles/new" component={VehicleForm} />
