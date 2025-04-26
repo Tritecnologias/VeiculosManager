@@ -118,7 +118,10 @@ export default function VehicleFormFixed() {
     enabled: isEditing,
   });
   
-  // Verificar se temos todos os dados carregados
+  // Estados para armazenar os nomes selecionados
+  const [selectedBrandName, setSelectedBrandName] = useState<string>("");
+  const [selectedModelName, setSelectedModelName] = useState<string>("");
+  const [selectedVersionName, setSelectedVersionName] = useState<string>("");
   const [dataWasLoaded, setDataWasLoaded] = useState(false);
   
   // Reset do formulário quando navegamos para outro veículo
@@ -147,6 +150,18 @@ export default function VehicleFormFixed() {
         const versionId = vehicle.versionId.toString();
         
         console.log(`Definindo marca=${brandId}, modelo=${modelId}, versão=${versionId}`);
+        
+        // Obter os nomes para exibição nos campos de seleção
+        const brandName = brands.find(b => b.id === vehicle.version.model.brandId)?.name || "";
+        const modelName = models.find(m => m.id === vehicle.version.modelId)?.name || "";
+        const versionName = versions.find(v => v.id === vehicle.versionId)?.name || "";
+        
+        // Armazenar os nomes
+        setSelectedBrandName(brandName);
+        setSelectedModelName(modelName);
+        setSelectedVersionName(versionName);
+        
+        console.log(`Nomes encontrados: marca=${brandName}, modelo=${modelName}, versão=${versionName}`);
         
         // Primeiro filtramos os modelos pela marca
         const modelsForBrand = models.filter(model => model.brandId === vehicle.version.model.brandId);
@@ -435,12 +450,17 @@ export default function VehicleFormFixed() {
                           <Select 
                             value={field.value} 
                             defaultValue={field.value}
-                            onValueChange={handleBrandChange}
+                            onValueChange={(value) => {
+                              handleBrandChange(value);
+                              // Atualizar nome ao selecionar
+                              const brandName = brands.find(b => b.id.toString() === value)?.name || "";
+                              setSelectedBrandName(brandName);
+                            }}
                           >
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Selecione uma marca">
-                                  {field.value && brands.find(b => b.id.toString() === field.value)?.name}
+                                  {selectedBrandName || (field.value && brands.find(b => b.id.toString() === field.value)?.name)}
                                 </SelectValue>
                               </SelectTrigger>
                             </FormControl>
@@ -453,6 +473,7 @@ export default function VehicleFormFixed() {
                             </SelectContent>
                           </Select>
                           <FormMessage />
+                          {field.value && !selectedBrandName && <div className="text-sm text-gray-500 pt-1">Marca selecionada: {brands.find(b => b.id.toString() === field.value)?.name}</div>}
                         </FormItem>
                       )}
                     />
@@ -467,13 +488,18 @@ export default function VehicleFormFixed() {
                           <Select 
                             value={field.value} 
                             defaultValue={field.value}
-                            onValueChange={handleModelChange}
+                            onValueChange={(value) => {
+                              handleModelChange(value);
+                              // Atualizar nome ao selecionar
+                              const modelName = models.find(m => m.id.toString() === value)?.name || "";
+                              setSelectedModelName(modelName);
+                            }}
                             disabled={!form.getValues("brandId")}
                           >
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Selecione um modelo">
-                                  {field.value && models.find(m => m.id.toString() === field.value)?.name}
+                                  {selectedModelName || (field.value && models.find(m => m.id.toString() === field.value)?.name)}
                                 </SelectValue>
                               </SelectTrigger>
                             </FormControl>
@@ -486,6 +512,7 @@ export default function VehicleFormFixed() {
                             </SelectContent>
                           </Select>
                           <FormMessage />
+                          {field.value && !selectedModelName && <div className="text-sm text-gray-500 pt-1">Modelo selecionado: {models.find(m => m.id.toString() === field.value)?.name}</div>}
                         </FormItem>
                       )}
                     />
@@ -500,13 +527,18 @@ export default function VehicleFormFixed() {
                           <Select 
                             value={field.value} 
                             defaultValue={field.value}
-                            onValueChange={field.onChange}
+                            onValueChange={(value) => {
+                              field.onChange(value);
+                              // Atualizar nome ao selecionar
+                              const versionName = versions.find(v => v.id.toString() === value)?.name || "";
+                              setSelectedVersionName(versionName);
+                            }}
                             disabled={!form.getValues("modelId")}
                           >
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Selecione uma versão">
-                                  {field.value && versions.find(v => v.id.toString() === field.value)?.name}
+                                  {selectedVersionName || (field.value && versions.find(v => v.id.toString() === field.value)?.name)}
                                 </SelectValue>
                               </SelectTrigger>
                             </FormControl>
@@ -519,6 +551,7 @@ export default function VehicleFormFixed() {
                             </SelectContent>
                           </Select>
                           <FormMessage />
+                          {field.value && !selectedVersionName && <div className="text-sm text-gray-500 pt-1">Versão selecionada: {versions.find(v => v.id.toString() === field.value)?.name}</div>}
                         </FormItem>
                       )}
                     />

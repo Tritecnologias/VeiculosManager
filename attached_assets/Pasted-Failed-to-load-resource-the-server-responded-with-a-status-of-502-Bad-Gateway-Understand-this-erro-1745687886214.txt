@@ -1,0 +1,54 @@
+Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this error
+edit:1 
+            
+            
+           Failed to load resource: the server responded with a status of 502 (Bad Gateway)Understand this error
+7Console.js:61 Inicializando formulário com id: 12 isEditing: true
+Console.js:61 Carregando dados do veículo para edição: Object
+Console.js:61 Modelos disponíveis: Array(16)
+Console.js:61 Versões disponíveis: Array(21)
+Console.js:61 Definindo marca=2, modelo=6, versão=12
+Console.js:61 Modelos filtrados: Array(4)
+Console.js:61 Versões filtradas: Array(3)
+Console.js:61 Formulário preenchido com dados do veículo
+2Console.js:61 Inicializando formulário com id: 12 isEditing: true
+
+                
+          
+          
+          
+         Chrome is moving towards a new experience that allows users to choose to browse without third-party cookies.Understand this warning
+
+                
+          
+          
+          
+         Chrome is moving towards a new experience that allows users to choose to browse without third-party cookies.Understand this warning
+2Console.js:61 Inicializando formulário com id: 12 isEditing: true
+Console.js:61 Botão Salvar clicado para editar
+Console.js:61 Inicializando formulário com id: 12 isEditing: true
+Console.js:61 Form submitted with values: {brandId: '2', modelId: '6', versionId: '12', colorId: '', year: 2025, …}
+Console.js:61 isEditing: true id: 12
+Console.js:61 Preparando para enviar dados para a API: {brandId: 2, modelId: 6, versionId: 12, colorId: null, year: 2025, …}
+Console.js:61 Enviando requisição PATCH para /api/vehicles/12
+Console.js:61 Dados enviados: {
+  "brandId": 2,
+  "modelId": 6,
+  "versionId": 12,
+  "colorId": null,
+  "year": 2025,
+  "publicPrice": "120.00",
+  "situation": "available",
+  "description": "Chevrolet Cruze",
+  "engine": "1.0",
+  "fuelType": "flex",
+  "transmission": "automatic",
+  "isActive": true,
+  "pcdIpiIcms": "0.07",
+  "pcdIpi": "0.08",
+  "taxiIpiIcms": "0.09",
+  "taxiIpi": "0.10"
+}
+Console.js:61 Inicializando formulário com id: 12 isEditing: true
+Console.js:61 Resposta da API: 200 OK
+Console.js:61 Dados da resposta: {id: 12, versionId: 12, colorId: null, year: 2025, publicPrice: '120.00', …}
