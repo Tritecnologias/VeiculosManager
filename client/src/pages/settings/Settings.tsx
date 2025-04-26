@@ -3,7 +3,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { apiRequest } from "@/lib/queryClient";
-// import DirectSaleList from "../../pages/direct-sales/DirectSaleList";
+import DirectSaleList from "../../pages/direct-sales/DirectSaleList";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -176,21 +176,7 @@ export default function Settings() {
         </TabsContent>
         
         <TabsContent value="direct-sales" className="space-y-4">
-          {/* <DirectSaleList /> */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Vendas Diretas</CardTitle>
-              <CardDescription>
-                Gerencie as vendas diretas com descontos específicos
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p>Funcionalidade de Vendas Diretas em desenvolvimento.</p>
-              <Button onClick={() => window.location.href = "/direct-sales/new"} disabled>
-                Nova Venda Direta
-              </Button>
-            </CardContent>
-          </Card>
+          <DirectSaleList />
         </TabsContent>
         
         <TabsContent value="company" className="space-y-4">
