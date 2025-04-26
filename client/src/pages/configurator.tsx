@@ -9,6 +9,7 @@ import { Brand, Model, Version, Color, Vehicle } from "@/lib/types";
 import { formatCurrency, formatConfiguratorCurrency } from "@/lib/formatters";
 import { apiRequest } from "@/lib/queryClient";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 function Configurator() {
@@ -69,6 +70,20 @@ function Configurator() {
     enabled: !!selectedVersionId,
   });
   
+  // Fetch version optionals para a versão selecionada
+  const { data: versionOptionals = [] } = useQuery<any[]>({
+    queryKey: ["/api/version-optionals", selectedVersionId],
+    queryFn: async () => {
+      if (!selectedVersionId) return [];
+      
+      console.log("Buscando opcionais para a versão:", selectedVersionId);
+      const response = await apiRequest("GET", `/api/version-optionals?versionId=${selectedVersionId}`);
+      console.log("Dados de opcionais para versão recebidos:", response);
+      return response;
+    },
+    enabled: !!selectedVersionId,
+  });
+  
   // Debug logs
   useEffect(() => {
     console.log("Brands loaded:", brands.length);
@@ -80,10 +95,13 @@ function Configurator() {
     if (versionColors.length > 0) {
       console.log("Version colors loaded:", versionColors);
     }
+    if (versionOptionals.length > 0) {
+      console.log("Version optionals loaded:", versionOptionals);
+    }
     if (directSales.length > 0) {
       console.log("Direct Sales data:", directSales);
     }
-  }, [brands, allModels, allVersions, allColors, allVehicles, versionColors, directSales]);
+  }, [brands, allModels, allVersions, allColors, allVehicles, versionColors, versionOptionals, directSales]);
   
   // Atualizar as cores disponíveis quando versionColors mudar
   useEffect(() => {
@@ -109,6 +127,10 @@ function Configurator() {
   
   // Filtered colors for the selected version
   const [availableColors, setAvailableColors] = useState<Color[]>([]);
+  
+  // Selected optionals
+  const [selectedOptionals, setSelectedOptionals] = useState<number[]>([]);
+  const [optionalsPrice, setOptionalsPrice] = useState(0);
   
   // Price calculations
   const [basePrice, setBasePrice] = useState(0);
@@ -293,7 +315,8 @@ function Configurator() {
       const markupAmountValue = parseFloat(markupAmount) || 0;
       const quantityValue = parseInt(quantity) || 1;
       
-      const subtotal = basePrice + colorPrice;
+      // Adiciona o preço da cor e dos opcionais selecionados ao preço base
+      const subtotal = basePrice + colorPrice + optionalsPrice;
       const withDiscount = subtotal - discountAmountValue;
       const withMarkup = withDiscount + markupAmountValue;
       const total = withMarkup * quantityValue;
@@ -304,12 +327,32 @@ function Configurator() {
       setTotalPrice(0);
       setFinalPrice(0);
     }
-  }, [basePrice, colorPrice, discountAmount, markupAmount, quantity]);
+  }, [basePrice, colorPrice, optionalsPrice, discountAmount, markupAmount, quantity]);
   
   // Reset selected price type when vehicle changes
   useEffect(() => {
     setSelectedPriceType(null);
+    setSelectedOptionals([]);
+    setOptionalsPrice(0);
   }, [selectedVehicle]);
+  
+  // Handle optional selection
+  const handleOptionalToggle = (optionalId: number, price: string) => {
+    setSelectedOptionals(prev => {
+      // Verificar se o opcional já está selecionado
+      const isSelected = prev.includes(optionalId);
+      
+      if (isSelected) {
+        // Se já estiver selecionado, remove
+        setOptionalsPrice(prevPrice => prevPrice - parseFloat(price));
+        return prev.filter(id => id !== optionalId);
+      } else {
+        // Se não estiver selecionado, adiciona
+        setOptionalsPrice(prevPrice => prevPrice + parseFloat(price));
+        return [...prev, optionalId];
+      }
+    });
+  };
   
   // Handle price card selection
   const handlePriceCardClick = (priceType: string | null) => {
@@ -580,9 +623,39 @@ function Configurator() {
                         <AccordionItem value="opcionais">
                           <AccordionTrigger>OPCIONAIS</AccordionTrigger>
                           <AccordionContent>
-                            <div className="py-2 text-center text-gray-500">
-                              NÃO HÁ OPCIONAIS PARA ESSE MODELO!
-                            </div>
+                            {versionOptionals && versionOptionals.length > 0 ? (
+                              <div className="grid grid-cols-1 gap-3">
+                                {versionOptionals.map(opt => (
+                                  <div key={opt.id} className="p-3 border rounded-md flex justify-between items-center">
+                                    <div className="flex items-center gap-3">
+                                      <Checkbox 
+                                        id={`optional-${opt.id}`} 
+                                        checked={selectedOptionals.includes(opt.optionalId)}
+                                        onCheckedChange={() => handleOptionalToggle(opt.optionalId, opt.price)}
+                                      />
+                                      <div>
+                                        <label htmlFor={`optional-${opt.id}`} className="font-medium cursor-pointer">
+                                          {opt.optional?.name}
+                                        </label>
+                                        <p className="text-sm text-gray-500">{opt.optional?.description}</p>
+                                      </div>
+                                    </div>
+                                    <div className="text-right">
+                                      <div className="font-bold">{formatCurrency(parseFloat(opt.price))}</div>
+                                      {opt.optional?.imageUrl && (
+                                        <button className="text-xs text-blue-500 underline mt-1">
+                                          Ver imagem
+                                        </button>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="py-2 text-center text-gray-500">
+                                NÃO HÁ OPCIONAIS PARA ESSE MODELO!
+                              </div>
+                            )}
                           </AccordionContent>
                         </AccordionItem>
                       </Accordion>
