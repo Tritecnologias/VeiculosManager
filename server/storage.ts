@@ -338,14 +338,26 @@ export async function createVehicle(data: VehicleInsert) {
 }
 
 export async function updateVehicle(id: number, data: VehicleInsert) {
-  const [updatedVehicle] = await db.update(vehicles)
-    .set({ ...data, updatedAt: new Date() })
-    .where(eq(vehicles.id, id))
-    .returning();
+  console.log(`[updateVehicle] Attempting to update vehicle with ID ${id}`);
+  console.log('[updateVehicle] Data:', JSON.stringify(data, null, 2));
   
-  if (!updatedVehicle) return null;
-  
-  return getVehicleById(updatedVehicle.id);
+  try {
+    const [updatedVehicle] = await db.update(vehicles)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(vehicles.id, id))
+      .returning();
+    
+    console.log('[updateVehicle] Update result:', updatedVehicle ? 'Success' : 'Not found');
+    
+    if (!updatedVehicle) return null;
+    
+    const result = await getVehicleById(updatedVehicle.id);
+    console.log('[updateVehicle] Retrieved updated vehicle successfully');
+    return result;
+  } catch (error) {
+    console.error('[updateVehicle] Error updating vehicle:', error);
+    throw error;
+  }
 }
 
 export async function deleteVehicle(id: number) {

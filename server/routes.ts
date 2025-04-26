@@ -503,23 +503,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.patch(`${apiPrefix}/vehicles/:id`, async (req, res) => {
+    console.log(`[PATCH /api/vehicles/:id] Received request to update vehicle ID: ${req.params.id}`);
+    console.log('[PATCH /api/vehicles/:id] Request body:', JSON.stringify(req.body, null, 2));
+    
     try {
       const id = parseInt(req.params.id);
-      const validatedData = vehicleInsertSchema.parse(req.body);
+      console.log(`[PATCH /api/vehicles/:id] Parsed ID: ${id}`);
       
-      const updatedVehicle = await storage.updateVehicle(id, validatedData);
-      
-      if (!updatedVehicle) {
-        return res.status(404).json({ message: "Vehicle not found" });
+      try {
+        const validatedData = vehicleInsertSchema.parse(req.body);
+        console.log('[PATCH /api/vehicles/:id] Data validated successfully with schema');
+        
+        console.log('[PATCH /api/vehicles/:id] Calling storage.updateVehicle...');
+        const updatedVehicle = await storage.updateVehicle(id, validatedData);
+        
+        if (!updatedVehicle) {
+          console.log(`[PATCH /api/vehicles/:id] Vehicle with ID ${id} not found`);
+          return res.status(404).json({ message: "Vehicle not found" });
+        }
+        
+        console.log('[PATCH /api/vehicles/:id] Vehicle updated successfully, sending response');
+        return res.json(updatedVehicle);
+      } catch (zodError) {
+        if (zodError instanceof z.ZodError) {
+          console.error('[PATCH /api/vehicles/:id] Validation error:', zodError.errors);
+          return res.status(400).json({ errors: zodError.errors });
+        }
+        throw zodError; // Re-throw if not a Zod error
       }
-      
-      res.json(updatedVehicle);
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ errors: error.errors });
-      }
-      console.error("Error updating vehicle:", error);
-      res.status(500).json({ message: "Failed to update vehicle" });
+      console.error('[PATCH /api/vehicles/:id] Server error:', error);
+      return res.status(500).json({ message: "Failed to update vehicle", error: error.message });
     }
   });
 
