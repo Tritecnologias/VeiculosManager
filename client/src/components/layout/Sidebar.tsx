@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Home, Car, Building, FileText, Palette, Settings } from "lucide-react";
+import { Home, Car, Building, FileText, Palette, Settings, ListPlus } from "lucide-react";
 
 export default function Sidebar() {
   const [location] = useLocation();
@@ -50,6 +50,12 @@ export default function Sidebar() {
               <Link href="/paint-types" className={`sidebar-item ${location.startsWith('/paint-types') ? 'active' : ''}`}>
                 <Palette className="h-5 w-5 mr-2" />
                 Tipos de Pintura
+              </Link>
+            </li>
+            <li>
+              <Link href="/optionals" className={`sidebar-item ${location.startsWith('/optionals') ? 'active' : ''}`}>
+                <ListPlus className="h-5 w-5 mr-2" />
+                Opcionais
               </Link>
             </li>
             <li>
