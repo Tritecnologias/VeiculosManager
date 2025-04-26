@@ -616,11 +616,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const key = req.params.key;
       const { value } = req.body;
       
-      if (!value) {
+      // Permitir valor vazio para logo da empresa
+      if (value === undefined && key !== 'company_logo_url') {
         return res.status(400).json({ message: "Value is required" });
       }
       
-      const updatedSetting = await storage.updateSettingByKey(key, value);
+      const updatedSetting = await storage.updateSettingByKey(key, value || '');
       
       if (!updatedSetting) {
         return res.status(404).json({ message: "Setting not found" });

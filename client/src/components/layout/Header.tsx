@@ -26,9 +26,6 @@ export default function Header() {
             ) : (
               <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
-                {!removeDealer && (
-                  <text x="0" y="23" className="text-xs" fill="currentColor">Dealers</text>
-                )}
               </svg>
             )}
             <span className="ml-2 text-xl font-semibold text-primary">{companyName}</span>

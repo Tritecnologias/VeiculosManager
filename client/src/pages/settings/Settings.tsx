@@ -113,7 +113,7 @@ export default function Settings() {
   // Agrupar configurações por tipo
   const generalSettings = settings.filter(s => ["admin_email", "default_currency"].includes(s.key));
   const taxSettings = settings.filter(s => ["tax_rate", "enable_pcd_discounts"].includes(s.key));
-  const companySettings = settings.filter(s => ["company_name", "company_logo_url", "remove_dealer_text"].includes(s.key));
+  const companySettings = settings.filter(s => ["company_name", "company_logo_url"].includes(s.key));
   
   return (
     <div className="space-y-6">
@@ -237,40 +237,7 @@ export default function Settings() {
                 />
               </div>
               
-              {/* Opção para remover texto "Dealers" do logo */}
-              <div className="grid gap-2 pt-2">
-                <Label htmlFor="remove_dealer_text">Texto "Dealers" no logo padrão</Label>
-                <div className="flex items-center gap-4 rounded-md border p-4">
-                  <div className="flex flex-col gap-0.5">
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="radio"
-                        id="show_dealer_text"
-                        name="remove_dealer_text"
-                        checked={formData["remove_dealer_text"] !== true}
-                        onChange={() => handleSwitchChange("remove_dealer_text", false)}
-                        className="h-4 w-4 border-gray-300 text-primary focus:ring-primary"
-                      />
-                      <Label htmlFor="show_dealer_text" className="text-sm font-normal">
-                        Exibir texto "Dealers"
-                      </Label>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="radio"
-                        id="hide_dealer_text"
-                        name="remove_dealer_text"
-                        checked={formData["remove_dealer_text"] === true}
-                        onChange={() => handleSwitchChange("remove_dealer_text", true)}
-                        className="h-4 w-4 border-gray-300 text-primary focus:ring-primary"
-                      />
-                      <Label htmlFor="hide_dealer_text" className="text-sm font-normal">
-                        Remover texto "Dealers"
-                      </Label>
-                    </div>
-                  </div>
-                </div>
-              </div>
+
             </CardContent>
           </Card>
         </TabsContent>
