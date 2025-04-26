@@ -354,20 +354,84 @@ export default function VehicleFormFixed() {
             : "O novo veículo foi cadastrado com sucesso."
         });
         
-        // Invalidar cache
+        // Invalidar cache para garantir que os dados mais recentes sejam carregados
         queryClient.invalidateQueries({ queryKey: ["/api/vehicles"] });
         
         if (isEditing) {
-          // Limpar os estados de nomes para evitar problemas com futuras edições
-          setSelectedBrandName("");
-          setSelectedModelName("");
-          setSelectedVersionName("");
-          setDataWasLoaded(false);
+          // Invalidar a consulta específica deste veículo para forçar recarregar
+          queryClient.invalidateQueries({ queryKey: [`/api/vehicles/${id}`] });
           
-          // Se estiver editando, navegue de volta para a lista após um pequeno delay
-          setTimeout(() => {
-            navigate("/vehicles");
-          }, 500);
+          // Atualizar os dados no formulário com os valores recém-salvos
+          toast({
+            title: "Dados atualizados",
+            description: "Os valores foram salvos. Recarregando formulário com dados atualizados.",
+          });
+          
+          // Recarregar os dados do veículo após um pequeno delay
+          setTimeout(async () => {
+            try {
+              // Buscar os dados atualizados diretamente
+              const response = await fetch(`/api/vehicles/${id}`);
+              if (!response.ok) throw new Error("Falha ao recarregar dados do veículo");
+              
+              const updatedVehicle = await response.json();
+              
+              // Garantir que todos os estados e dados do formulário sejam atualizados
+              if (updatedVehicle) {
+                console.log("Dados atualizados recebidos:", updatedVehicle);
+                
+                // Atualizar os nomes selecionados
+                const brandName = brands.find(b => b.id === updatedVehicle.version.model.brandId)?.name || "";
+                const modelName = models.find(m => m.id === updatedVehicle.version.modelId)?.name || "";
+                const versionName = versions.find(v => v.id === updatedVehicle.versionId)?.name || "";
+                
+                setSelectedBrandName(brandName);
+                setSelectedModelName(modelName);
+                setSelectedVersionName(versionName);
+                
+                // Atualizar os modelos e versões filtrados
+                setFilteredModels(models.filter(model => model.brandId === updatedVehicle.version.model.brandId));
+                setFilteredVersions(versions.filter(version => version.modelId === updatedVehicle.version.modelId));
+                
+                // Atualizar o formulário com os valores mais recentes
+                form.reset({
+                  brandId: updatedVehicle.version.model.brandId.toString(),
+                  modelId: updatedVehicle.version.modelId.toString(),
+                  versionId: updatedVehicle.versionId.toString(),
+                  colorId: updatedVehicle.colorId ? updatedVehicle.colorId.toString() : "",
+                  year: updatedVehicle.year,
+                  publicPrice: formatBRCurrency(Number(updatedVehicle.publicPrice)),
+                  situation: updatedVehicle.situation,
+                  description: updatedVehicle.description,
+                  engine: updatedVehicle.engine,
+                  fuelType: updatedVehicle.fuelType,
+                  transmission: updatedVehicle.transmission,
+                  isActive: updatedVehicle.isActive,
+                  pcdIpiIcms: formatBRCurrency(Number(updatedVehicle.pcdIpiIcms)),
+                  pcdIpi: formatBRCurrency(Number(updatedVehicle.pcdIpi)),
+                  taxiIpiIcms: formatBRCurrency(Number(updatedVehicle.taxiIpiIcms)),
+                  taxiIpi: formatBRCurrency(Number(updatedVehicle.taxiIpi))
+                });
+                
+                toast({
+                  title: "Formulário atualizado",
+                  description: "Dados atualizados com sucesso.",
+                });
+              }
+            } catch (error) {
+              console.error("Erro ao recarregar dados do veículo:", error);
+              toast({
+                title: "Erro ao recarregar",
+                description: "Não foi possível recarregar os dados atualizados.",
+                variant: "destructive"
+              });
+              
+              // Navegar de volta para a lista em caso de erro
+              navigate("/vehicles");
+            } finally {
+              setDataWasLoaded(true);
+            }
+          }, 800);
         } else {
           // Se estiver criando um novo, limpe o formulário
           form.reset({
