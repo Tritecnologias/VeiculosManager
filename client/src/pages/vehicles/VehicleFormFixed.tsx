@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link, useParams, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -118,51 +118,65 @@ export default function VehicleFormFixed() {
     enabled: isEditing,
   });
   
+  // Verificar se temos todos os dados carregados
+  const [dataWasLoaded, setDataWasLoaded] = useState(false);
+  
+  // Reset do formulário quando navegamos para outro veículo
+  useEffect(() => {
+    if (isEditing && id) {
+      // Resetar o estado para permitir carregar novos dados de outro veículo
+      setDataWasLoaded(false);
+    }
+  }, [id, isEditing]);
+  
   // Preencher o formulário com os dados do veículo quando estiver editando
   useEffect(() => {
-    if (vehicle && isEditing) {
+    // Só executamos se todos os dados necessários estiverem disponíveis
+    if (vehicle && isEditing && models.length > 0 && versions.length > 0 && !dataWasLoaded) {
       console.log("Carregando dados do veículo para edição:", vehicle);
+      console.log("Modelos disponíveis:", models);
+      console.log("Versões disponíveis:", versions);
       
       try {
+        // Evitar recarregar os dados várias vezes
+        setDataWasLoaded(true);
+        
         // Carregar dados relacionados de forma consistente
         const brandId = vehicle.version.model.brandId.toString();
         const modelId = vehicle.version.modelId.toString();
         const versionId = vehicle.versionId.toString();
         
-        // Primeiro definimos a marca para disparar a filtragem
-        form.setValue("brandId", brandId);
+        console.log(`Definindo marca=${brandId}, modelo=${modelId}, versão=${versionId}`);
         
-        // Filtra modelos pela marca manualmente para garantir que sejam carregados
+        // Primeiro filtramos os modelos pela marca
         const modelsForBrand = models.filter(model => model.brandId === vehicle.version.model.brandId);
         setFilteredModels(modelsForBrand);
         console.log("Modelos filtrados:", modelsForBrand);
         
-        // Define o modelo manualmente
-        form.setValue("modelId", modelId);
-        
-        // Filtra versões pelo modelo manualmente
+        // Filtramos as versões pelo modelo
         const versionsForModel = versions.filter(version => version.modelId === vehicle.version.modelId);
         setFilteredVersions(versionsForModel);
         console.log("Versões filtradas:", versionsForModel);
         
-        // Define todos os valores restantes com formatação adequada em duas etapas
-        // Primeiro os campos de relacionamento
-        form.setValue("versionId", versionId);
-        form.setValue("colorId", vehicle.colorId ? vehicle.colorId.toString() : "");
-        
-        // Depois os outros campos
-        form.setValue("year", vehicle.year);
-        form.setValue("publicPrice", formatBRCurrency(Number(vehicle.publicPrice)));
-        form.setValue("situation", vehicle.situation);
-        form.setValue("description", vehicle.description);
-        form.setValue("engine", vehicle.engine);
-        form.setValue("fuelType", vehicle.fuelType);
-        form.setValue("transmission", vehicle.transmission);
-        form.setValue("isActive", vehicle.isActive);
-        form.setValue("pcdIpiIcms", formatBRCurrency(Number(vehicle.pcdIpiIcms)));
-        form.setValue("pcdIpi", formatBRCurrency(Number(vehicle.pcdIpi)));
-        form.setValue("taxiIpiIcms", formatBRCurrency(Number(vehicle.taxiIpiIcms)));
-        form.setValue("taxiIpi", formatBRCurrency(Number(vehicle.taxiIpi)));
+        // Definimos TODOS os valores do formulário de uma vez só para evitar problemas de ordem
+        form.reset({
+          brandId: brandId,
+          modelId: modelId,
+          versionId: versionId,
+          colorId: vehicle.colorId ? vehicle.colorId.toString() : "",
+          year: vehicle.year,
+          publicPrice: formatBRCurrency(Number(vehicle.publicPrice)),
+          situation: vehicle.situation,
+          description: vehicle.description,
+          engine: vehicle.engine,
+          fuelType: vehicle.fuelType,
+          transmission: vehicle.transmission,
+          isActive: vehicle.isActive,
+          pcdIpiIcms: formatBRCurrency(Number(vehicle.pcdIpiIcms)),
+          pcdIpi: formatBRCurrency(Number(vehicle.pcdIpi)),
+          taxiIpiIcms: formatBRCurrency(Number(vehicle.taxiIpiIcms)),
+          taxiIpi: formatBRCurrency(Number(vehicle.taxiIpi))
+        });
         
         console.log("Formulário preenchido com dados do veículo");
       } catch (error) {
