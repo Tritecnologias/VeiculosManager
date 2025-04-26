@@ -316,6 +316,12 @@ export default function VehicleFormFixed() {
       
       console.log("Preparando para enviar dados para a API:", vehicleData);
       
+      // Adicionar logs detalhados para depuração dos campos de marca, modelo e versão
+      console.log("DEPURAÇÃO - Valores sendo enviados:");
+      console.log("brandId:", vehicleData.brandId, "tipo:", typeof vehicleData.brandId);
+      console.log("modelId:", vehicleData.modelId, "tipo:", typeof vehicleData.modelId);
+      console.log("versionId:", vehicleData.versionId, "tipo:", typeof vehicleData.versionId);
+      
       // Tentativa de submissão direta com fetch para diagnóstico
       try {
         const endpoint = isEditing ? `/api/vehicles/${id}` : "/api/vehicles";
@@ -387,10 +393,21 @@ export default function VehicleFormFixed() {
               if (updatedVehicle) {
                 console.log("Dados atualizados recebidos:", updatedVehicle);
                 
+                // Verificar estrutura do objeto updatedVehicle
+                console.log("ESTRUTURA updateVehicle:", 
+                  "versionId=", updatedVehicle.versionId,
+                  "version=", updatedVehicle.version,
+                  "version.modelId=", updatedVehicle.version?.modelId,
+                  "version.model=", updatedVehicle.version?.model,
+                  "version.model.brandId=", updatedVehicle.version?.model?.brandId
+                );
+                
                 // Atualizar os nomes selecionados
                 const brandName = brands.find(b => b.id === updatedVehicle.version.model.brandId)?.name || "";
                 const modelName = models.find(m => m.id === updatedVehicle.version.modelId)?.name || "";
                 const versionName = versions.find(v => v.id === updatedVehicle.versionId)?.name || "";
+                
+                console.log("Nomes atualizados:", {brandName, modelName, versionName});
                 
                 setSelectedBrandName(brandName);
                 setSelectedModelName(modelName);
@@ -568,7 +585,7 @@ export default function VehicleFormFixed() {
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Selecione uma marca">
-                                  {selectedBrandName || (field.value && brands.find(b => b.id.toString() === field.value)?.name)}
+                                  {selectedBrandName || (field.value && brands.find(b => b.id.toString() === field.value)?.name) || "Selecione uma marca"}
                                 </SelectValue>
                               </SelectTrigger>
                             </FormControl>
@@ -607,7 +624,7 @@ export default function VehicleFormFixed() {
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Selecione um modelo">
-                                  {selectedModelName || (field.value && models.find(m => m.id.toString() === field.value)?.name)}
+                                  {selectedModelName || (field.value && models.find(m => m.id.toString() === field.value)?.name) || "Selecione um modelo"}
                                 </SelectValue>
                               </SelectTrigger>
                             </FormControl>
@@ -646,7 +663,7 @@ export default function VehicleFormFixed() {
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Selecione uma versão">
-                                  {selectedVersionName || (field.value && versions.find(v => v.id.toString() === field.value)?.name)}
+                                  {selectedVersionName || (field.value && versions.find(v => v.id.toString() === field.value)?.name) || "Selecione uma versão"}
                                 </SelectValue>
                               </SelectTrigger>
                             </FormControl>
