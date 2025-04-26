@@ -391,10 +391,10 @@ function Configurator() {
     const markupAmountValue = parseFloat(markupAmount) || 0;
     const quantityValue = parseInt(quantity) || 1;
     
-    // Adiciona o preço da cor
-    const withColor = currentBase + colorPrice;
+    // Adiciona o preço da cor e dos opcionais selecionados
+    const withAdditions = currentBase + colorPrice + optionalsPrice;
     // Subtrai o desconto
-    const withDiscount = withColor - discountAmountValue;
+    const withDiscount = withAdditions - discountAmountValue;
     // Adiciona o ágio
     const withMarkup = withDiscount + markupAmountValue;
     // Multiplica pela quantidade
@@ -621,7 +621,9 @@ function Configurator() {
                     <TabsContent value="equipamentos" className="p-4 border rounded-md mt-2">
                       <Accordion type="single" collapsible>
                         <AccordionItem value="opcionais">
-                          <AccordionTrigger>OPCIONAIS</AccordionTrigger>
+                          <AccordionTrigger>
+                            OPCIONAIS {selectedOptionals.length > 0 && `(${selectedOptionals.length} selecionados)`}
+                          </AccordionTrigger>
                           <AccordionContent>
                             {versionOptionals && versionOptionals.length > 0 ? (
                               <div className="grid grid-cols-1 gap-3">
@@ -704,13 +706,18 @@ function Configurator() {
                       </Card>
                       
                       <Card className="p-4">
-                        <div className="text-xs mb-1">Pintura + Opcionais</div>
+                        <div className="text-xs mb-1">Pintura</div>
                         <div className="font-bold">{formatCurrency(colorPrice)}</div>
                       </Card>
                       
                       <Card className="p-4">
+                        <div className="text-xs mb-1">Opcionais {selectedOptionals.length > 0 && `(${selectedOptionals.length})`}</div>
+                        <div className="font-bold">{formatCurrency(optionalsPrice)}</div>
+                      </Card>
+                      
+                      <Card className="p-4">
                         <div className="text-xs mb-1">Total</div>
-                        <div className="font-bold">{formatCurrency(getCurrentBasePrice() + colorPrice)}</div>
+                        <div className="font-bold">{formatCurrency(getCurrentBasePrice() + colorPrice + optionalsPrice)}</div>
                       </Card>
                       
                       <Card className="p-4">
