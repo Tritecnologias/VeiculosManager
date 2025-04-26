@@ -420,8 +420,8 @@ function Configurator() {
         <CardHeader className="bg-primary text-white">
           <CardTitle className="text-xl">Configurador</CardTitle>
         </CardHeader>
-        <CardContent className="p-6">
-          <div className="grid grid-cols-3 gap-4 mb-6">
+        <CardContent className="p-4 sm:p-6">
+          <div className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-3'} gap-4 mb-6`}>
             <div>
               <Label htmlFor="brand-select">Marca</Label>
               <Select 
@@ -491,9 +491,9 @@ function Configurator() {
                 FLEX MY{selectedVehicle.year}
               </h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div>
-                  <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div className={`grid ${isMobile ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-2'} gap-4 mb-6`}>
                     <Card 
                       className={`p-4 cursor-pointer ${selectedPriceType === null ? 'border-primary border-2' : ''}`}
                       onClick={() => handlePriceCardClick(null)}
@@ -537,7 +537,7 @@ function Configurator() {
                     </Card>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div className={`grid ${isMobile ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-2'} gap-4 mb-6`}>
                     <div>
                       <Label htmlFor="direct-sale-select">DESCONTOS VENDA DIRETA</Label>
                       <Select 
@@ -682,7 +682,7 @@ function Configurator() {
                 
                 <div>
                   <h4 className="text-lg font-semibold mb-4">Pinturas</h4>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                  <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6`}>
                     {availableColors.map(color => (
                       <button 
                         key={color.id} 
