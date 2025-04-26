@@ -82,22 +82,7 @@ export default function Header() {
       
       <nav className="bg-primary">
         <div className="max-w-full mx-auto px-4">
-          {isMobile ? (
-            <div className="py-2">
-              <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
-                <SheetTrigger asChild>
-                  <button className="text-white p-2">
-                    <Menu className="h-6 w-6" />
-                  </button>
-                </SheetTrigger>
-                <SheetContent side="top" className="bg-primary pt-10">
-                  <div className="flex flex-col space-y-2 text-white">
-                    <MenuLinks />
-                  </div>
-                </SheetContent>
-              </Sheet>
-            </div>
-          ) : (
+          {!isMobile && (
             <div className="flex">
               <div className="flex space-x-1">
                 <MenuLinks />

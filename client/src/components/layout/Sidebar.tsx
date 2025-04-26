@@ -79,7 +79,7 @@ export default function Sidebar() {
       <div>
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
-            <button className="p-2 fixed top-4 left-4 z-40 bg-white rounded-md shadow-md">
+            <button className="p-2 fixed top-16 left-4 z-40 bg-white rounded-md shadow-md">
               <Menu className="h-6 w-6" />
             </button>
           </SheetTrigger>
