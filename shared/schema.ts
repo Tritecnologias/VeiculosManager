@@ -220,3 +220,28 @@ export const settingsInsertSchema = createInsertSchema(settings, {
 export type SettingsInsert = z.infer<typeof settingsInsertSchema>;
 export const settingsSelectSchema = createSelectSchema(settings);
 export type Settings = z.infer<typeof settingsSelectSchema>;
+
+// Definição da tabela de Vendas Diretas
+export const directSales = pgTable("direct_sales", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  discountPercentage: decimal("discount_percentage", { precision: 5, scale: 2 }).notNull(),
+  brandId: integer("brand_id").references(() => brands.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull()
+});
+
+export const directSalesRelations = relations(directSales, ({ one }) => ({
+  brand: one(brands, {
+    fields: [directSales.brandId],
+    references: [brands.id]
+  })
+}));
+
+export const directSalesInsertSchema = createInsertSchema(directSales, {
+  name: (schema) => schema.min(2, "Nome deve ter pelo menos 2 caracteres"),
+  discountPercentage: (schema) => schema.min(0, "Percentual de desconto não pode ser negativo")
+});
+export type DirectSaleInsert = z.infer<typeof directSalesInsertSchema>;
+export const directSalesSelectSchema = createSelectSchema(directSales);
+export type DirectSale = z.infer<typeof directSalesSelectSchema>;

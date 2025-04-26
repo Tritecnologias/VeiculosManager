@@ -11,6 +11,7 @@ import {
   settings,
   optionals,
   versionOptionals,
+  directSales,
   BrandInsert,
   ModelInsert,
   VersionInsert,
@@ -20,7 +21,8 @@ import {
   PaintTypeInsert,
   SettingsInsert,
   OptionalInsert,
-  VersionOptionalInsert
+  VersionOptionalInsert,
+  DirectSaleInsert
 } from "@shared/schema";
 
 // Brands
