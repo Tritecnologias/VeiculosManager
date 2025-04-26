@@ -119,6 +119,7 @@ function Configurator() {
   const [taxiIpiPrice, setTaxiIpiPrice] = useState(0);
   const [totalPrice, setTotalPrice] = useState(0);
   const [finalPrice, setFinalPrice] = useState(0);
+  const [selectedPriceType, setSelectedPriceType] = useState<string | null>(null);
   
   // Select a brand
   const handleBrandChange = (brandId: string) => {
@@ -305,6 +306,58 @@ function Configurator() {
     }
   }, [basePrice, colorPrice, discountAmount, markupAmount, quantity]);
   
+  // Reset selected price type when vehicle changes
+  useEffect(() => {
+    setSelectedPriceType(null);
+  }, [selectedVehicle]);
+  
+  // Handle price card selection
+  const handlePriceCardClick = (priceType: string | null) => {
+    // Se o mesmo cartão for clicado novamente, desmarque-o
+    if (selectedPriceType === priceType) {
+      setSelectedPriceType(null);
+    } else {
+      setSelectedPriceType(priceType);
+    }
+  };
+  
+  // Calcula o preço atual com base no tipo de preço selecionado
+  const getCurrentBasePrice = () => {
+    if (!selectedPriceType) return basePrice;
+    
+    switch (selectedPriceType) {
+      case 'pcdIpi':
+        return pcdIpiPrice;
+      case 'taxiIpiIcms':
+        return taxiIpiIcmsPrice;
+      case 'pcdIpiIcms':
+        return pcdIpiIcmsPrice;
+      case 'taxiIpi':
+        return taxiIpiPrice;
+      default:
+        return basePrice;
+    }
+  };
+  
+  // Calcula o preço final com base no tipo de preço selecionado
+  const getCurrentFinalPrice = () => {
+    if (!selectedPriceType) return finalPrice;
+    
+    const currentBase = getCurrentBasePrice();
+    const discountAmountValue = parseFloat(discountAmount) || 0;
+    const markupAmountValue = parseFloat(markupAmount) || 0;
+    const quantityValue = parseInt(quantity) || 1;
+    
+    // Adiciona o preço da cor
+    const withColor = currentBase + colorPrice;
+    // Subtrai o desconto
+    const withDiscount = withColor - discountAmountValue;
+    // Adiciona o ágio
+    const withMarkup = withDiscount + markupAmountValue;
+    // Multiplica pela quantidade
+    return withMarkup * quantityValue;
+  };
+  
   // Get color card background style
   const getColorStyle = (hexCode: string) => {
     return {
@@ -396,29 +449,44 @@ function Configurator() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <div className="grid grid-cols-2 gap-4 mb-6">
-                    <Card className="p-4">
+                    <Card 
+                      className={`p-4 cursor-pointer ${selectedPriceType === null ? 'border-primary border-2' : ''}`}
+                      onClick={() => handlePriceCardClick(null)}
+                    >
                       <div className="text-xs mb-1">PREÇO PÚBLICO</div>
                       <div className="font-bold">{formatCurrency(basePrice)}</div>
                     </Card>
                     
                     {/* Card Zona Franca foi removido conforme solicitado */}
                     
-                    <Card className="p-4 bg-slate-100">
+                    <Card 
+                      className={`p-4 bg-slate-100 cursor-pointer ${selectedPriceType === 'pcdIpi' ? 'border-primary border-2' : ''}`}
+                      onClick={() => handlePriceCardClick('pcdIpi')}
+                    >
                       <div className="text-xs mb-1">PCD IPI</div>
                       <div className="font-bold">{formatCurrency(pcdIpiPrice)}</div>
                     </Card>
                     
-                    <Card className="p-4 bg-slate-100">
+                    <Card 
+                      className={`p-4 bg-slate-100 cursor-pointer ${selectedPriceType === 'taxiIpiIcms' ? 'border-primary border-2' : ''}`}
+                      onClick={() => handlePriceCardClick('taxiIpiIcms')}
+                    >
                       <div className="text-xs mb-1">TAXI IPI/ICMS</div>
                       <div className="font-bold">{formatCurrency(taxiIpiIcmsPrice)}</div>
                     </Card>
                     
-                    <Card className="p-4 bg-slate-100">
+                    <Card 
+                      className={`p-4 bg-slate-100 cursor-pointer ${selectedPriceType === 'pcdIpiIcms' ? 'border-primary border-2' : ''}`}
+                      onClick={() => handlePriceCardClick('pcdIpiIcms')}
+                    >
                       <div className="text-xs mb-1">PCD IPI/ICMS</div>
                       <div className="font-bold">{formatCurrency(pcdIpiIcmsPrice)}</div>
                     </Card>
                     
-                    <Card className="p-4 bg-slate-100">
+                    <Card 
+                      className={`p-4 bg-slate-100 cursor-pointer ${selectedPriceType === 'taxiIpi' ? 'border-primary border-2' : ''}`}
+                      onClick={() => handlePriceCardClick('taxiIpi')}
+                    >
                       <div className="text-xs mb-1">TAXI IPI</div>
                       <div className="font-bold">{formatCurrency(taxiIpiPrice)}</div>
                     </Card>
@@ -558,8 +626,8 @@ function Configurator() {
                     <h4 className="text-lg font-semibold mb-4">Resumo e Valores Finais</h4>
                     <div className="grid grid-cols-2 gap-4 mb-4">
                       <Card className="p-4">
-                        <div className="text-xs mb-1">Preço Público</div>
-                        <div className="font-bold">{formatCurrency(basePrice)}</div>
+                        <div className="text-xs mb-1">Preço Base</div>
+                        <div className="font-bold">{formatCurrency(getCurrentBasePrice())}</div>
                       </Card>
                       
                       <Card className="p-4">
@@ -569,18 +637,18 @@ function Configurator() {
                       
                       <Card className="p-4">
                         <div className="text-xs mb-1">Total</div>
-                        <div className="font-bold">{formatCurrency(totalPrice)}</div>
+                        <div className="font-bold">{formatCurrency(getCurrentBasePrice() + colorPrice)}</div>
                       </Card>
                       
                       <Card className="p-4">
                         <div className="text-xs mb-1">Desc. {discountPercent}%</div>
-                        <div className="font-bold">{formatCurrency(parseFloat(discountAmount))}</div>
+                        <div className="font-bold">{formatConfiguratorCurrency(parseFloat(discountAmount))}</div>
                       </Card>
                     </div>
                     
                     <Card className="p-4 bg-primary text-white">
                       <div className="text-sm mb-1">Preço Final x{quantity}</div>
-                      <div className="text-xl font-bold">{formatCurrency(finalPrice)}</div>
+                      <div className="text-xl font-bold">{formatCurrency(getCurrentFinalPrice())}</div>
                     </Card>
                     
                     <div className="mt-6">
