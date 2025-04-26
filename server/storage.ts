@@ -9,6 +9,8 @@ import {
   versionColors,
   paintTypes,
   settings,
+  optionals,
+  versionOptionals,
   BrandInsert,
   ModelInsert,
   VersionInsert,
@@ -16,7 +18,9 @@ import {
   VehicleInsert,
   VersionColorInsert,
   PaintTypeInsert,
-  SettingsInsert
+  SettingsInsert,
+  OptionalInsert,
+  VersionOptionalInsert
 } from "@shared/schema";
 
 // Brands
@@ -393,6 +397,126 @@ export async function deleteSetting(id: number) {
   return setting;
 }
 
+// Opcionais
+export async function getOptionals() {
+  return db.query.optionals.findMany({
+    orderBy: optionals.name
+  });
+}
+
+export async function getOptionalById(id: number) {
+  return db.query.optionals.findFirst({
+    where: eq(optionals.id, id)
+  });
+}
+
+export async function createOptional(data: OptionalInsert) {
+  const [newOptional] = await db.insert(optionals).values({
+    ...data,
+    updatedAt: new Date()
+  }).returning();
+  return newOptional;
+}
+
+export async function updateOptional(id: number, data: OptionalInsert) {
+  const [updatedOptional] = await db.update(optionals)
+    .set({
+      ...data,
+      updatedAt: new Date()
+    })
+    .where(eq(optionals.id, id))
+    .returning();
+  
+  return updatedOptional;
+}
+
+export async function deleteOptional(id: number) {
+  await db.delete(optionals).where(eq(optionals.id, id));
+}
+
+// Opcionais das Versões
+export async function getVersionOptionals(options: { modelId?: number, versionId?: number } = {}) {
+  const query: any = {};
+  
+  if (options.versionId) {
+    query.where = eq(versionOptionals.versionId, options.versionId);
+  }
+  
+  const results = await db.query.versionOptionals.findMany({
+    ...query,
+    orderBy: desc(versionOptionals.createdAt),
+    with: {
+      version: {
+        with: {
+          model: {
+            with: {
+              brand: true
+            }
+          }
+        }
+      },
+      optional: true
+    }
+  });
+  
+  // Filter by modelId if provided (needs to be done post-query due to relations)
+  if (options.modelId && results.length > 0) {
+    return results.filter(vo => {
+      // Access modelId through the loaded relation
+      const versionData = vo.version as any;
+      if (!versionData || !versionData.modelId) return false;
+      return versionData.modelId === options.modelId;
+    });
+  }
+  
+  return results;
+}
+
+export async function getVersionOptionalById(id: number) {
+  return db.query.versionOptionals.findFirst({
+    where: eq(versionOptionals.id, id),
+    with: {
+      version: {
+        with: {
+          model: {
+            with: {
+              brand: true
+            }
+          }
+        }
+      },
+      optional: true
+    }
+  });
+}
+
+export async function createVersionOptional(data: VersionOptionalInsert) {
+  const [newVersionOptional] = await db.insert(versionOptionals).values({
+    ...data,
+    updatedAt: new Date()
+  }).returning();
+  
+  return getVersionOptionalById(newVersionOptional.id);
+}
+
+export async function updateVersionOptional(id: number, data: VersionOptionalInsert) {
+  const [updatedVersionOptional] = await db.update(versionOptionals)
+    .set({
+      ...data,
+      updatedAt: new Date()
+    })
+    .where(eq(versionOptionals.id, id))
+    .returning();
+  
+  if (!updatedVersionOptional) return null;
+  
+  return getVersionOptionalById(updatedVersionOptional.id);
+}
+
+export async function deleteVersionOptional(id: number) {
+  await db.delete(versionOptionals).where(eq(versionOptionals.id, id));
+}
+
 export const storage = {
   getBrands,
   getBrandById,
@@ -435,6 +559,18 @@ export const storage = {
   createVehicle,
   updateVehicle,
   deleteVehicle,
+  
+  getOptionals,
+  getOptionalById,
+  createOptional,
+  updateOptional,
+  deleteOptional,
+  
+  getVersionOptionals,
+  getVersionOptionalById,
+  createVersionOptional,
+  updateVersionOptional,
+  deleteVersionOptional,
   
   getSettings,
   getSettingByKey,

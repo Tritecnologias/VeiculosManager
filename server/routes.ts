@@ -10,7 +10,9 @@ import {
   vehicleInsertSchema,
   versionColorInsertSchema,
   paintTypeInsertSchema,
-  settingsInsertSchema
+  settingsInsertSchema,
+  optionalInsertSchema,
+  versionOptionalInsertSchema
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -639,6 +641,158 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting setting:", error);
       res.status(500).json({ message: "Failed to delete setting" });
+    }
+  });
+
+  // Opcionais API
+  app.get(`${apiPrefix}/optionals`, async (req, res) => {
+    try {
+      const optionals = await storage.getOptionals();
+      res.json(optionals);
+    } catch (error) {
+      console.error("Error fetching optionals:", error);
+      res.status(500).json({ message: "Failed to fetch optionals" });
+    }
+  });
+
+  app.get(`${apiPrefix}/optionals/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const optional = await storage.getOptionalById(id);
+      
+      if (!optional) {
+        return res.status(404).json({ message: "Optional not found" });
+      }
+      
+      res.json(optional);
+    } catch (error) {
+      console.error("Error fetching optional:", error);
+      res.status(500).json({ message: "Failed to fetch optional" });
+    }
+  });
+
+  app.post(`${apiPrefix}/optionals`, async (req, res) => {
+    try {
+      const validatedData = optionalInsertSchema.parse(req.body);
+      const newOptional = await storage.createOptional(validatedData);
+      res.status(201).json(newOptional);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      console.error("Error creating optional:", error);
+      res.status(500).json({ message: "Failed to create optional" });
+    }
+  });
+
+  app.patch(`${apiPrefix}/optionals/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = optionalInsertSchema.parse(req.body);
+      
+      const updatedOptional = await storage.updateOptional(id, validatedData);
+      
+      if (!updatedOptional) {
+        return res.status(404).json({ message: "Optional not found" });
+      }
+      
+      res.json(updatedOptional);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      console.error("Error updating optional:", error);
+      res.status(500).json({ message: "Failed to update optional" });
+    }
+  });
+
+  app.delete(`${apiPrefix}/optionals/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteOptional(id);
+      res.status(204).end();
+    } catch (error) {
+      console.error("Error deleting optional:", error);
+      res.status(500).json({ message: "Failed to delete optional" });
+    }
+  });
+
+  // Versão-Opcionais API
+  app.get(`${apiPrefix}/version-optionals`, async (req, res) => {
+    try {
+      const { modelId, versionId } = req.query;
+      const options: any = {};
+      
+      if (modelId) options.modelId = parseInt(modelId as string);
+      if (versionId) options.versionId = parseInt(versionId as string);
+      
+      const versionOptionals = await storage.getVersionOptionals(options);
+      res.json(versionOptionals);
+    } catch (error) {
+      console.error("Error fetching version optionals:", error);
+      res.status(500).json({ message: "Failed to fetch version optionals" });
+    }
+  });
+
+  app.get(`${apiPrefix}/version-optionals/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const versionOptional = await storage.getVersionOptionalById(id);
+      
+      if (!versionOptional) {
+        return res.status(404).json({ message: "Version optional not found" });
+      }
+      
+      res.json(versionOptional);
+    } catch (error) {
+      console.error("Error fetching version optional:", error);
+      res.status(500).json({ message: "Failed to fetch version optional" });
+    }
+  });
+
+  app.post(`${apiPrefix}/version-optionals`, async (req, res) => {
+    try {
+      const validatedData = versionOptionalInsertSchema.parse(req.body);
+      const newVersionOptional = await storage.createVersionOptional(validatedData);
+      res.status(201).json(newVersionOptional);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      console.error("Error creating version optional:", error);
+      res.status(500).json({ message: "Failed to create version optional" });
+    }
+  });
+
+  app.patch(`${apiPrefix}/version-optionals/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = versionOptionalInsertSchema.parse(req.body);
+      
+      const updatedVersionOptional = await storage.updateVersionOptional(id, validatedData);
+      
+      if (!updatedVersionOptional) {
+        return res.status(404).json({ message: "Version optional not found" });
+      }
+      
+      res.json(updatedVersionOptional);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ errors: error.errors });
+      }
+      console.error("Error updating version optional:", error);
+      res.status(500).json({ message: "Failed to update version optional" });
+    }
+  });
+
+  app.delete(`${apiPrefix}/version-optionals/:id`, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteVersionOptional(id);
+      res.status(204).end();
+    } catch (error) {
+      console.error("Error deleting version optional:", error);
+      res.status(500).json({ message: "Failed to delete version optional" });
     }
   });
 
