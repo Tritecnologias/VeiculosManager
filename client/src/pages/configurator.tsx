@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Brand, Model, Version, Color, Vehicle } from "@/lib/types";
-import { formatCurrency } from "@/lib/formatters";
+import { formatCurrency, formatConfiguratorCurrency } from "@/lib/formatters";
 import { apiRequest } from "@/lib/queryClient";
 import { Label } from "@/components/ui/label";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -471,9 +471,9 @@ function Configurator() {
                           type="number" 
                           value={discountAmount}
                           onChange={(e) => handleDiscountAmountChange(e.target.value)}
-                          className="pl-6" 
+                          className="pl-10" 
                         />
-                        <span className="absolute left-2 top-2">R$</span>
+                        <span className="absolute left-3 top-2">R$</span>
                       </div>
                     </div>
                     
@@ -485,9 +485,9 @@ function Configurator() {
                           type="number" 
                           value={markupAmount}
                           onChange={(e) => setMarkupAmount(e.target.value)}
-                          className="pl-6" 
+                          className="pl-10" 
                         />
-                        <span className="absolute left-2 top-2">R$</span>
+                        <span className="absolute left-3 top-2">R$</span>
                       </div>
                     </div>
                     

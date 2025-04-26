@@ -57,6 +57,26 @@ export function formatBRCurrencyWithSymbol(value: number | string): string {
   });
 }
 
+// Formatador específico para campos como DESC. R$ e ÁGIO R$ com espaço entre R$ e valor
+export function formatConfiguratorCurrency(value: number | string): string {
+  // Se for string, converte para número primeiro
+  const numericValue = typeof value === 'string' ? parseFloat(value.replace(/[^\d.,]/g, '').replace(',', '.')) : value;
+  
+  // Se não for um número válido, retorna zero formatado
+  if (isNaN(numericValue)) {
+    return 'R$ 0,00';
+  }
+  
+  // Formata o valor numérico em estilo pt-BR (1.234,56)
+  const formattedValue = numericValue.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+  
+  // Retorna com símbolo R$ e espaço
+  return `R$ ${formattedValue}`;
+}
+
 // Função para converter valores monetários formatados em BR para strings
 // que o backend aceita, mantendo como string para evitar problemas de precisão
 export function parseBRCurrency(value: string): string {
