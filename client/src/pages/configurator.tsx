@@ -22,6 +22,7 @@ function Configurator() {
   const [markupAmount, setMarkupAmount] = useState("0");
   const [quantity, setQuantity] = useState("1");
   const [selectedTab, setSelectedTab] = useState("equipamentos");
+  const [selectedDirectSaleId, setSelectedDirectSaleId] = useState("");
 
   // Fetch brands
   const { data: brands = [], isLoading: brandsLoading } = useQuery<Brand[]>({
@@ -48,6 +49,11 @@ function Configurator() {
     queryKey: ["/api/vehicles"],
   });
   
+  // Fetch direct sales
+  const { data: directSales = [] } = useQuery<any[]>({
+    queryKey: ["/api/direct-sales"],
+  });
+  
   // Fetch version colors para a versão selecionada
   const { data: versionColors = [] } = useQuery<any[]>({
     queryKey: ["/api/version-colors", selectedVersionId],
@@ -70,10 +76,14 @@ function Configurator() {
     console.log("Versions loaded:", allVersions.length);
     console.log("Colors loaded:", allColors.length);
     console.log("Vehicles loaded:", allVehicles.length);
+    console.log("Direct Sales loaded:", directSales.length);
     if (versionColors.length > 0) {
       console.log("Version colors loaded:", versionColors);
     }
-  }, [brands, allModels, allVersions, allColors, allVehicles, versionColors]);
+    if (directSales.length > 0) {
+      console.log("Direct Sales data:", directSales);
+    }
+  }, [brands, allModels, allVersions, allColors, allVehicles, versionColors, directSales]);
   
   // Atualizar as cores disponíveis quando versionColors mudar
   useEffect(() => {
@@ -117,6 +127,7 @@ function Configurator() {
     setSelectedVersionId("");
     setSelectedColorId("");
     setSelectedVehicle(null);
+    setSelectedDirectSaleId("0"); // Reset direct sale selection when brand changes
     
     if (brandId) {
       const brandModels = allModels.filter(model => model.brandId === parseInt(brandId));
@@ -248,6 +259,29 @@ function Configurator() {
       setDiscountPercent(newDiscountPercent);
     } else {
       setDiscountPercent("0");
+    }
+  };
+  
+  // Handle direct sale selection
+  const handleDirectSaleChange = (directSaleId: string) => {
+    setSelectedDirectSaleId(directSaleId);
+    
+    if (directSaleId && directSaleId !== "0") {
+      // Find the selected direct sale
+      const directSale = directSales.find(ds => ds.id.toString() === directSaleId);
+      if (directSale && selectedBrandId) {
+        // Check if the selected direct sale applies to the current brand
+        if (directSale.brandId === parseInt(selectedBrandId)) {
+          // Apply the discount percentage
+          handleDiscountPercentChange(directSale.discountPercentage.toString());
+        } else {
+          // Reset discount if brand doesn't match
+          handleDiscountPercentChange("0");
+        }
+      }
+    } else {
+      // Reset discount if no direct sale is selected
+      handleDiscountPercentChange("0");
     }
   };
   
@@ -392,16 +426,25 @@ function Configurator() {
                   
                   <div className="grid grid-cols-2 gap-4 mb-6">
                     <div>
-                      <Label htmlFor="discount-select">DESCONTOS VENDA DIRETA</Label>
-                      <Select defaultValue="0">
-                        <SelectTrigger id="discount-select">
+                      <Label htmlFor="direct-sale-select">DESCONTOS VENDA DIRETA</Label>
+                      <Select 
+                        value={selectedDirectSaleId} 
+                        onValueChange={handleDirectSaleChange}
+                      >
+                        <SelectTrigger id="direct-sale-select">
                           <SelectValue placeholder="Selecione um desconto" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="0">Nenhum</SelectItem>
-                          <SelectItem value="5">5%</SelectItem>
-                          <SelectItem value="10">10%</SelectItem>
-                          <SelectItem value="15">15%</SelectItem>
+                          {directSales.map(sale => (
+                            <SelectItem 
+                              key={sale.id} 
+                              value={sale.id.toString()}
+                              disabled={sale.brandId !== parseInt(selectedBrandId)}
+                            >
+                              {sale.name} ({sale.discountPercentage}%)
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
