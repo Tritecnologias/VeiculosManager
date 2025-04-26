@@ -77,7 +77,7 @@ export default function DirectSaleForm() {
       const parsedData = {
         name: formData.name,
         brandId: parseInt(formData.brandId),
-        discountPercentage: parseFloat(formData.discountPercentage)
+        discountPercentage: formData.discountPercentage // Keeping it as string to match schema expectation
       };
       
       // Create or update direct sale
