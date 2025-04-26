@@ -13,13 +13,10 @@ import { ChevronLeft, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Optional } from "@/lib/types";
-import { parseBRCurrency, formatBRCurrency } from "@/lib/formatters";
 
 const formSchema = z.object({
   name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres"),
   description: z.string().min(5, "A descrição deve ter pelo menos 5 caracteres"),
-  price: z.string().default("0"),
-  imageUrl: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -41,8 +38,6 @@ export default function OptionalForm({ id, onCancel }: OptionalFormProps) {
     defaultValues: {
       name: "",
       description: "",
-      price: "0",
-      imageUrl: "",
     },
   });
 
@@ -56,8 +51,6 @@ export default function OptionalForm({ id, onCancel }: OptionalFormProps) {
       form.reset({
         name: optional.name,
         description: optional.description,
-        price: optional.price || "0",
-        imageUrl: optional.imageUrl || "",
       });
     }
   }, [optional, form]);
@@ -94,10 +87,7 @@ export default function OptionalForm({ id, onCancel }: OptionalFormProps) {
     }
   };
 
-  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formattedValue = parseBRCurrency(e.target.value);
-    form.setValue("price", formattedValue || "0");
-  };
+
   
   if (isLoading && isEditing) {
     return <div>Carregando...</div>;
@@ -155,38 +145,6 @@ export default function OptionalForm({ id, onCancel }: OptionalFormProps) {
                         placeholder="Descrição do opcional" 
                         rows={3}
                       />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="price"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Preço Adicional</FormLabel>
-                    <FormControl>
-                      <Input 
-                        value={formatBRCurrency(field.value)} 
-                        onChange={handlePriceChange} 
-                        placeholder="Preço adicional" 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="imageUrl"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>URL da Imagem (opcional)</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="URL da imagem do opcional" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
