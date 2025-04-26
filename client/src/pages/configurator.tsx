@@ -11,8 +11,10 @@ import { apiRequest } from "@/lib/queryClient";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { useMobile } from "@/hooks/use-mobile";
 
 function Configurator() {
+  const isMobile = useMobile();
   const [selectedBrandId, setSelectedBrandId] = useState("");
   const [selectedModelId, setSelectedModelId] = useState("");
   const [selectedVersionId, setSelectedVersionId] = useState("");
