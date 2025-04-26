@@ -136,14 +136,13 @@ export default function VehicleFormFixed() {
   // Preencher o formulário com os dados do veículo quando estiver editando
   useEffect(() => {
     // Só executamos se todos os dados necessários estiverem disponíveis
-    if (vehicle && isEditing && models.length > 0 && versions.length > 0 && !dataWasLoaded) {
+    if (vehicle && isEditing && models.length > 0 && versions.length > 0) {
       console.log("Carregando dados do veículo para edição:", vehicle);
       console.log("Modelos disponíveis:", models);
       console.log("Versões disponíveis:", versions);
       
       try {
-        // Evitar recarregar os dados várias vezes
-        setDataWasLoaded(true);
+        // Sempre carregamos os dados do veículo ao editar
         
         // Carregar dados relacionados de forma consistente
         const brandId = vehicle.version.model.brandId.toString();
@@ -195,11 +194,14 @@ export default function VehicleFormFixed() {
         });
         
         console.log("Formulário preenchido com dados do veículo");
+        
+        // Definimos que os dados foram carregados após carregar tudo
+        setDataWasLoaded(true);
       } catch (error) {
         console.error("Erro ao carregar dados do veículo:", error);
       }
     }
-  }, [vehicle, isEditing, form, models, versions]);
+  }, [vehicle, isEditing, brands, models, versions]);
   
   // Atualiza modelos filtrados quando a marca muda
   const handleBrandChange = (brandId: string) => {
