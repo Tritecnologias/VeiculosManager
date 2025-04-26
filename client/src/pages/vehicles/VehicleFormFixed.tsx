@@ -277,9 +277,15 @@ export default function VehicleFormFixed() {
   // Função de submissão do formulário simplificada e robusta
   const onSubmit = async (data: FormValues) => {
     try {
-      // setIsSubmitting(true) já é chamado no onClick do botão agora
+      // Força o estado de submissão como true
+      setIsSubmitting(true);
       console.log("Form submitted with values:", data);
       console.log("isEditing:", isEditing, "id:", id);
+      
+      // Verifica se os valores obrigatórios estão presentes
+      if (!data.brandId || !data.modelId || !data.versionId) {
+        throw new Error("Marca, modelo e versão são campos obrigatórios.");
+      }
       
       // Preparar dados para o backend
       const vehicleData = {
@@ -311,6 +317,10 @@ export default function VehicleFormFixed() {
         console.log(`Enviando requisição ${method} para ${endpoint}`);
         console.log("Dados enviados:", JSON.stringify(vehicleData, null, 2));
         
+        // Define um timeout para evitar que a requisição fique pendente indefinidamente
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos de timeout
+        
         const response = await fetch(endpoint, {
           method: method,
           headers: {
@@ -318,8 +328,12 @@ export default function VehicleFormFixed() {
             "Accept": "application/json"
           },
           body: JSON.stringify(vehicleData),
-          credentials: "include"
+          credentials: "include",
+          signal: controller.signal
         });
+        
+        // Limpa o timeout se a resposta chegou
+        clearTimeout(timeoutId);
         
         console.log("Resposta da API:", response.status, response.statusText);
         
@@ -344,8 +358,16 @@ export default function VehicleFormFixed() {
         queryClient.invalidateQueries({ queryKey: ["/api/vehicles"] });
         
         if (isEditing) {
-          // Se estiver editando, navegue de volta para a lista
-          navigate("/vehicles");
+          // Limpar os estados de nomes para evitar problemas com futuras edições
+          setSelectedBrandName("");
+          setSelectedModelName("");
+          setSelectedVersionName("");
+          setDataWasLoaded(false);
+          
+          // Se estiver editando, navegue de volta para a lista após um pequeno delay
+          setTimeout(() => {
+            navigate("/vehicles");
+          }, 500);
         } else {
           // Se estiver criando um novo, limpe o formulário
           form.reset({
@@ -380,9 +402,19 @@ export default function VehicleFormFixed() {
           });
         }
         
-      } catch (fetchError) {
-        console.error("Erro na requisição fetch:", fetchError);
-        throw fetchError;
+      } catch (error) {
+        console.error("Erro na requisição fetch:", error);
+        
+        // Se for um erro de timeout (abortado), mostrar mensagem específica
+        if (error instanceof Error && error.name === 'AbortError') {
+          toast({
+            title: "Erro de timeout",
+            description: "A operação demorou muito para completar. Tente novamente.",
+            variant: "destructive"
+          });
+        } else {
+          throw error;
+        }
       }
       
     } catch (error) {
@@ -395,6 +427,7 @@ export default function VehicleFormFixed() {
         variant: "destructive"
       });
     } finally {
+      // Garante que o estado de submissão seja resetado
       setIsSubmitting(false);
     }
   };
@@ -839,18 +872,12 @@ export default function VehicleFormFixed() {
                     </Button>
                   </Link>
                   <Button 
-                    type="button" 
+                    type="submit" 
                     disabled={isSubmitting}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setIsSubmitting(true);
-                      console.log("Botão Salvar clicado para " + (isEditing ? "editar" : "cadastrar"));
-                      form.handleSubmit(onSubmit)(e);
-                    }}
                   >
                     {isSubmitting ? (
                       <>
-                        <span className="animate-spin mr-2">⏳</span>
+                        <span className="inline-block animate-spin mr-2">⟳</span>
                         {isEditing ? "Salvando..." : "Cadastrando..."}
                       </>
                     ) : (
