@@ -62,10 +62,13 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export default function VehicleFormFixed() {
-  const { id } = useParams();
+  const params = useParams();
+  const id = params?.id ? parseInt(params.id) : undefined;
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const isEditing = Boolean(id);
+  
+  console.log("Inicializando formulário com id:", id, "isEditing:", isEditing);
   
   const [filteredModels, setFilteredModels] = useState<Model[]>([]);
   const [filteredVersions, setFilteredVersions] = useState<Version[]>([]);
@@ -237,6 +240,7 @@ export default function VehicleFormFixed() {
     try {
       setIsSubmitting(true);
       console.log("Form submitted with values:", data);
+      console.log("isEditing:", isEditing, "id:", id);
       
       // Preparar dados para o backend
       const vehicleData = {
@@ -769,13 +773,8 @@ export default function VehicleFormFixed() {
                     </Button>
                   </Link>
                   <Button 
-                    type="button" 
+                    type="submit" 
                     disabled={isSubmitting}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      console.log("Botão Salvar clicado manualmente");
-                      form.handleSubmit(onSubmit)(e);
-                    }}
                   >
                     {isSubmitting ? (
                       <>
