@@ -77,7 +77,7 @@ export interface Optional {
   id: number;
   name: string;
   description: string;
-  additionalPrice: number;
+  price: string;
   imageUrl?: string;
   createdAt?: string;
   updatedAt?: string;

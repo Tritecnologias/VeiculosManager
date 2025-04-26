@@ -99,7 +99,7 @@ export default function OptionalList({ onEdit }: OptionalListProps) {
                     <TableCell>{optional.id}</TableCell>
                     <TableCell>{optional.name}</TableCell>
                     <TableCell>{optional.description}</TableCell>
-                    <TableCell>{formatBRCurrency(optional.additionalPrice)}</TableCell>
+                    <TableCell>{formatBRCurrency(Number(optional.price))}</TableCell>
                     <TableCell>
                       <div className="flex gap-2">
                         {onEdit ? (
