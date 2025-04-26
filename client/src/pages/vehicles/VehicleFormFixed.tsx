@@ -936,8 +936,13 @@ export default function VehicleFormFixed() {
                     </Button>
                   </Link>
                   <Button 
-                    type="submit" 
+                    type="button" 
                     disabled={isSubmitting}
+                    onClick={() => {
+                      // Forçar a submissão do formulário manualmente
+                      setIsSubmitting(true);
+                      form.handleSubmit(onSubmit)();
+                    }}
                   >
                     {isSubmitting ? (
                       <>
