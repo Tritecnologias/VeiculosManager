@@ -72,3 +72,24 @@ export interface Vehicle {
   createdAt?: string;
   updatedAt?: string;
 }
+
+export interface Optional {
+  id: number;
+  name: string;
+  description: string;
+  additionalPrice: number;
+  imageUrl?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface VersionOptional {
+  id: number;
+  versionId: number;
+  optionalId: number;
+  price: number;
+  version?: VersionWithModel;
+  optional?: Optional;
+  createdAt?: string;
+  updatedAt?: string;
+}
