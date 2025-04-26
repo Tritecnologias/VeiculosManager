@@ -137,6 +137,7 @@ export default function Settings() {
         <TabsList>
           <TabsTrigger value="general">Geral</TabsTrigger>
           <TabsTrigger value="tax">Impostos</TabsTrigger>
+          <TabsTrigger value="company">Empresa</TabsTrigger>
         </TabsList>
         
         <TabsContent value="general" className="space-y-4">
@@ -198,6 +199,42 @@ export default function Settings() {
                   )}
                 </div>
               ))}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="company" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Informações da Empresa</CardTitle>
+              <CardDescription>
+                Configure o nome e o logo da empresa
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Campo para nome da empresa */}
+              <div className="grid gap-2">
+                <Label htmlFor="company_name">Nome da empresa</Label>
+                <Input
+                  id="company_name"
+                  name="company_name"
+                  value={formData["company_name"] as string || ""}
+                  onChange={handleTextChange}
+                  placeholder="Nome da empresa"
+                />
+              </div>
+              
+              {/* Campo para URL do logo */}
+              <div className="grid gap-2">
+                <Label htmlFor="company_logo_url">URL do logo</Label>
+                <Input
+                  id="company_logo_url"
+                  name="company_logo_url"
+                  value={formData["company_logo_url"] as string || ""}
+                  onChange={handleTextChange}
+                  placeholder="URL da imagem do logo (opcional)"
+                />
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

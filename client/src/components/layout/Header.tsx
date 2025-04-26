@@ -7,12 +7,12 @@ export default function Header() {
   const [location] = useLocation();
   
   // Buscar o nome da empresa nas configurações
-  const { data: settings = [] } = useQuery({
+  const { data: settings = [] } = useQuery<Array<{key: string, value: string}>>({
     queryKey: ["/api/settings"],
   });
   
   // Encontrar a configuração de nome da empresa
-  const companyName = settings.find((setting: any) => setting.key === "company_name")?.value || "Vendas Corporativas";
+  const companyName = settings.find(setting => setting.key === "company_name")?.value || "Vendas Corporativas";
   
   return (
     <header className="bg-white shadow">
