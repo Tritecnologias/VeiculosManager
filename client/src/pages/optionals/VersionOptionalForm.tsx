@@ -98,7 +98,13 @@ export default function VersionOptionalForm() {
   };
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formattedValue = parseBRCurrency(e.target.value);
+    // Remove caracteres inválidos, mantendo apenas números, vírgulas e pontos
+    let inputValue = e.target.value.replace(/[^\d,\.]/g, '');
+    
+    // Converte para o formato esperado pela API (com ponto decimal)
+    const formattedValue = parseBRCurrency(inputValue);
+    
+    // Define o valor no formulário como string
     form.setValue("price", formattedValue);
   };
   

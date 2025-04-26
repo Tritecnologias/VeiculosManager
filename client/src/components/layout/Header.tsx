@@ -1,9 +1,18 @@
 import { Link, useLocation } from "wouter";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Header() {
   const [location] = useLocation();
+  
+  // Buscar o nome da empresa nas configurações
+  const { data: settings = [] } = useQuery({
+    queryKey: ["/api/settings"],
+  });
+  
+  // Encontrar a configuração de nome da empresa
+  const companyName = settings.find((setting: any) => setting.key === "company_name")?.value || "Vendas Corporativas";
   
   return (
     <header className="bg-white shadow">
@@ -13,7 +22,7 @@ export default function Header() {
             <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
             </svg>
-            <span className="ml-2 text-xl font-semibold text-gray-500">Vendas Corporativas <span className="text-primary">Dealers</span></span>
+            <span className="ml-2 text-xl font-semibold text-primary">{companyName}</span>
           </div>
         </div>
         
