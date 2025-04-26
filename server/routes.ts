@@ -533,7 +533,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       console.error('[PATCH /api/vehicles/:id] Server error:', error);
-      return res.status(500).json({ message: "Failed to update vehicle", error: error.message });
+      return res.status(500).json({ 
+        message: "Failed to update vehicle", 
+        error: error instanceof Error ? error.message : String(error)
+      });
     }
   });
 

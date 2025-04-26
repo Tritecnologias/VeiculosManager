@@ -342,8 +342,35 @@ export async function updateVehicle(id: number, data: VehicleInsert) {
   console.log('[updateVehicle] Data:', JSON.stringify(data, null, 2));
   
   try {
+    // Filtrar e preparar apenas os campos válidos do veículo
+    // Garantindo que os campos enum estejam corretos
+    const fuelType = data.fuelType as 'flex' | 'gasoline' | 'diesel' | 'electric' | 'hybrid';
+    const transmission = data.transmission as 'manual' | 'automatic' | 'cvt' | 'dct';
+    const situation = data.situation as 'available' | 'unavailable' | 'coming-soon';
+    
+    const validUpdateFields = {
+      versionId: data.versionId,
+      colorId: data.colorId,
+      year: data.year,
+      publicPrice: data.publicPrice,
+      situation: situation,
+      description: data.description,
+      engine: data.engine,
+      fuelType: fuelType,
+      transmission: transmission,
+      isActive: data.isActive,
+      pcdIpiIcms: data.pcdIpiIcms,
+      pcdIpi: data.pcdIpi,
+      taxiIpiIcms: data.taxiIpiIcms,
+      taxiIpi: data.taxiIpi,
+      updatedAt: new Date()
+    };
+    
+    console.log('[updateVehicle] Filtered valid fields for update');
+    
+    // Executa a atualização com os campos filtrados
     const [updatedVehicle] = await db.update(vehicles)
-      .set({ ...data, updatedAt: new Date() })
+      .set(validUpdateFields)
       .where(eq(vehicles.id, id))
       .returning();
     
