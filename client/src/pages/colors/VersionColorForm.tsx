@@ -23,7 +23,12 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export default function VersionColorForm() {
+interface VersionColorFormProps {
+  id?: number | null;
+  onCancel?: () => void;
+}
+
+export default function VersionColorForm({ id, onCancel }: VersionColorFormProps) {
   const { toast } = useToast();
   const [filteredModels, setFilteredModels] = useState<Model[]>([]);
   const [filteredVersions, setFilteredVersions] = useState<Version[]>([]);
@@ -96,44 +101,104 @@ export default function VersionColorForm() {
         price: values.price.toString(), // Converter para string conforme esperado pelo schema
         imageUrl: values.imageUrl || null,
       };
+
+      if (id) {
+        // Atualizar um registro existente
+        await apiRequest("PATCH", `/api/version-colors/${id}`, data);
+        
+        toast({
+          title: "Associação atualizada com sucesso",
+          description: "A associação de cor foi atualizada.",
+        });
+        
+        // Se houver uma função de cancelamento, chamá-la após o sucesso
+        if (onCancel) {
+          onCancel();
+        }
+      } else {
+        // Criar um novo registro
+        await apiRequest("POST", "/api/version-colors", data);
+        
+        toast({
+          title: "Cores associadas com sucesso",
+          description: "A cor foi associada à versão selecionada.",
+        });
+        
+        // Reset form somente para criação
+        form.reset({
+          modelId: "",
+          versionId: "",
+          colorId: "",
+          price: 0,
+          imageUrl: "",
+        });
+        setSelectedBrandId("");
+        setFilteredModels([]);
+        setFilteredVersions([]);
+      }
       
-      await apiRequest("POST", "/api/version-colors", data);
-      
-      toast({
-        title: "Cores associadas com sucesso",
-        description: "A cor foi associada à versão selecionada.",
-      });
-      
+      // Atualizar a lista em ambos os casos
       queryClient.invalidateQueries({ queryKey: ["/api/version-colors"] });
       
-      // Reset form
-      form.reset({
-        modelId: "",
-        versionId: "",
-        colorId: "",
-        price: 0,
-        imageUrl: "",
-      });
-      setSelectedBrandId("");
-      setFilteredModels([]);
-      setFilteredVersions([]);
-      
     } catch (error) {
-      console.error("Failed to associate color with version:", error);
+      console.error("Failed to save version color:", error);
       toast({
-        title: "Erro ao associar cor",
-        description: "Ocorreu um erro ao associar a cor à versão.",
+        title: id ? "Erro ao atualizar associação" : "Erro ao associar cor",
+        description: id 
+          ? "Ocorreu um erro ao atualizar a associação de cor." 
+          : "Ocorreu um erro ao associar a cor à versão.",
         variant: "destructive",
       });
     }
   };
   
+  // Buscar dados para edição quando o id estiver presente
+  const { data: versionColorData } = useQuery({
+    queryKey: ["/api/version-colors", id],
+    queryFn: async () => {
+      if (!id) return null;
+      const response = await apiRequest("GET", `/api/version-colors/${id}`);
+      return response;
+    },
+    enabled: !!id,
+  });
+
+  // Preencher o formulário com os dados da versão de cor quando disponíveis
+  useEffect(() => {
+    if (versionColorData) {
+      const versionId = versionColorData.versionId.toString();
+      const colorId = versionColorData.colorId.toString();
+      const modelId = versionColorData.version?.modelId.toString() || "";
+      const brandId = versionColorData.version?.model?.brandId.toString() || "";
+      
+      setSelectedBrandId(brandId);
+      
+      // Filtrar modelos e versões
+      if (brandId) {
+        const parsedBrandId = parseInt(brandId);
+        setFilteredModels(models.filter(model => model.brandId === parsedBrandId));
+      }
+      
+      if (modelId) {
+        const parsedModelId = parseInt(modelId);
+        setFilteredVersions(versions.filter(version => version.modelId === parsedModelId));
+      }
+      
+      // Atualizar valores do formulário
+      form.setValue("modelId", modelId);
+      form.setValue("versionId", versionId);
+      form.setValue("colorId", colorId);
+      form.setValue("price", parseFloat(versionColorData.price));
+      form.setValue("imageUrl", versionColorData.imageUrl || "");
+    }
+  }, [versionColorData, form, models, versions]);
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Associar Pintura à Versão</CardTitle>
+        <CardTitle>{id ? 'Editar Associação de Pintura' : 'Associar Pintura à Versão'}</CardTitle>
         <CardDescription>
-          Escolha um modelo, versão e cor para associar uma pintura específica a uma versão de veículo
+          {id ? 'Edite os detalhes da associação de pintura' : 'Escolha um modelo, versão e cor para associar uma pintura específica a uma versão de veículo'}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -299,10 +364,15 @@ export default function VersionColorForm() {
               />
             </div>
             
-            <div className="flex justify-end">
+            <div className="flex justify-end gap-2">
+              {onCancel && (
+                <Button type="button" variant="outline" onClick={onCancel}>
+                  Cancelar
+                </Button>
+              )}
               <Button type="submit" className="w-full sm:w-auto">
                 <Save className="h-4 w-4 mr-2" />
-                Salvar
+                {id ? 'Atualizar' : 'Salvar'}
               </Button>
             </div>
           </form>
