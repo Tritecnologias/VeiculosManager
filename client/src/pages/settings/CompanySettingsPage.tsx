@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -14,6 +14,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 const formSchema = z.object({
   company_name: z.string().min(1, "O nome da empresa é obrigatório"),
   company_logo_url: z.string().optional(),
+  remove_dealer_text: z.boolean().default(false),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -30,18 +31,32 @@ export default function CompanySettingsPage() {
     },
   });
   
-  const { data: settings = [], isLoading: isLoadingSettings } = useQuery({
+  type Setting = {
+    id: number;
+    key: string;
+    value: string;
+    label: string;
+    type: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+
+  const { data: settings = [], isLoading: isLoadingSettings } = useQuery<Setting[]>({
     queryKey: ["/api/settings"],
-    onSuccess: (data) => {
-      const companyName = data.find((setting: any) => setting.key === "company_name")?.value || "";
-      const companyLogoUrl = data.find((setting: any) => setting.key === "company_logo_url")?.value || "";
+  });
+  
+  // Configurar os valores do formulário quando os dados são carregados
+  useEffect(() => {
+    if (settings.length > 0) {
+      const companyName = settings.find(setting => setting.key === "company_name")?.value || "";
+      const companyLogoUrl = settings.find(setting => setting.key === "company_logo_url")?.value || "";
       
       form.reset({
         company_name: companyName,
         company_logo_url: companyLogoUrl,
       });
-    },
-  });
+    }
+  }, [settings, form]);
   
   const onSubmit = async (data: FormValues) => {
     try {
