@@ -18,7 +18,7 @@ const formSchema = z.object({
   modelId: z.string().min(1, "Selecione um modelo"),
   versionId: z.string().min(1, "Selecione uma versão"),
   optionalId: z.string().min(1, "Selecione um opcional"),
-  price: z.coerce.number().min(0, "O preço não pode ser negativo"),
+  price: z.string().default("0"),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -34,7 +34,7 @@ export default function VersionOptionalForm() {
       modelId: "",
       versionId: "",
       optionalId: "",
-      price: 0,
+      price: "0",
     },
   });
   
@@ -85,7 +85,7 @@ export default function VersionOptionalForm() {
         modelId: "",
         versionId: "",
         optionalId: "",
-        price: 0,
+        price: "0",
       });
     } catch (error) {
       console.error("Erro ao associar opcional à versão:", error);
@@ -99,7 +99,7 @@ export default function VersionOptionalForm() {
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formattedValue = parseBRCurrency(e.target.value);
-    form.setValue("price", parseFloat(formattedValue) || 0);
+    form.setValue("price", formattedValue);
   };
   
   return (
