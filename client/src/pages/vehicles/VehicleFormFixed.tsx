@@ -434,11 +434,14 @@ export default function VehicleFormFixed() {
                           <FormLabel>Marca</FormLabel>
                           <Select 
                             value={field.value} 
+                            defaultValue={field.value}
                             onValueChange={handleBrandChange}
                           >
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Selecione uma marca" />
+                                <SelectValue placeholder="Selecione uma marca">
+                                  {field.value && brands.find(b => b.id.toString() === field.value)?.name}
+                                </SelectValue>
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -463,12 +466,15 @@ export default function VehicleFormFixed() {
                           <FormLabel>Modelo</FormLabel>
                           <Select 
                             value={field.value} 
+                            defaultValue={field.value}
                             onValueChange={handleModelChange}
                             disabled={!form.getValues("brandId")}
                           >
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Selecione um modelo" />
+                                <SelectValue placeholder="Selecione um modelo">
+                                  {field.value && models.find(m => m.id.toString() === field.value)?.name}
+                                </SelectValue>
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -493,12 +499,15 @@ export default function VehicleFormFixed() {
                           <FormLabel>Versão</FormLabel>
                           <Select 
                             value={field.value} 
+                            defaultValue={field.value}
                             onValueChange={field.onChange}
                             disabled={!form.getValues("modelId")}
                           >
                             <FormControl>
                               <SelectTrigger>
-                                <SelectValue placeholder="Selecione uma versão" />
+                                <SelectValue placeholder="Selecione uma versão">
+                                  {field.value && versions.find(v => v.id.toString() === field.value)?.name}
+                                </SelectValue>
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
