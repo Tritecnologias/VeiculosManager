@@ -45,7 +45,11 @@ interface VersionColor {
   };
 }
 
-export default function VersionColorList() {
+interface VersionColorListProps {
+  onEdit: (id: number) => void;
+}
+
+export default function VersionColorList({ onEdit }: VersionColorListProps) {
   const { toast } = useToast();
   const [selectedBrandId, setSelectedBrandId] = useState<string>("all");
   const [selectedModelId, setSelectedModelId] = useState<string>("all");
@@ -252,7 +256,7 @@ export default function VersionColorList() {
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        onClick={() => handleEditVersionColor(versionColor.id)}
+                        onClick={() => onEdit(versionColor.id)}
                       >
                         <Edit className="h-4 w-4" />
                       </Button>

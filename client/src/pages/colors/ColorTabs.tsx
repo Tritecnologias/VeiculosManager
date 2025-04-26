@@ -12,6 +12,7 @@ export default function ColorTabs() {
   const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState("list");
   const [editId, setEditId] = useState<number | null>(null);
+  const [editVersionColorId, setEditVersionColorId] = useState<number | null>(null);
 
   const handleNewColor = () => {
     setEditId(null);
@@ -26,6 +27,16 @@ export default function ColorTabs() {
   const handleCancel = () => {
     setEditId(null);
     setActiveTab("list");
+  };
+  
+  const handleEditVersionColor = (id: number) => {
+    setEditVersionColorId(id);
+    setActiveTab("associate");
+  };
+  
+  const handleCancelVersionColorEdit = () => {
+    setEditVersionColorId(null);
+    setActiveTab("associations");
   };
 
   return (
@@ -66,11 +77,14 @@ export default function ColorTabs() {
         </TabsContent>
 
         <TabsContent value="associate" className="space-y-6">
-          <VersionColorForm />
+          <VersionColorForm 
+            id={editVersionColorId}
+            onCancel={handleCancelVersionColorEdit}
+          />
         </TabsContent>
 
         <TabsContent value="associations" className="space-y-6">
-          <VersionColorList />
+          <VersionColorList onEdit={handleEditVersionColor} />
         </TabsContent>
       </Tabs>
     </div>
