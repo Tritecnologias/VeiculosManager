@@ -29,6 +29,7 @@ export default function VersionForm() {
   const { toast } = useToast();
   const isEditing = Boolean(id);
   const [filteredModels, setFilteredModels] = useState<Model[]>([]);
+  const [duplicateError, setDuplicateError] = useState<string | null>(null);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -45,6 +46,10 @@ export default function VersionForm() {
   
   const { data: models = [] } = useQuery<Model[]>({
     queryKey: ["/api/models"],
+  });
+  
+  const { data: versions = [] } = useQuery<(Version & { model: Model })[]>({
+    queryKey: ["/api/versions"],
   });
   
   const { data: version, isLoading: isLoadingVersion } = useQuery<Version & { model: Model }>({
@@ -66,10 +71,45 @@ export default function VersionForm() {
     }
   }, [version, form, models]);
   
+  // Converter para maiúsculas ao digitar e verificar duplicatas
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === 'name' && value.name) {
+        // Converter para maiúsculas
+        const upperCaseName = value.name.toUpperCase();
+        if (upperCaseName !== value.name) {
+          form.setValue('name', upperCaseName);
+        }
+        
+        // Verificar se a versão já existe para o modelo selecionado
+        setDuplicateError(null);
+        const normalizedName = upperCaseName.trim();
+        const selectedModelId = value.modelId ? parseInt(value.modelId) : null;
+        
+        if (normalizedName && selectedModelId) {
+          const existingVersion = versions.find(v => 
+            v.name.toUpperCase() === normalizedName && 
+            v.modelId === selectedModelId &&
+            (!isEditing || v.id !== Number(id))
+          );
+          
+          if (existingVersion) {
+            const modelName = models.find(m => m.id === selectedModelId)?.name || '';
+            const brandName = brands.find(b => b.id === models.find(m => m.id === selectedModelId)?.brandId)?.name || '';
+            setDuplicateError(`Já existe a versão: ${existingVersion.name} para o modelo ${modelName} da marca ${brandName}`);
+          }
+        }
+      }
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [form, versions, models, brands, isEditing, id]);
+
   // Update filtered models when brand changes
   const handleBrandChange = (brandId: string) => {
     form.setValue("brandId", brandId);
     form.setValue("modelId", ""); // Reset model selection
+    setDuplicateError(null); // Limpar erro ao mudar a marca
     
     if (brandId) {
       const parsedBrandId = parseInt(brandId);
@@ -80,10 +120,33 @@ export default function VersionForm() {
   };
   
   const handleSubmit = async (values: FormValues) => {
+    // Verificar novamente se há duplicatas antes de salvar
+    const normalizedName = values.name.toUpperCase().trim();
+    const selectedModelId = parseInt(values.modelId);
+    
+    const existingVersion = versions.find(v => 
+      v.name.toUpperCase() === normalizedName && 
+      v.modelId === selectedModelId &&
+      (!isEditing || v.id !== Number(id))
+    );
+
+    if (existingVersion) {
+      const modelName = models.find(m => m.id === selectedModelId)?.name || '';
+      const brandName = brands.find(b => b.id === models.find(m => m.id === selectedModelId)?.brandId)?.name || '';
+      const errorMessage = `Já existe a versão: ${existingVersion.name} para o modelo ${modelName} da marca ${brandName}`;
+      setDuplicateError(errorMessage);
+      toast({
+        title: "Versão duplicada",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const versionData = {
-        name: values.name,
-        modelId: parseInt(values.modelId),
+        name: normalizedName, // Garante que vai em maiúsculas
+        modelId: selectedModelId,
       };
       
       if (isEditing) {
@@ -102,13 +165,24 @@ export default function VersionForm() {
       
       queryClient.invalidateQueries({ queryKey: ["/api/versions"] });
       navigate("/versions");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to save version:", error);
-      toast({
-        title: "Erro ao salvar",
-        description: "Ocorreu um erro ao salvar a versão.",
-        variant: "destructive",
-      });
+      // Verificar se o erro é por causa de duplicação
+      if (error?.message?.includes("duplicate key") || error?.message?.includes("already exists")) {
+        const errorMessage = `Já existe uma versão com esse nome para este modelo.`;
+        setDuplicateError(errorMessage);
+        toast({
+          title: "Versão duplicada",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Erro ao salvar",
+          description: "Ocorreu um erro ao salvar a versão.",
+          variant: "destructive",
+        });
+      }
     }
   };
   
@@ -143,6 +217,13 @@ export default function VersionForm() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+              {duplicateError && (
+                <Alert variant="destructive" className="mb-4">
+                  <AlertCircle className="h-4 w-4 mr-2" />
+                  <AlertDescription>{duplicateError}</AlertDescription>
+                </Alert>
+              )}
+              
               <FormField
                 control={form.control}
                 name="brandId"
@@ -209,6 +290,14 @@ export default function VersionForm() {
                     <FormControl>
                       <Input placeholder="Ex: Sense TSI 116CV" {...field} />
                     </FormControl>
+                    {isEditing && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Este é o nome atual da versão. Você pode alterá-lo se desejar.
+                      </p>
+                    )}
+                    <p className="text-xs text-muted-foreground mt-1">
+                      O nome será automaticamente convertido para maiúsculas.
+                    </p>
                     <FormMessage />
                   </FormItem>
                 )}
