@@ -53,6 +53,25 @@ export async function updateBrand(id: number, data: BrandInsert) {
 }
 
 export async function deleteBrand(id: number) {
+  // Verificar se existem modelos associados a esta marca
+  const associatedModels = await db.query.models.findMany({
+    where: eq(models.brandId, id)
+  });
+  
+  if (associatedModels.length > 0) {
+    throw new Error('Cannot delete brand because it has associated models. Delete the models first.');
+  }
+  
+  // Verificar se existem vendas diretas associadas a esta marca
+  const associatedDirectSales = await db.query.directSales.findMany({
+    where: eq(directSales.brandId, id)
+  });
+  
+  if (associatedDirectSales.length > 0) {
+    throw new Error('Cannot delete brand because it has associated direct sales. Delete the direct sales first.');
+  }
+  
+  // Se não houver dependências, excluir a marca
   await db.delete(brands).where(eq(brands.id, id));
 }
 
