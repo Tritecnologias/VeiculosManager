@@ -87,16 +87,16 @@ export default function BrandForm() {
           </Button>
         </Link>
         <h1 className="text-2xl font-semibold text-gray-800">
-          {isEditing ? "Editar Marca" : "Nova Marca"}
+          {isEditing ? `Editar Marca: ${brand?.name}` : "Nova Marca"}
         </h1>
       </div>
       
       <Card>
         <CardHeader>
-          <CardTitle>{isEditing ? "Editar Marca" : "Cadastrar Nova Marca"}</CardTitle>
+          <CardTitle>{isEditing ? `Editar Marca: ${brand?.name}` : "Cadastrar Nova Marca"}</CardTitle>
           <CardDescription>
             {isEditing 
-              ? "Atualize as informações da marca"
+              ? `Atualize as informações da marca ${brand?.name}`
               : "Preencha os campos para adicionar uma nova marca"
             }
           </CardDescription>
@@ -113,6 +113,11 @@ export default function BrandForm() {
                     <FormControl>
                       <Input placeholder="Ex: Volkswagen" {...field} />
                     </FormControl>
+                    {isEditing && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Este é o nome atual da marca ({brand?.name}). Você pode modificá-lo se desejar.
+                      </p>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
