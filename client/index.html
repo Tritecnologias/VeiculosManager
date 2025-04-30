@@ -3,8 +3,45 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-    <title></title>
+    <title>Cota Zero KM</title>
     <script>
+      // SOLUÇÃO DEFINITIVA PARA O PROBLEMA DO TÍTULO
+      
+      // Garantir que o HTML inicial seja criado com o título do localStorage ou "Cota Zero KM"
+      document.title = localStorage.getItem('app_name') || 'Cota Zero KM';
+      
+      // Forçar a remoção de qualquer referência ao "Auto+"
+      if (document.title.includes("Auto+")) {
+        document.title = localStorage.getItem('app_name') || 'Cota Zero KM';
+      }
+      
+      // Função para atualizar o título e favicon em múltiplos lugares
+      function updateTitleAndFavicon(title, favicon) {
+        // 1. Atualizar o título da janela principal
+        window.document.title = title;
+        
+        // 2. Armazenar o título no localStorage para uso futuro
+        localStorage.setItem('app_name', title);
+        
+        // 3. Se houver favicon, atualizá-lo
+        if (favicon && favicon.trim() !== '') {
+          try {
+            // Remover favicons existentes
+            const existingFavicons = document.querySelectorAll('link[rel*="icon"]');
+            existingFavicons.forEach(f => f.remove());
+            
+            // Adicionar o novo favicon
+            const link = document.createElement('link');
+            link.rel = 'icon';
+            link.type = 'image/x-icon';
+            link.href = favicon;
+            document.head.appendChild(link);
+          } catch (e) {
+            console.error('Erro ao atualizar favicon:', e);
+          }
+        }
+      }
+      
       // Função para buscar as configurações do servidor
       async function fetchAppSettings() {
         try {
@@ -12,42 +49,35 @@
           if (response.ok) {
             const settings = await response.json();
             const appNameSetting = settings.find(s => s.key === 'app_name');
-            const appName = appNameSetting ? appNameSetting.value : '';
+            const appName = appNameSetting?.value || '';
             const companyNameSetting = settings.find(s => s.key === 'company_name');
-            const companyName = companyNameSetting ? companyNameSetting.value : '';
+            const companyName = companyNameSetting?.value || '';
+            const faviconSetting = settings.find(s => s.key === 'app_favicon');
+            const favicon = faviconSetting?.value || '';
             
             // Definir o título com base na prioridade
             if (appName && appName.trim() !== '') {
-              document.title = appName;
-              localStorage.setItem('app_name', appName);
+              updateTitleAndFavicon(appName, favicon);
             } else if (companyName && companyName.trim() !== '') {
-              document.title = companyName;
-              localStorage.setItem('app_name', companyName);
+              updateTitleAndFavicon(companyName, favicon);
             } else {
-              document.title = 'Cota Zero KM';
-            }
-            
-            // Também atualizar o favicon se estiver nas configurações
-            const faviconSetting = settings.find(s => s.key === 'app_favicon');
-            const favicon = faviconSetting ? faviconSetting.value : '';
-            if (favicon && favicon.trim() !== '') {
-              const link = document.createElement('link');
-              link.rel = 'icon';
-              link.type = 'image/x-icon';
-              link.href = favicon;
-              document.head.appendChild(link);
+              updateTitleAndFavicon('Cota Zero KM', favicon);
             }
           }
         } catch (error) {
           console.error('Erro ao buscar configurações:', error);
         }
       }
-
-      // Definir um título provisório até buscar do servidor
-      document.title = localStorage.getItem('app_name') || 'Cota Zero KM';
       
-      // Buscar as configurações assim que possível
+      // Executar imediatamente
       fetchAppSettings();
+      
+      // Monitor para garantir que o título permaneça correto
+      setInterval(() => {
+        if (document.title.includes('Auto+')) {
+          document.title = localStorage.getItem('app_name') || 'Cota Zero KM';
+        }
+      }, 100);
     </script>
     <style>
       /* Estilo diretamente no HTML para garantir que seja aplicado imediatamente */
