@@ -41,26 +41,41 @@ export default function BrandList() {
         try {
           const errorJson = JSON.parse(error.message.split(": ")[1]);
           if (errorJson.message) {
-            errorDetails = errorJson.message;
+            // Usar apenas a primeira parte da mensagem, sem os nomes de modelos
+            const baseMessage = errorJson.message.split(':')[0];
+            errorDetails = baseMessage;
           }
           
           // Capturar informações sobre modelos associados, se houver
           if (errorJson.models && errorJson.models.length > 0) {
             modelList = errorJson.models;
+            
+            // Criar uma lista formatada de modelos para exibir
+            const modelCount = modelList.length;
+            const modelNames = modelList.map(model => model.name).join(', ');
+            
+            // Construir uma descrição mais detalhada
+            errorDetails = `${errorDetails}\n\nQuantidade de Modelos Associados: ${modelCount}\nModelos Associados: ${modelNames}`;
           }
           
           // Capturar informações sobre vendas diretas associadas, se houver
           if (errorJson.directSales && errorJson.directSales.length > 0) {
             directSaleList = errorJson.directSales;
+            
+            // Adicionar informações sobre vendas diretas associadas
+            const directSaleCount = directSaleList.length;
+            errorDetails = `${errorDetails}\n\nQuantidade de Vendas Diretas Associadas: ${directSaleCount}`;
           }
         } catch (e) {
           // Se não conseguir fazer o parse, usa a mensagem genérica
+          console.error("Error parsing error message:", e);
         }
         
         toast({
           title: "Erro ao excluir marca",
           description: errorDetails,
           variant: "destructive",
+          className: "whitespace-pre-line", // Permitir quebras de linha
         });
       } else {
         toast({
