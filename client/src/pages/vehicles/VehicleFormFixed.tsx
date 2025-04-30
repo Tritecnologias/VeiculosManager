@@ -302,7 +302,7 @@ export default function VehicleFormFixed() {
         modelId: parseInt(data.modelId),
         versionId: parseInt(data.versionId),
         colorId: data.colorId && data.colorId !== "0" ? parseInt(data.colorId) : null,
-        year: data.year,
+        year: parseInt(String(data.year)),
         publicPrice: parseBRCurrency(data.publicPrice),
         situation: data.situation,
         description: data.description,
