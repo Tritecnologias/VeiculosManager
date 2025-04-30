@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -9,10 +9,11 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { ChevronLeft, Save } from "lucide-react";
+import { AlertCircle, ChevronLeft, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Brand, Model } from "@/lib/types";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const formSchema = z.object({
   name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres"),
@@ -26,6 +27,7 @@ export default function ModelForm() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const isEditing = Boolean(id);
+  const [duplicateError, setDuplicateError] = useState<string | null>(null);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -37,6 +39,10 @@ export default function ModelForm() {
   
   const { data: brands = [] } = useQuery<Brand[]>({
     queryKey: ["/api/brands"],
+  });
+  
+  const { data: models = [] } = useQuery<Model[]>({
+    queryKey: ["/api/models"],
   });
   
   const { data: model, isLoading: isLoadingModel } = useQuery<Model>({
@@ -53,11 +59,67 @@ export default function ModelForm() {
     }
   }, [model, form]);
   
+  // Converter para maiúsculas ao digitar e verificar duplicatas
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === 'name' && value.name) {
+        // Converter para maiúsculas
+        const upperCaseName = value.name.toUpperCase();
+        if (upperCaseName !== value.name) {
+          form.setValue('name', upperCaseName);
+        }
+        
+        // Verificar se o modelo já existe para a marca selecionada
+        setDuplicateError(null);
+        const normalizedName = upperCaseName.trim();
+        const selectedBrandId = value.brandId ? parseInt(value.brandId) : null;
+        
+        if (normalizedName && selectedBrandId) {
+          const existingModel = models.find(m => 
+            m.name.toUpperCase() === normalizedName && 
+            m.brandId === selectedBrandId &&
+            (!isEditing || m.id !== Number(id))
+          );
+          
+          if (existingModel) {
+            const brandName = brands.find(b => b.id === selectedBrandId)?.name || '';
+            setDuplicateError(`Já existe o modelo: ${existingModel.name} para a marca ${brandName}`);
+          }
+        }
+      }
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [form, models, brands, isEditing, id]);
+  
   const handleSubmit = async (values: FormValues) => {
+    // Verificar novamente se há duplicatas antes de salvar
+    const normalizedName = values.name.toUpperCase().trim();
+    const selectedBrandId = parseInt(values.brandId);
+    
+    const existingModel = models.find(m => 
+      m.name.toUpperCase() === normalizedName && 
+      m.brandId === selectedBrandId &&
+      (!isEditing || m.id !== Number(id))
+    );
+
+    if (existingModel) {
+      const brandName = brands.find(b => b.id === selectedBrandId)?.name || '';
+      const errorMessage = `Já existe o modelo: ${existingModel.name} para a marca ${brandName}`;
+      setDuplicateError(errorMessage);
+      toast({
+        title: "Modelo duplicado",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const modelData = {
         ...values,
-        brandId: parseInt(values.brandId),
+        name: normalizedName, // Garante que vai em maiúsculas
+        brandId: selectedBrandId,
       };
       
       if (isEditing) {
@@ -76,13 +138,24 @@ export default function ModelForm() {
       
       queryClient.invalidateQueries({ queryKey: ["/api/models"] });
       navigate("/models");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to save model:", error);
-      toast({
-        title: "Erro ao salvar",
-        description: "Ocorreu um erro ao salvar o modelo.",
-        variant: "destructive",
-      });
+      // Verificar se o erro é por causa de duplicação
+      if (error?.message?.includes("duplicate key") || error?.message?.includes("already exists")) {
+        const errorMessage = `Já existe um modelo com esse nome para esta marca.`;
+        setDuplicateError(errorMessage);
+        toast({
+          title: "Modelo duplicado",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Erro ao salvar",
+          description: "Ocorreu um erro ao salvar o modelo.",
+          variant: "destructive",
+        });
+      }
     }
   };
   
@@ -117,6 +190,13 @@ export default function ModelForm() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+              {duplicateError && (
+                <Alert variant="destructive" className="mb-4">
+                  <AlertCircle className="h-4 w-4 mr-2" />
+                  <AlertDescription>{duplicateError}</AlertDescription>
+                </Alert>
+              )}
+              
               <FormField
                 control={form.control}
                 name="brandId"
@@ -167,6 +247,9 @@ export default function ModelForm() {
                         Este é o nome atual do modelo. Você pode alterá-lo se desejar.
                       </p>
                     )}
+                    <p className="text-xs text-muted-foreground mt-1">
+                      O nome será automaticamente convertido para maiúsculas.
+                    </p>
                     <FormMessage />
                   </FormItem>
                 )}
