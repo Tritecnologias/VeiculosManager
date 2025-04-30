@@ -8,11 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { ChevronLeft, Save } from "lucide-react";
+import { AlertCircle, ChevronLeft, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Brand } from "@/lib/types";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const formSchema = z.object({
   name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres"),
@@ -25,7 +25,7 @@ export default function BrandForm() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const isEditing = Boolean(id);
-  const [selectedBrandId, setSelectedBrandId] = useState<string>("");
+  const [duplicateError, setDuplicateError] = useState<string | null>(null);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -48,21 +48,56 @@ export default function BrandForm() {
       form.reset({
         name: brand.name,
       });
-      setSelectedBrandId(brand.id.toString());
     }
   }, [brand, form]);
   
-  // Atualizar o campo de nome quando o usuário selecionar uma marca existente
+  // Converter para maiúsculas ao digitar e verificar duplicatas
   useEffect(() => {
-    if (selectedBrandId) {
-      const selectedBrand = brands.find(b => b.id.toString() === selectedBrandId);
-      if (selectedBrand) {
-        form.setValue("name", selectedBrand.name);
+    const subscription = form.watch((value, { name }) => {
+      if (name === 'name' && value.name) {
+        // Converter para maiúsculas
+        const upperCaseName = value.name.toUpperCase();
+        if (upperCaseName !== value.name) {
+          form.setValue('name', upperCaseName);
+        }
+        
+        // Verificar se a marca já existe
+        setDuplicateError(null);
+        const normalizedName = upperCaseName.trim();
+        if (normalizedName) {
+          const existingBrand = brands.find(b => 
+            b.name.toUpperCase() === normalizedName && 
+            (!isEditing || b.id !== Number(id))
+          );
+          
+          if (existingBrand) {
+            setDuplicateError(`Já existe a marca: ${existingBrand.name}`);
+          }
+        }
       }
-    }
-  }, [selectedBrandId, brands, form]);
+    });
+    
+    return () => subscription.unsubscribe();
+  }, [form, brands, isEditing, id]);
   
   const handleSubmit = async (values: FormValues) => {
+    // Verificar novamente se há duplicatas antes de salvar
+    const normalizedName = values.name.toUpperCase().trim();
+    const existingBrand = brands.find(b => 
+      b.name.toUpperCase() === normalizedName && 
+      (!isEditing || b.id !== Number(id))
+    );
+
+    if (existingBrand) {
+      setDuplicateError(`Já existe a marca: ${existingBrand.name}`);
+      toast({
+        title: "Nome duplicado",
+        description: `Já existe a marca: ${existingBrand.name}`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       if (isEditing) {
         await apiRequest("PATCH", `/api/brands/${id}`, values);
@@ -80,13 +115,23 @@ export default function BrandForm() {
       
       queryClient.invalidateQueries({ queryKey: ["/api/brands"] });
       navigate("/brands");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to save brand:", error);
-      toast({
-        title: "Erro ao salvar",
-        description: "Ocorreu um erro ao salvar a marca.",
-        variant: "destructive",
-      });
+      // Verificar se o erro é por causa de duplicação
+      if (error?.message?.includes("duplicate key") || error?.message?.includes("already exists")) {
+        setDuplicateError(`Já existe uma marca com esse nome.`);
+        toast({
+          title: "Nome duplicado",
+          description: `Já existe uma marca com esse nome.`,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Erro ao salvar",
+          description: "Ocorreu um erro ao salvar a marca.",
+          variant: "destructive",
+        });
+      }
     }
   };
   
@@ -121,54 +166,34 @@ export default function BrandForm() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-              <div className="space-y-6">
-                {/* Seletor de marca existente */}
-                <div className="space-y-2">
-                  <FormLabel>Selecionar uma marca existente</FormLabel>
-                  <Select 
-                    value={selectedBrandId} 
-                    onValueChange={setSelectedBrandId}
-                  >
+              {duplicateError && (
+                <Alert variant="destructive" className="mb-4">
+                  <AlertCircle className="h-4 w-4 mr-2" />
+                  <AlertDescription>{duplicateError}</AlertDescription>
+                </Alert>
+              )}
+              
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nome da Marca</FormLabel>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione uma marca" />
-                      </SelectTrigger>
+                      <Input placeholder="Ex: Volkswagen" {...field} />
                     </FormControl>
-                    <SelectContent>
-                      {brands
-                        .filter(b => !isEditing || b.id !== Number(id)) // Excluir a marca atual em edição
-                        .map((brand) => (
-                          <SelectItem key={brand.id} value={brand.id.toString()}>
-                            {brand.name}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-muted-foreground">
-                    Selecione uma marca existente para usar como base ou para converter para outro nome.
-                  </p>
-                </div>
-                
-                {/* Campo de nome da marca */}
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nome da Marca</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Ex: Volkswagen" {...field} />
-                      </FormControl>
-                      {isEditing && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Este é o nome atual da marca ({brand?.name}). Você pode modificá-lo se desejar.
-                        </p>
-                      )}
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+                    {isEditing && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Este é o nome atual da marca ({brand?.name}). Você pode modificá-lo se desejar.
+                      </p>
+                    )}
+                    <p className="text-xs text-muted-foreground mt-1">
+                      O nome será automaticamente convertido para maiúsculas.
+                    </p>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               
               <div className="flex justify-end space-x-2">
                 <Link href="/brands">
