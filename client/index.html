@@ -3,7 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-    <title>Configurando...</title>
+    <title>Cota Zero KM</title>
+    <script>
+      // Script para garantir que o título seja definido imediatamente
+      document.title = localStorage.getItem('app_name') || 'Cota Zero KM';
+    </script>
     <style>
       /* Estilo diretamente no HTML para garantir que seja aplicado imediatamente */
       .replit-badge,
