@@ -3,65 +3,74 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-    <title>Cota Zero KM</title>
+    <meta name="application-name" content="Cota Zero KM">
+    <meta name="apple-mobile-web-app-title" content="Cota Zero KM">
     <script>
-      // SOLUÇÃO DEFINITIVA PARA O PROBLEMA DO TÍTULO
-      
-      // Garantir que o HTML inicial seja criado com o título do localStorage ou "Cota Zero KM"
-      document.title = localStorage.getItem('app_name') || 'Cota Zero KM';
-      
-      // Forçar a remoção de qualquer referência ao "Auto+"
-      if (document.title.includes("Auto+")) {
-        document.title = localStorage.getItem('app_name') || 'Cota Zero KM';
-      }
-      
-      // Função para atualizar o título e favicon em múltiplos lugares
-      function updateTitleAndFavicon(title, favicon) {
-        // 1. Atualizar o título da janela principal
-        window.document.title = title;
-        
-        // 2. Armazenar o título no localStorage para uso futuro
-        localStorage.setItem('app_name', title);
-        
-        // 3. Se houver favicon, atualizá-lo
-        if (favicon && favicon.trim() !== '') {
-          try {
-            // Remover favicons existentes
-            const existingFavicons = document.querySelectorAll('link[rel*="icon"]');
-            existingFavicons.forEach(f => f.remove());
-            
-            // Adicionar o novo favicon
-            const link = document.createElement('link');
-            link.rel = 'icon';
-            link.type = 'image/x-icon';
-            link.href = favicon;
-            document.head.appendChild(link);
-          } catch (e) {
-            console.error('Erro ao atualizar favicon:', e);
+      // Recuperar título e sobrescrever o title do documento
+      Object.defineProperty(document, 'title', {
+        get: function() {
+          return localStorage.getItem('app_name') || 'Cota Zero KM';
+        },
+        set: function(newTitle) {
+          // Se for tentar definir como "Auto+", use o título personalizado
+          if (newTitle && typeof newTitle === 'string' && newTitle.includes('Auto+')) {
+            const savedTitle = localStorage.getItem('app_name');
+            if (savedTitle) {
+              document.getElementsByTagName('title')[0].textContent = savedTitle;
+              return;
+            }
           }
+          
+          // Para qualquer outro título, permita a definição normal
+          document.getElementsByTagName('title')[0].textContent = newTitle;
         }
+      });
+      
+      // Definir o título inicial
+      if (!document.getElementsByTagName('title').length) {
+        const titleElem = document.createElement('title');
+        titleElem.textContent = localStorage.getItem('app_name') || 'Cota Zero KM';
+        document.head.appendChild(titleElem);
+      } else {
+        document.getElementsByTagName('title')[0].textContent = localStorage.getItem('app_name') || 'Cota Zero KM';
       }
       
-      // Função para buscar as configurações do servidor
-      async function fetchAppSettings() {
+      // Função para buscar as configurações
+      async function fetchSettings() {
         try {
           const response = await fetch('/api/settings');
           if (response.ok) {
             const settings = await response.json();
-            const appNameSetting = settings.find(s => s.key === 'app_name');
-            const appName = appNameSetting?.value || '';
-            const companyNameSetting = settings.find(s => s.key === 'company_name');
-            const companyName = companyNameSetting?.value || '';
-            const faviconSetting = settings.find(s => s.key === 'app_favicon');
-            const favicon = faviconSetting?.value || '';
+            const appName = settings.find(s => s.key === 'app_name')?.value;
+            const companyName = settings.find(s => s.key === 'company_name')?.value;
+            const appFavicon = settings.find(s => s.key === 'app_favicon')?.value;
             
-            // Definir o título com base na prioridade
-            if (appName && appName.trim() !== '') {
-              updateTitleAndFavicon(appName, favicon);
-            } else if (companyName && companyName.trim() !== '') {
-              updateTitleAndFavicon(companyName, favicon);
-            } else {
-              updateTitleAndFavicon('Cota Zero KM', favicon);
+            // Salvar título baseado na prioridade
+            if (appName && appName.trim()) {
+              localStorage.setItem('app_name', appName);
+              document.getElementsByTagName('title')[0].textContent = appName;
+              
+              // Atualizar metatags também
+              document.querySelector('meta[name="application-name"]').setAttribute('content', appName);
+              document.querySelector('meta[name="apple-mobile-web-app-title"]').setAttribute('content', appName);
+            } else if (companyName && companyName.trim()) {
+              localStorage.setItem('app_name', companyName);
+              document.getElementsByTagName('title')[0].textContent = companyName;
+              
+              // Atualizar metatags
+              document.querySelector('meta[name="application-name"]').setAttribute('content', companyName);
+              document.querySelector('meta[name="apple-mobile-web-app-title"]').setAttribute('content', companyName);
+            }
+            
+            // Atualizar favicon
+            if (appFavicon && appFavicon.trim()) {
+              const faviconElements = document.querySelectorAll('link[rel*="icon"]');
+              faviconElements.forEach(el => el.remove());
+              
+              const link = document.createElement('link');
+              link.rel = 'icon';
+              link.href = appFavicon;
+              document.head.appendChild(link);
             }
           }
         } catch (error) {
@@ -70,14 +79,7 @@
       }
       
       // Executar imediatamente
-      fetchAppSettings();
-      
-      // Monitor para garantir que o título permaneça correto
-      setInterval(() => {
-        if (document.title.includes('Auto+')) {
-          document.title = localStorage.getItem('app_name') || 'Cota Zero KM';
-        }
-      }, 100);
+      fetchSettings();
     </script>
     <style>
       /* Estilo diretamente no HTML para garantir que seja aplicado imediatamente */

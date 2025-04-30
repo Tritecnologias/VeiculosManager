@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <title>Cota Zero KM</title>
+    <script>
+      // SOLUÇÃO DEFINITIVA PARA O PROBLEMA DO TÍTULO
+      
+      // Garantir que o HTML inicial seja criado com o título do localStorage ou "Cota Zero KM"
+      document.title = localStorage.getItem('app_name') || 'Cota Zero KM';
+      
+      // Forçar a remoção de qualquer referência ao "Auto+"
+      if (document.title.includes("Auto+")) {
+        document.title = localStorage.getItem('app_name') || 'Cota Zero KM';
+      }
+      
+      // Função para atualizar o título e favicon em múltiplos lugares
+      function updateTitleAndFavicon(title, favicon) {
+        // 1. Atualizar o título da janela principal
+        window.document.title = title;
+        
+        // 2. Armazenar o título no localStorage para uso futuro
+        localStorage.setItem('app_name', title);
+        
+        // 3. Se houver favicon, atualizá-lo
+        if (favicon && favicon.trim() !== '') {
+          try {
+            // Remover favicons existentes
+            const existingFavicons = document.querySelectorAll('link[rel*="icon"]');
+            existingFavicons.forEach(f => f.remove());
+            
+            // Adicionar o novo favicon
+            const link = document.createElement('link');
+            link.rel = 'icon';
+            link.type = 'image/x-icon';
+            link.href = favicon;
+            document.head.appendChild(link);
+          } catch (e) {
+            console.error('Erro ao atualizar favicon:', e);
+          }
+        }
+      }
+      
+      // Função para buscar as configurações do servidor
+      async function fetchAppSettings() {
+        try {
+          const response = await fetch('/api/settings');
+          if (response.ok) {
+            const settings = await response.json();
+            const appNameSetting = settings.find(s => s.key === 'app_name');
+            const appName = appNameSetting?.value || '';
+            const companyNameSetting = settings.find(s => s.key === 'company_name');
+            const companyName = companyNameSetting?.value || '';
+            const faviconSetting = settings.find(s => s.key === 'app_favicon');
+            const favicon = faviconSetting?.value || '';
+            
+            // Definir o título com base na prioridade
+            if (appName && appName.trim() !== '') {
+              updateTitleAndFavicon(appName, favicon);
+            } else if (companyName && companyName.trim() !== '') {
+              updateTitleAndFavicon(companyName, favicon);
+            } else {
+              updateTitleAndFavicon('Cota Zero KM', favicon);
+            }
+          }
+        } catch (error) {
+          console.error('Erro ao buscar configurações:', error);
+        }
+      }
+      
+      // Executar imediatamente
+      fetchAppSettings();
+      
+      // Monitor para garantir que o título permaneça correto
+      setInterval(() => {
+        if (document.title.includes('Auto+')) {
+          document.title = localStorage.getItem('app_name') || 'Cota Zero KM';
+        }
+      }, 100);
+    </script>
+    <style>
+      /* Estilo diretamente no HTML para garantir que seja aplicado imediatamente */
+      .replit-badge,
+      .replit-badge-container,
+      div[style*="position: fixed; bottom: 0px; right: 0px;"],
+      div[style*="position:fixed;bottom:0;right:0"],
+      a[href*="replit.com"],
+      a[href*="/__replauthuser"],
+      .replit-auth-container,
+      #FeatureFlags,
+      #LandingPageComponents {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        z-index: -9999 !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <!-- Script de badge Replit removido -->
+    <script>
+      // Script para remover o badge Replit após o carregamento da página
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          const badges = document.querySelectorAll('div[style*="position: fixed; bottom: 0px; right: 0px;"], div[style*="position:fixed;bottom:0;right:0"], a[href*="replit.com"]');
+          badges.forEach(function(badge) {
+            badge.style.display = 'none';
+            badge.remove();
+          });
+        }, 500);
+      });
+    </script>
+  </body>
+</html>
