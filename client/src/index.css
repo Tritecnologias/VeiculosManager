@@ -82,3 +82,20 @@
     @apply bg-teal-600;
   }
 }
+
+/* Ocultar o badge Made with Replit */
+.replit-badge,
+.replit-badge-container,
+div[style*="position: fixed; bottom: 0px; right: 0px;"],
+div[style*="position:fixed;bottom:0;right:0"],
+a[href*="replit.com"],
+a[href*="/__replauthuser"],
+.replit-auth-container,
+#FeatureFlags,
+#LandingPageComponents {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  z-index: -9999 !important;
+}

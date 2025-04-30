@@ -3,11 +3,41 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <title>Auto+</title>
+    <style>
+      /* Estilo diretamente no HTML para garantir que seja aplicado imediatamente */
+      .replit-badge,
+      .replit-badge-container,
+      div[style*="position: fixed; bottom: 0px; right: 0px;"],
+      div[style*="position:fixed;bottom:0;right:0"],
+      a[href*="replit.com"],
+      a[href*="/__replauthuser"],
+      .replit-auth-container,
+      #FeatureFlags,
+      #LandingPageComponents {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        z-index: -9999 !important;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <!-- This script injects a replit badge into the page, please feel free to remove this line -->
-    <script type="text/javascript" src="https://replit.com/public/js/replit-badge-v3.js"></script>
+    <!-- Script de badge Replit removido -->
+    <script>
+      // Script para remover o badge Replit após o carregamento da página
+      window.addEventListener('load', function() {
+        setTimeout(function() {
+          const badges = document.querySelectorAll('div[style*="position: fixed; bottom: 0px; right: 0px;"], div[style*="position:fixed;bottom:0;right:0"], a[href*="replit.com"]');
+          badges.forEach(function(badge) {
+            badge.style.display = 'none';
+            badge.remove();
+          });
+        }, 500);
+      });
+    </script>
   </body>
 </html>
