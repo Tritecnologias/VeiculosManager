@@ -123,6 +123,7 @@ export default function Settings() {
   const generalSettings = settings.filter(s => ["admin_email", "default_currency"].includes(s.key));
   const taxSettings = settings.filter(s => ["tax_rate", "enable_pcd_discounts"].includes(s.key));
   const companySettings = settings.filter(s => ["company_name", "company_logo_url"].includes(s.key));
+  const appSettings = settings.filter(s => ["app_name", "app_favicon"].includes(s.key));
   
   return (
     <div className="space-y-6">
@@ -148,6 +149,7 @@ export default function Settings() {
           <TabsTrigger value="general">Geral</TabsTrigger>
           <TabsTrigger value="direct-sales">Vendas Diretas</TabsTrigger>
           <TabsTrigger value="company">Empresa</TabsTrigger>
+          <TabsTrigger value="app">Aplicação</TabsTrigger>
         </TabsList>
         
         <TabsContent value="general" className="space-y-4">
@@ -213,6 +215,62 @@ export default function Settings() {
               </div>
               
 
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="app" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Configurações da Aplicação</CardTitle>
+              <CardDescription>
+                Configure o nome e o favicon da aplicação que aparecem na aba do navegador
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Campo para nome da aplicação */}
+              <div className="grid gap-2">
+                <Label htmlFor="app_name">Nome da Aplicação</Label>
+                <Input
+                  id="app_name"
+                  name="app_name"
+                  value={formData["app_name"] as string || ""}
+                  onChange={handleTextChange}
+                  placeholder="Nome da aplicação que aparece na aba do navegador"
+                />
+                <p className="text-sm text-muted-foreground">
+                  Este nome será exibido na aba do navegador.
+                </p>
+              </div>
+              
+              {/* Campo para URL do favicon */}
+              <div className="grid gap-2">
+                <Label htmlFor="app_favicon">URL do Favicon</Label>
+                <Input
+                  id="app_favicon"
+                  name="app_favicon"
+                  value={formData["app_favicon"] as string || ""}
+                  onChange={handleTextChange}
+                  placeholder="URL do ícone para a aba do navegador (opcional)"
+                />
+                <p className="text-sm text-muted-foreground">
+                  URL para uma imagem quadrada que será usada como favicon. Para melhor resultado, use uma imagem de 32x32 pixels ou maior.
+                </p>
+                {formData["app_favicon"] && (
+                  <div className="mt-2">
+                    <p className="text-sm font-medium mb-1">Visualização:</p>
+                    <img 
+                      src={formData["app_favicon"] as string} 
+                      alt="Favicon Preview" 
+                      className="w-8 h-8 border border-gray-200 rounded"
+                      onError={(e) => {
+                        // Se a imagem não carregar, mostra um placeholder
+                        (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71'%3E%3C/path%3E%3Cpath d='M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71'%3E%3C/path%3E%3C/svg%3E";
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
