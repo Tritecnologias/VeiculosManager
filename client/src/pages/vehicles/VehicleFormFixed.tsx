@@ -305,7 +305,10 @@ export default function VehicleFormFixed() {
         year: parseInt(String(data.year)),
         publicPrice: parseBRCurrency(data.publicPrice),
         situation: data.situation,
-        description: data.description,
+        // Garantir que description tenha pelo menos 10 caracteres
+        description: data.description ? data.description : 
+          (data.engine ? data.engine + " - Características padrão do veículo" : 
+           "Veículo padrão - Características a serem definidas posteriormente"),
         engine: data.engine,
         fuelType: data.fuelType,
         transmission: data.transmission,

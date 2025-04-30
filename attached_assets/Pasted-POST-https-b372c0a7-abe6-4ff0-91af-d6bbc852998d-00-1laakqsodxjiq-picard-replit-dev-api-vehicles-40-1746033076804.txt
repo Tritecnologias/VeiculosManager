@@ -1,0 +1,85 @@
+POST https://b372c0a7-abe6-4ff0-91af-d6bbc852998d-00-1laakqsodxjiq.picard.replit.dev/api/vehicles 400 (Bad Request)
+window.fetch @ Network.js:219
+onSubmit @ VehicleFormFixed.tsx:339
+onClick @ VehicleFormFixed.tsx:984
+callCallback2 @ chunk-WERSD76P.js?v=ae64b9b8:3674
+invokeGuardedCallbackDev @ chunk-WERSD76P.js?v=ae64b9b8:3699
+invokeGuardedCallback @ chunk-WERSD76P.js?v=ae64b9b8:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-WERSD76P.js?v=ae64b9b8:3736
+executeDispatch @ chunk-WERSD76P.js?v=ae64b9b8:7014
+processDispatchQueueItemsInOrder @ chunk-WERSD76P.js?v=ae64b9b8:7034
+processDispatchQueue @ chunk-WERSD76P.js?v=ae64b9b8:7043
+dispatchEventsForPlugins @ chunk-WERSD76P.js?v=ae64b9b8:7051
+(anonymous) @ chunk-WERSD76P.js?v=ae64b9b8:7174
+batchedUpdates$1 @ chunk-WERSD76P.js?v=ae64b9b8:18913
+batchedUpdates @ chunk-WERSD76P.js?v=ae64b9b8:3579
+dispatchEventForPluginEventSystem @ chunk-WERSD76P.js?v=ae64b9b8:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-WERSD76P.js?v=ae64b9b8:5478
+dispatchEvent @ chunk-WERSD76P.js?v=ae64b9b8:5472
+dispatchDiscreteEvent @ chunk-WERSD76P.js?v=ae64b9b8:5449Understand this error
+Console.js:61 Resposta da API: 400 Bad Request
+Console.js:61 Erro da API (400): {"errors":[{"code":"too_small","minimum":10,"type":"string","inclusive":true,"exact":false,"message":"A descrição deve ter pelo menos 10 caracteres","path":["description"]}]}
+Mt.forEach.n.<computed> @ Console.js:61
+onSubmit @ VehicleFormFixed.tsx:357
+await in onSubmit
+onClick @ VehicleFormFixed.tsx:984
+callCallback2 @ chunk-WERSD76P.js?v=ae64b9b8:3674
+invokeGuardedCallbackDev @ chunk-WERSD76P.js?v=ae64b9b8:3699
+invokeGuardedCallback @ chunk-WERSD76P.js?v=ae64b9b8:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-WERSD76P.js?v=ae64b9b8:3736
+executeDispatch @ chunk-WERSD76P.js?v=ae64b9b8:7014
+processDispatchQueueItemsInOrder @ chunk-WERSD76P.js?v=ae64b9b8:7034
+processDispatchQueue @ chunk-WERSD76P.js?v=ae64b9b8:7043
+dispatchEventsForPlugins @ chunk-WERSD76P.js?v=ae64b9b8:7051
+(anonymous) @ chunk-WERSD76P.js?v=ae64b9b8:7174
+batchedUpdates$1 @ chunk-WERSD76P.js?v=ae64b9b8:18913
+batchedUpdates @ chunk-WERSD76P.js?v=ae64b9b8:3579
+dispatchEventForPluginEventSystem @ chunk-WERSD76P.js?v=ae64b9b8:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-WERSD76P.js?v=ae64b9b8:5478
+dispatchEvent @ chunk-WERSD76P.js?v=ae64b9b8:5472
+dispatchDiscreteEvent @ chunk-WERSD76P.js?v=ae64b9b8:5449Understand this error
+Console.js:61 Erro na requisição fetch: Error: Erro ao salvar: 400 {"errors":[{"code":"too_small","minimum":10,"type":"string","inclusive":true,"exact":false,"message":"A descrição deve ter pelo menos 10 caracteres","path":["description"]}]}
+    at onSubmit (VehicleFormFixed.tsx:358:17)
+Mt.forEach.n.<computed> @ Console.js:61
+onSubmit @ VehicleFormFixed.tsx:496
+await in onSubmit
+onClick @ VehicleFormFixed.tsx:984
+callCallback2 @ chunk-WERSD76P.js?v=ae64b9b8:3674
+invokeGuardedCallbackDev @ chunk-WERSD76P.js?v=ae64b9b8:3699
+invokeGuardedCallback @ chunk-WERSD76P.js?v=ae64b9b8:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-WERSD76P.js?v=ae64b9b8:3736
+executeDispatch @ chunk-WERSD76P.js?v=ae64b9b8:7014
+processDispatchQueueItemsInOrder @ chunk-WERSD76P.js?v=ae64b9b8:7034
+processDispatchQueue @ chunk-WERSD76P.js?v=ae64b9b8:7043
+dispatchEventsForPlugins @ chunk-WERSD76P.js?v=ae64b9b8:7051
+(anonymous) @ chunk-WERSD76P.js?v=ae64b9b8:7174
+batchedUpdates$1 @ chunk-WERSD76P.js?v=ae64b9b8:18913
+batchedUpdates @ chunk-WERSD76P.js?v=ae64b9b8:3579
+dispatchEventForPluginEventSystem @ chunk-WERSD76P.js?v=ae64b9b8:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-WERSD76P.js?v=ae64b9b8:5478
+dispatchEvent @ chunk-WERSD76P.js?v=ae64b9b8:5472
+dispatchDiscreteEvent @ chunk-WERSD76P.js?v=ae64b9b8:5449Understand this error
+Console.js:61 Erro ao salvar veículo: Error: Erro ao salvar: 400 {"errors":[{"code":"too_small","minimum":10,"type":"string","inclusive":true,"exact":false,"message":"A descrição deve ter pelo menos 10 caracteres","path":["description"]}]}
+    at onSubmit (VehicleFormFixed.tsx:358:17)
+Mt.forEach.n.<computed> @ Console.js:61
+onSubmit @ VehicleFormFixed.tsx:511
+await in onSubmit
+onClick @ VehicleFormFixed.tsx:984
+callCallback2 @ chunk-WERSD76P.js?v=ae64b9b8:3674
+invokeGuardedCallbackDev @ chunk-WERSD76P.js?v=ae64b9b8:3699
+invokeGuardedCallback @ chunk-WERSD76P.js?v=ae64b9b8:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-WERSD76P.js?v=ae64b9b8:3736
+executeDispatch @ chunk-WERSD76P.js?v=ae64b9b8:7014
+processDispatchQueueItemsInOrder @ chunk-WERSD76P.js?v=ae64b9b8:7034
+processDispatchQueue @ chunk-WERSD76P.js?v=ae64b9b8:7043
+dispatchEventsForPlugins @ chunk-WERSD76P.js?v=ae64b9b8:7051
+(anonymous) @ chunk-WERSD76P.js?v=ae64b9b8:7174
+batchedUpdates$1 @ chunk-WERSD76P.js?v=ae64b9b8:18913
+batchedUpdates @ chunk-WERSD76P.js?v=ae64b9b8:3579
+dispatchEventForPluginEventSystem @ chunk-WERSD76P.js?v=ae64b9b8:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-WERSD76P.js?v=ae64b9b8:5478
+dispatchEvent @ chunk-WERSD76P.js?v=ae64b9b8:5472
+dispatchDiscreteEvent @ chunk-WERSD76P.js?v=ae64b9b8:5449Understand this error
+Console.js:61 Inicializando formulário com id: undefined isEditing: false
+Console.js:61 Resetando estado de submissão
+Console.js:61 Inicializando formulário com id: undefined isEditing: false
