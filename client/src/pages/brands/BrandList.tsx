@@ -35,11 +35,23 @@ export default function BrandList() {
       if (error.message && error.message.includes("409")) {
         // Extrair a mensagem do erro que vem do backend
         let errorDetails = "Não foi possível excluir esta marca.";
+        let modelList = [];
+        let directSaleList = [];
         
         try {
           const errorJson = JSON.parse(error.message.split(": ")[1]);
           if (errorJson.message) {
             errorDetails = errorJson.message;
+          }
+          
+          // Capturar informações sobre modelos associados, se houver
+          if (errorJson.models && errorJson.models.length > 0) {
+            modelList = errorJson.models;
+          }
+          
+          // Capturar informações sobre vendas diretas associadas, se houver
+          if (errorJson.directSales && errorJson.directSales.length > 0) {
+            directSaleList = errorJson.directSales;
           }
         } catch (e) {
           // Se não conseguir fazer o parse, usa a mensagem genérica

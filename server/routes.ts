@@ -107,8 +107,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (associatedModels.length > 0) {
         console.log(`[API DELETE /brands/:id] Cannot delete: has associated models`);
+        
+        // Criar uma lista com os nomes dos modelos
+        const modelNames = associatedModels.map(model => model.name).join(", ");
+        
         return res.status(409).json({ 
-          message: `Cannot delete brand because it has ${associatedModels.length} associated models. Delete the models first.` 
+          message: `Não é possível excluir esta marca porque ela possui ${associatedModels.length} modelos associados: ${modelNames}. Exclua os modelos primeiro.`,
+          models: associatedModels.map(model => ({ id: model.id, name: model.name }))
         });
       }
       
@@ -121,8 +126,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (associatedDirectSales.length > 0) {
         console.log(`[API DELETE /brands/:id] Cannot delete: has associated direct sales`);
+        
+        // Criar uma lista com os IDs das vendas diretas associadas
         return res.status(409).json({ 
-          message: `Cannot delete brand because it has ${associatedDirectSales.length} associated direct sales. Delete the direct sales first.` 
+          message: `Não é possível excluir esta marca porque ela possui ${associatedDirectSales.length} vendas diretas associadas. Exclua as vendas diretas primeiro.`,
+          directSales: associatedDirectSales.map(sale => ({ id: sale.id }))
         });
       }
       
