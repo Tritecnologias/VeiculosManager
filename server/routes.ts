@@ -2,6 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
+import { db } from "@db";
+import { eq } from "drizzle-orm";
 import { 
   brandInsertSchema, 
   modelInsertSchema, 
@@ -13,12 +15,21 @@ import {
   settingsInsertSchema,
   optionalInsertSchema,
   versionOptionalInsertSchema,
-  directSalesInsertSchema
+  directSalesInsertSchema,
+  brands,
+  models,
+  directSales
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const apiPrefix = '/api';
   const httpServer = createServer(app);
+  
+  // Middleware para logar todas as solicitações de API
+  app.use(apiPrefix, (req, res, next) => {
+    console.log(`API Request: ${req.method} ${req.originalUrl}`);
+    next();
+  });
 
   // Brands API
   app.get(`${apiPrefix}/brands`, async (req, res) => {
