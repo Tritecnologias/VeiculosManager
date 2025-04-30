@@ -490,11 +490,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post(`${apiPrefix}/vehicles`, async (req, res) => {
     try {
-      const validatedData = vehicleInsertSchema.parse(req.body);
+      console.log("POST /vehicles - Dados recebidos:", JSON.stringify(req.body, null, 2));
+      
+      // Vamos garantir que os valores numéricos estejam corretos
+      const processedData = {
+        ...req.body,
+        versionId: parseInt(req.body.versionId),
+        colorId: req.body.colorId ? parseInt(req.body.colorId) : null,
+        year: parseInt(req.body.year),
+        publicPrice: parseFloat(req.body.publicPrice),
+        pcdIpiIcms: parseFloat(req.body.pcdIpiIcms),
+        pcdIpi: parseFloat(req.body.pcdIpi),
+        taxiIpiIcms: parseFloat(req.body.taxiIpiIcms),
+        taxiIpi: parseFloat(req.body.taxiIpi)
+      };
+      
+      console.log("Dados processados para validação:", JSON.stringify(processedData, null, 2));
+      
+      const validatedData = vehicleInsertSchema.parse(processedData);
+      console.log("Dados validados:", JSON.stringify(validatedData, null, 2));
+      
       const newVehicle = await storage.createVehicle(validatedData);
       res.status(201).json(newVehicle);
     } catch (error) {
       if (error instanceof z.ZodError) {
+        console.error("Erro de validação Zod:", JSON.stringify(error.errors, null, 2));
         return res.status(400).json({ errors: error.errors });
       }
       console.error("Error creating vehicle:", error);
@@ -511,7 +531,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`[PATCH /api/vehicles/:id] Parsed ID: ${id}`);
       
       try {
-        const validatedData = vehicleInsertSchema.parse(req.body);
+        // Vamos garantir que os valores numéricos estejam corretos
+        const processedData = {
+          ...req.body,
+          versionId: parseInt(req.body.versionId),
+          colorId: req.body.colorId ? parseInt(req.body.colorId) : null,
+          year: parseInt(req.body.year),
+          publicPrice: parseFloat(req.body.publicPrice),
+          pcdIpiIcms: parseFloat(req.body.pcdIpiIcms),
+          pcdIpi: parseFloat(req.body.pcdIpi),
+          taxiIpiIcms: parseFloat(req.body.taxiIpiIcms),
+          taxiIpi: parseFloat(req.body.taxiIpi)
+        };
+        
+        console.log('Dados processados para validação:', JSON.stringify(processedData, null, 2));
+        
+        const validatedData = vehicleInsertSchema.parse(processedData);
         console.log('[PATCH /api/vehicles/:id] Data validated successfully with schema');
         
         console.log('[PATCH /api/vehicles/:id] Calling storage.updateVehicle...');
@@ -526,7 +561,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json(updatedVehicle);
       } catch (zodError) {
         if (zodError instanceof z.ZodError) {
-          console.error('[PATCH /api/vehicles/:id] Validation error:', zodError.errors);
+          console.error('[PATCH /api/vehicles/:id] Validation error:', JSON.stringify(zodError.errors, null, 2));
           return res.status(400).json({ errors: zodError.errors });
         }
         throw zodError; // Re-throw if not a Zod error
