@@ -100,16 +100,16 @@ export default function ModelForm() {
           </Button>
         </Link>
         <h1 className="text-2xl font-semibold text-gray-800">
-          {isEditing ? "Editar Modelo" : "Novo Modelo"}
+          {isEditing ? `Editar Modelo: ${model?.name}` : "Novo Modelo"}
         </h1>
       </div>
       
       <Card>
         <CardHeader>
-          <CardTitle>{isEditing ? "Editar Modelo" : "Cadastrar Novo Modelo"}</CardTitle>
+          <CardTitle>{isEditing ? `Editar Modelo: ${model?.name}` : "Cadastrar Novo Modelo"}</CardTitle>
           <CardDescription>
             {isEditing 
-              ? "Atualize as informações do modelo"
+              ? `Atualize as informações do modelo ${model?.name} da marca ${brands.find(b => b.id === model?.brandId)?.name || ''}` 
               : "Preencha os campos para adicionar um novo modelo"
             }
           </CardDescription>
@@ -140,6 +140,11 @@ export default function ModelForm() {
                         ))}
                       </SelectContent>
                     </Select>
+                    {isEditing && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Marca atual: {brands.find(b => b.id === model?.brandId)?.name}. Você pode selecionar outra marca se desejar.
+                      </p>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
@@ -152,8 +157,16 @@ export default function ModelForm() {
                   <FormItem>
                     <FormLabel>Nome do Modelo</FormLabel>
                     <FormControl>
-                      <Input placeholder="Ex: Polo" {...field} />
+                      <Input 
+                        placeholder="Ex: Polo" 
+                        {...field} 
+                      />
                     </FormControl>
+                    {isEditing && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Este é o nome atual do modelo. Você pode alterá-lo se desejar.
+                      </p>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
