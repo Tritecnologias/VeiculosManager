@@ -3,10 +3,51 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-    <title>Cota Zero KM</title>
+    <title></title>
     <script>
-      // Script para garantir que o título seja definido imediatamente
+      // Função para buscar as configurações do servidor
+      async function fetchAppSettings() {
+        try {
+          const response = await fetch('/api/settings');
+          if (response.ok) {
+            const settings = await response.json();
+            const appNameSetting = settings.find(s => s.key === 'app_name');
+            const appName = appNameSetting ? appNameSetting.value : '';
+            const companyNameSetting = settings.find(s => s.key === 'company_name');
+            const companyName = companyNameSetting ? companyNameSetting.value : '';
+            
+            // Definir o título com base na prioridade
+            if (appName && appName.trim() !== '') {
+              document.title = appName;
+              localStorage.setItem('app_name', appName);
+            } else if (companyName && companyName.trim() !== '') {
+              document.title = companyName;
+              localStorage.setItem('app_name', companyName);
+            } else {
+              document.title = 'Cota Zero KM';
+            }
+            
+            // Também atualizar o favicon se estiver nas configurações
+            const faviconSetting = settings.find(s => s.key === 'app_favicon');
+            const favicon = faviconSetting ? faviconSetting.value : '';
+            if (favicon && favicon.trim() !== '') {
+              const link = document.createElement('link');
+              link.rel = 'icon';
+              link.type = 'image/x-icon';
+              link.href = favicon;
+              document.head.appendChild(link);
+            }
+          }
+        } catch (error) {
+          console.error('Erro ao buscar configurações:', error);
+        }
+      }
+
+      // Definir um título provisório até buscar do servidor
       document.title = localStorage.getItem('app_name') || 'Cota Zero KM';
+      
+      // Buscar as configurações assim que possível
+      fetchAppSettings();
     </script>
     <style>
       /* Estilo diretamente no HTML para garantir que seja aplicado imediatamente */

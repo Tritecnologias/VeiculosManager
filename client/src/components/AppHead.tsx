@@ -19,14 +19,6 @@ export function AppHead() {
     refetchOnWindowFocus: true, // Recarregar quando a janela ganhar foco
   });
 
-  // Remover completamente qualquer texto "Auto+" que possa ter sido definido
-  useEffect(() => {
-    // Forçar a remoção de qualquer referência ao "Auto+"
-    if (document.title.includes("Auto+")) {
-      document.title = "Cota Zero KM";
-    }
-  }, []);
-
   useEffect(() => {
     if (settings.length === 0) return; // Não faz nada se as configurações não foram carregadas
 
@@ -35,22 +27,17 @@ export function AppHead() {
     const appFavicon = settings.find(s => s.key === "app_favicon")?.value;
     const companyName = settings.find(s => s.key === "company_name")?.value;
 
-    // Salvar o nome da aplicação no localStorage para uso durante o carregamento da página
+    // Atualizar o título da página de acordo com a ordem de prioridade
     if (appName && appName.trim() !== "") {
-      localStorage.setItem('app_name', appName);
-      // Garantir que o título seja atualizado
       document.title = appName;
+      localStorage.setItem('app_name', appName);
     } else if (companyName && companyName.trim() !== "") {
-      localStorage.setItem('app_name', companyName);
       document.title = companyName;
-    } else {
-      // Se não tiver nome da aplicação nem da empresa, usar um nome padrão
-      document.title = "Cota Zero KM";
+      localStorage.setItem('app_name', companyName);
     }
 
     // Atualizar o favicon se estiver definido
     if (appFavicon && appFavicon.trim() !== "") {
-      // Armazenar o favicon no localStorage
       localStorage.setItem('app_favicon', appFavicon);
       
       try {
@@ -75,22 +62,6 @@ export function AppHead() {
       }
     }
   }, [settings]);
-
-  // Executar periodicamente para garantir que o título esteja correto
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (document.title.includes("Auto+")) {
-        const savedName = localStorage.getItem('app_name');
-        if (savedName) {
-          document.title = savedName;
-        } else {
-          document.title = "Cota Zero KM";
-        }
-      }
-    }, 500);
-    
-    return () => clearInterval(interval);
-  }, []);
 
   // Este componente não renderiza nada visível
   return null;
