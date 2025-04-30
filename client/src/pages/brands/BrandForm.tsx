@@ -45,11 +45,26 @@ export default function BrandForm() {
   
   useEffect(() => {
     if (brand) {
+      // Garantir que o nome esteja em maiúsculas ao carregar
+      const upperCaseName = brand.name.toUpperCase();
       form.reset({
-        name: brand.name,
+        name: upperCaseName,
       });
+      
+      // Se o nome na base de dados não estiver em maiúsculas, atualizar
+      if (upperCaseName !== brand.name && isEditing) {
+        apiRequest("PATCH", `/api/brands/${id}`, { name: upperCaseName })
+          .then(() => {
+            console.log("Nome da marca convertido para maiúsculas no banco de dados");
+            queryClient.invalidateQueries({ queryKey: ["/api/brands"] });
+            queryClient.invalidateQueries({ queryKey: [`/api/brands/${id}`] });
+          })
+          .catch(error => {
+            console.error("Erro ao atualizar nome da marca para maiúsculas:", error);
+          });
+      }
     }
-  }, [brand, form]);
+  }, [brand, form, id, isEditing]);
   
   // Converter para maiúsculas ao digitar e verificar duplicatas
   useEffect(() => {

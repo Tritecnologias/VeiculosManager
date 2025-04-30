@@ -59,8 +59,10 @@ export default function VersionForm() {
   
   useEffect(() => {
     if (version && version.model) {
+      // Garantir que o nome esteja em maiúsculas ao carregar
+      const upperCaseName = version.name.toUpperCase();
       form.reset({
-        name: version.name,
+        name: upperCaseName,
         brandId: version.model.brandId.toString(),
         modelId: version.modelId.toString(),
       });
@@ -68,8 +70,24 @@ export default function VersionForm() {
       setFilteredModels(
         models.filter(model => model.brandId === version.model.brandId)
       );
+      
+      // Se o nome na base de dados não estiver em maiúsculas, atualizar
+      if (upperCaseName !== version.name && isEditing) {
+        apiRequest("PATCH", `/api/versions/${id}`, { 
+          name: upperCaseName, 
+          modelId: version.modelId 
+        })
+          .then(() => {
+            console.log("Nome da versão convertido para maiúsculas no banco de dados");
+            queryClient.invalidateQueries({ queryKey: ["/api/versions"] });
+            queryClient.invalidateQueries({ queryKey: [`/api/versions/${id}`] });
+          })
+          .catch(error => {
+            console.error("Erro ao atualizar nome da versão para maiúsculas:", error);
+          });
+      }
     }
-  }, [version, form, models]);
+  }, [version, form, models, id, isEditing]);
   
   // Converter para maiúsculas ao digitar e verificar duplicatas
   useEffect(() => {

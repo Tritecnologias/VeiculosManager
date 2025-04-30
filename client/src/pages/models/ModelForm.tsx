@@ -52,12 +52,30 @@ export default function ModelForm() {
   
   useEffect(() => {
     if (model) {
+      // Garantir que o nome esteja em maiúsculas ao carregar
+      const upperCaseName = model.name.toUpperCase();
       form.reset({
-        name: model.name,
+        name: upperCaseName,
         brandId: model.brandId.toString(),
       });
+      
+      // Se o nome na base de dados não estiver em maiúsculas, atualizar
+      if (upperCaseName !== model.name && isEditing) {
+        apiRequest("PATCH", `/api/models/${id}`, { 
+          name: upperCaseName, 
+          brandId: model.brandId 
+        })
+          .then(() => {
+            console.log("Nome do modelo convertido para maiúsculas no banco de dados");
+            queryClient.invalidateQueries({ queryKey: ["/api/models"] });
+            queryClient.invalidateQueries({ queryKey: [`/api/models/${id}`] });
+          })
+          .catch(error => {
+            console.error("Erro ao atualizar nome do modelo para maiúsculas:", error);
+          });
+      }
     }
-  }, [model, form]);
+  }, [model, form, id, isEditing]);
   
   // Converter para maiúsculas ao digitar e verificar duplicatas
   useEffect(() => {
