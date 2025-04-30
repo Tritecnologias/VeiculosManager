@@ -5,6 +5,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import AdminLayout from "@/components/layout/AdminLayout";
 import { SidebarProvider } from "@/contexts/SidebarContext";
+import { AppHead } from "@/components/AppHead";
 
 // Pages
 import Dashboard from "@/pages/dashboard/Dashboard";
@@ -75,6 +76,8 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <SidebarProvider>
+        {/* Componente para gerenciar o título e favicon da aplicação */}
+        <AppHead />
         <Router />
         <Toaster />
       </SidebarProvider>
