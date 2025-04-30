@@ -492,17 +492,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log("POST /vehicles - Dados recebidos:", JSON.stringify(req.body, null, 2));
       
-      // Vamos garantir que os valores numéricos estejam corretos
+      // Garantir que apenas o versionId, colorId e year são convertidos para números
+      // mas mantemos os campos de preço como strings para o schema
       const processedData = {
         ...req.body,
         versionId: parseInt(req.body.versionId),
         colorId: req.body.colorId ? parseInt(req.body.colorId) : null,
         year: parseInt(req.body.year),
-        publicPrice: parseFloat(req.body.publicPrice),
-        pcdIpiIcms: parseFloat(req.body.pcdIpiIcms),
-        pcdIpi: parseFloat(req.body.pcdIpi),
-        taxiIpiIcms: parseFloat(req.body.taxiIpiIcms),
-        taxiIpi: parseFloat(req.body.taxiIpi)
+        // Não convertemos os campos de preço para número
       };
       
       console.log("Dados processados para validação:", JSON.stringify(processedData, null, 2));
@@ -531,17 +528,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`[PATCH /api/vehicles/:id] Parsed ID: ${id}`);
       
       try {
-        // Vamos garantir que os valores numéricos estejam corretos
+        // Garantir que apenas o versionId, colorId e year são convertidos para números
+        // mas mantemos os campos de preço como strings para o schema
         const processedData = {
           ...req.body,
           versionId: parseInt(req.body.versionId),
           colorId: req.body.colorId ? parseInt(req.body.colorId) : null,
           year: parseInt(req.body.year),
-          publicPrice: parseFloat(req.body.publicPrice),
-          pcdIpiIcms: parseFloat(req.body.pcdIpiIcms),
-          pcdIpi: parseFloat(req.body.pcdIpi),
-          taxiIpiIcms: parseFloat(req.body.taxiIpiIcms),
-          taxiIpi: parseFloat(req.body.taxiIpi)
+          // Não convertemos os campos de preço para número
         };
         
         console.log('Dados processados para validação:', JSON.stringify(processedData, null, 2));

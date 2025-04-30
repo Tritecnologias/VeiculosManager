@@ -180,22 +180,7 @@ export const versionColorSelectSchema = createSelectSchema(versionColors);
 export type VersionColor = z.infer<typeof versionColorSelectSchema>;
 
 export const vehicleInsertSchema = createInsertSchema(vehicles, {
-  description: (schema) => schema.min(10, "A descrição deve ter pelo menos 10 caracteres"),
-  publicPrice: (schema) => schema.transform((val) => 
-    typeof val === 'number' ? val.toString() : val
-  ),
-  pcdIpiIcms: (schema) => schema.transform((val) => 
-    typeof val === 'number' ? val.toString() : val
-  ),
-  pcdIpi: (schema) => schema.transform((val) => 
-    typeof val === 'number' ? val.toString() : val
-  ),
-  taxiIpiIcms: (schema) => schema.transform((val) => 
-    typeof val === 'number' ? val.toString() : val
-  ),
-  taxiIpi: (schema) => schema.transform((val) => 
-    typeof val === 'number' ? val.toString() : val
-  )
+  description: (schema) => schema.min(10, "A descrição deve ter pelo menos 10 caracteres")
 });
 export type VehicleInsert = z.infer<typeof vehicleInsertSchema>;
 export const vehicleSelectSchema = createSelectSchema(vehicles);
