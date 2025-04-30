@@ -9,9 +9,11 @@ import { Plus, Search, Pencil, Trash } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Brand } from "@/lib/types";
+import { useToast } from "@/hooks/use-toast";
 
 export default function BrandList() {
   const [searchQuery, setSearchQuery] = useState("");
+  const { toast } = useToast();
   
   const { data: brands = [], isLoading } = useQuery<Brand[]>({
     queryKey: ["/api/brands"],
@@ -21,8 +23,40 @@ export default function BrandList() {
     try {
       await apiRequest("DELETE", `/api/brands/${id}`);
       queryClient.invalidateQueries({ queryKey: ["/api/brands"] });
-    } catch (error) {
+      toast({
+        title: "Marca excluída",
+        description: "A marca foi excluída com sucesso.",
+        variant: "default",
+      });
+    } catch (error: any) {
       console.error("Failed to delete brand:", error);
+      
+      // Verificar se é um erro de dependência (409 Conflict)
+      if (error.message && error.message.includes("409")) {
+        // Extrair a mensagem do erro que vem do backend
+        let errorDetails = "Não foi possível excluir esta marca.";
+        
+        try {
+          const errorJson = JSON.parse(error.message.split(": ")[1]);
+          if (errorJson.message) {
+            errorDetails = errorJson.message;
+          }
+        } catch (e) {
+          // Se não conseguir fazer o parse, usa a mensagem genérica
+        }
+        
+        toast({
+          title: "Erro ao excluir marca",
+          description: errorDetails,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Erro ao excluir marca",
+          description: "Ocorreu um erro ao tentar excluir esta marca. Tente novamente.",
+          variant: "destructive",
+        });
+      }
     }
   };
   

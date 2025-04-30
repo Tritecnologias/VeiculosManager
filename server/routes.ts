@@ -89,6 +89,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(204).end();
     } catch (error) {
       console.error("Error deleting brand:", error);
+      
+      // Verificar se o erro é por causa de dependências
+      const errorMessage = error instanceof Error ? error.message : "Failed to delete brand";
+      
+      if (errorMessage.includes('associated models') || errorMessage.includes('associated direct sales')) {
+        // Erro de restrição de relacionamento - código 409 Conflict
+        return res.status(409).json({ message: errorMessage });
+      }
+      
+      // Outros erros - código 500 Server Error
       res.status(500).json({ message: "Failed to delete brand" });
     }
   });
