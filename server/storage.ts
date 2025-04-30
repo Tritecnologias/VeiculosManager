@@ -53,26 +53,43 @@ export async function updateBrand(id: number, data: BrandInsert) {
 }
 
 export async function deleteBrand(id: number) {
-  // Verificar se existem modelos associados a esta marca
-  const associatedModels = await db.query.models.findMany({
-    where: eq(models.brandId, id)
-  });
+  console.log(`[deleteBrand] Attempting to delete brand with ID: ${id}`);
   
-  if (associatedModels.length > 0) {
-    throw new Error('Cannot delete brand because it has associated models. Delete the models first.');
+  try {
+    // Verificar se existem modelos associados a esta marca
+    console.log(`[deleteBrand] Checking for associated models...`);
+    const associatedModels = await db.query.models.findMany({
+      where: eq(models.brandId, id)
+    });
+    
+    console.log(`[deleteBrand] Found ${associatedModels.length} associated models`);
+    
+    if (associatedModels.length > 0) {
+      console.log(`[deleteBrand] Throwing error: brand has associated models`);
+      throw new Error('Cannot delete brand because it has associated models. Delete the models first.');
+    }
+    
+    // Verificar se existem vendas diretas associadas a esta marca
+    console.log(`[deleteBrand] Checking for associated direct sales...`);
+    const associatedDirectSales = await db.query.directSales.findMany({
+      where: eq(directSales.brandId, id)
+    });
+    
+    console.log(`[deleteBrand] Found ${associatedDirectSales.length} associated direct sales`);
+    
+    if (associatedDirectSales.length > 0) {
+      console.log(`[deleteBrand] Throwing error: brand has associated direct sales`);
+      throw new Error('Cannot delete brand because it has associated direct sales. Delete the direct sales first.');
+    }
+    
+    // Se não houver dependências, excluir a marca
+    console.log(`[deleteBrand] No dependencies found, proceeding with deletion`);
+    await db.delete(brands).where(eq(brands.id, id));
+    console.log(`[deleteBrand] Brand deleted successfully`);
+  } catch (error) {
+    console.error(`[deleteBrand] Error in deleteBrand function:`, error);
+    throw error; // Re-throw to be handled by the route handler
   }
-  
-  // Verificar se existem vendas diretas associadas a esta marca
-  const associatedDirectSales = await db.query.directSales.findMany({
-    where: eq(directSales.brandId, id)
-  });
-  
-  if (associatedDirectSales.length > 0) {
-    throw new Error('Cannot delete brand because it has associated direct sales. Delete the direct sales first.');
-  }
-  
-  // Se não houver dependências, excluir a marca
-  await db.delete(brands).where(eq(brands.id, id));
 }
 
 // Models

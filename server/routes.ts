@@ -85,12 +85,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete(`${apiPrefix}/brands/:id`, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
-      await storage.deleteBrand(id);
+      console.log(`[API DELETE /brands/:id] Requesting deletion of brand ID: ${id}`);
+      
+      // Verificar se existem modelos associados a esta marca diretamente na rota
+      const associatedModels = await db.query.models.findMany({
+        where: eq(models.brandId, id)
+      });
+      
+      console.log(`[API DELETE /brands/:id] Found ${associatedModels.length} associated models`);
+      
+      if (associatedModels.length > 0) {
+        console.log(`[API DELETE /brands/:id] Cannot delete: has associated models`);
+        return res.status(409).json({ 
+          message: `Cannot delete brand because it has ${associatedModels.length} associated models. Delete the models first.` 
+        });
+      }
+      
+      // Verificar se existem vendas diretas associadas
+      const associatedDirectSales = await db.query.directSales.findMany({
+        where: eq(directSales.brandId, id)
+      });
+      
+      console.log(`[API DELETE /brands/:id] Found ${associatedDirectSales.length} associated direct sales`);
+      
+      if (associatedDirectSales.length > 0) {
+        console.log(`[API DELETE /brands/:id] Cannot delete: has associated direct sales`);
+        return res.status(409).json({ 
+          message: `Cannot delete brand because it has ${associatedDirectSales.length} associated direct sales. Delete the direct sales first.` 
+        });
+      }
+      
+      // Se não houver dependências, excluir a marca
+      console.log(`[API DELETE /brands/:id] No dependencies found, proceeding with deletion`);
+      await db.delete(brands).where(eq(brands.id, id));
+      console.log(`[API DELETE /brands/:id] Brand deleted successfully`);
+      
       res.status(204).end();
     } catch (error) {
       console.error("Error deleting brand:", error);
       
-      // Verificar se o erro é por causa de dependências
+      // Verificar se o erro é por causa de dependências (redundante, mas mantendo por segurança)
       const errorMessage = error instanceof Error ? error.message : "Failed to delete brand";
       
       if (errorMessage.includes('associated models') || errorMessage.includes('associated direct sales')) {
