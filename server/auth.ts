@@ -71,6 +71,14 @@ export async function getUserByEmail(email: string) {
   return user;
 }
 
+export async function updateUserLastLogin(id: number) {
+  const now = new Date();
+  await db.update(users)
+    .set({ lastLogin: now })
+    .where(eq(users.id, id));
+  return now;
+}
+
 export async function getUser(id: number) {
   const user = await db.query.users.findFirst({
     where: eq(users.id, id),
@@ -239,24 +247,45 @@ export function setupAuth(app: Express) {
 
   // Rotas de autenticação
   app.post("/api/login", (req, res, next) => {
-    passport.authenticate("local", (err: Error, user: Express.User, info: { message: string }) => {
+    passport.authenticate("local", async (err: Error, user: Express.User, info: { message: string }) => {
       if (err) {
         return next(err);
       }
       if (!user) {
         return res.status(401).json({ message: info.message });
       }
-      req.logIn(user, (err) => {
-        if (err) {
-          return next(err);
-        }
-        return res.status(200).json({
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role
+      
+      // Atualizar o último acesso do usuário
+      try {
+        const lastLogin = await updateUserLastLogin(user.id);
+        
+        req.logIn(user, (err) => {
+          if (err) {
+            return next(err);
+          }
+          
+          return res.status(200).json({
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            lastLogin: lastLogin
+          });
         });
-      });
+      } catch (error) {
+        console.error("Erro ao atualizar último acesso:", error);
+        req.logIn(user, (err) => {
+          if (err) {
+            return next(err);
+          }
+          return res.status(200).json({
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role
+          });
+        });
+      }
     })(req, res, next);
   });
 
@@ -301,14 +330,17 @@ export function setupAuth(app: Express) {
     });
   });
 
-  app.get("/api/user", (req, res) => {
+  app.get("/api/user", async (req, res) => {
     if (req.isAuthenticated()) {
       const user = req.user;
+      // Busca informações atualizadas do usuário, incluindo o último login
+      const userDetails = await getUser(user.id);
       return res.status(200).json({
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
+        lastLogin: userDetails?.lastLogin
       });
     }
     return res.status(401).json({ message: "Não autenticado" });
