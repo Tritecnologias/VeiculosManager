@@ -5,13 +5,18 @@ import {
   versions, 
   colors, 
   vehicles,
+  userRoles,
+  users,
   BrandInsert,
   ModelInsert,
   VersionInsert,
   ColorInsert,
-  VehicleInsert
+  VehicleInsert,
+  UserRoleInsert,
+  UserInsert
 } from "@shared/schema";
 import { eq } from "drizzle-orm";
+import { hashPassword } from "../server/auth";
 
 async function seed() {
   try {
@@ -311,6 +316,64 @@ async function seed() {
 
         await db.insert(vehicles).values(vehicleData);
         console.log(`Added vehicle: ${tCrossVersion.model.brand.name} ${tCrossVersion.model.name} ${tCrossVersion.name}`);
+      }
+    }
+
+    // Seed user roles (níveis de acesso)
+    console.log("Seeding user roles...");
+    const roleData: UserRoleInsert[] = [
+      { 
+        name: "Usuário", 
+        description: "Usuário comum com acesso somente de visualização" 
+      },
+      { 
+        name: "Cadastrador", 
+        description: "Usuário com permissão para criar e editar registros, mas sem acesso administrativo" 
+      },
+      { 
+        name: "Administrador", 
+        description: "Usuário com acesso completo ao sistema, incluindo gerenciamento de usuários" 
+      }
+    ];
+
+    for (const role of roleData) {
+      const existingRole = await db.query.userRoles.findFirst({
+        where: eq(userRoles.name, role.name)
+      });
+
+      if (!existingRole) {
+        await db.insert(userRoles).values(role);
+        console.log(`Added user role: ${role.name}`);
+      }
+    }
+
+    // Get admin role for reference
+    const adminRole = await db.query.userRoles.findFirst({
+      where: eq(userRoles.name, "Administrador")
+    });
+
+    if (adminRole) {
+      // Seed admin user
+      console.log("Seeding administrator user...");
+      
+      const adminEmail = "wanderson.martins.silva@gmail.com";
+      const existingAdmin = await db.query.users.findFirst({
+        where: eq(users.email, adminEmail)
+      });
+
+      if (!existingAdmin) {
+        const password = await hashPassword("admin123"); // Senha temporária que deverá ser alterada no primeiro acesso
+        
+        const adminUser: UserInsert = {
+          name: "Wanderson Martins Silva",
+          email: adminEmail,
+          password,
+          roleId: adminRole.id,
+          isActive: true
+        };
+
+        await db.insert(users).values(adminUser);
+        console.log(`Added administrator user: ${adminEmail}`);
       }
     }
 

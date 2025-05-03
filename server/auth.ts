@@ -5,17 +5,41 @@ import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { db } from "../db";
-import { users, User, userRoles } from "@shared/schema";
+import { users, User as UserType, userRoles } from "@shared/schema";
 import { eq, and } from "drizzle-orm";
 import connectPg from "connect-pg-simple";
 import { pool } from "../db/index";
 
+// Definir a interface de usuário para autenticação
+type UserWithRole = {
+  id: number;
+  name: string;
+  email: string;
+  password: string;
+  roleId: number;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  role?: {
+    id: number;
+    name: string;
+    description?: string | null;
+  };
+};
+
 declare global {
   namespace Express {
-    interface User extends User {
+    // Definição da interface User no namespace Express
+    interface User {
+      id: number;
+      name: string;
+      email: string;
+      roleId: number;
+      isActive: boolean;
       role?: {
         id: number;
         name: string;
+        description?: string | null;
       };
     }
   }
@@ -184,6 +208,10 @@ export function setupAuth(app: Express) {
 
       // Criar novo usuário
       const user = await createUser(req.body);
+      
+      if (!user) {
+        return res.status(500).json({ message: "Erro ao criar usuário" });
+      }
 
       // Autenticar o usuário recém-criado
       req.logIn(user, (err) => {
