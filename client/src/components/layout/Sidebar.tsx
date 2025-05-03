@@ -65,6 +65,12 @@ const UserProfile = () => {
               <span>Alterar Senha</span>
             </DropdownMenuItem>
           </Link>
+          <Link href="/admin/permissions">
+            <DropdownMenuItem className="cursor-pointer">
+              <ShieldCheck className="mr-2 h-4 w-4" />
+              <span>Permissões de Acesso</span>
+            </DropdownMenuItem>
+          </Link>
           <DropdownMenuSeparator />
           <DropdownMenuItem className="cursor-pointer text-red-600" onClick={handleLogout}>
             <LogOut className="mr-2 h-4 w-4" />
