@@ -4,7 +4,19 @@ import { storage } from "./storage";
 import { z } from "zod";
 import { db } from "@db";
 import { eq } from "drizzle-orm";
-import { setupAuth, isAuthenticated, isAdmin, isCadastrador } from "./auth";
+import { 
+  setupAuth, 
+  isAuthenticated, 
+  isAdmin, 
+  isCadastrador,
+  getAllUsers,
+  getUserByEmail,
+  updateUser,
+  getUserWithPassword,
+  comparePasswords,
+  hashPassword,
+  updateUserPassword
+} from "./auth";
 import { 
   brandInsertSchema, 
   modelInsertSchema, 
@@ -990,7 +1002,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Rotas de gerenciamento de usuários
   app.get(`${apiPrefix}/users`, isAdmin, async (req, res) => {
     try {
-      const users = await storage.getAllUsers();
+      const users = await getAllUsers();
       res.json(users);
     } catch (error) {
       console.error("Erro ao buscar usuários:", error);
@@ -1011,13 +1023,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { name, email } = req.body;
       
       // Verificar se o e-mail já existe (exceto para o próprio usuário)
-      const existingUser = await storage.getUserByEmail(email);
+      const existingUser = await getUserByEmail(email);
       if (existingUser && existingUser.id !== userId) {
         return res.status(400).json({ message: "Este e-mail já está em uso" });
       }
       
       // Atualizar usuário
-      const updatedUser = await storage.updateUser(userId, { name, email });
+      const updatedUser = await updateUser(userId, { name, email });
       
       if (!updatedUser) {
         return res.status(404).json({ message: "Usuário não encontrado" });
@@ -1043,7 +1055,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { currentPassword, newPassword } = req.body;
       
       // Obter usuário com senha
-      const user = await storage.getUserWithPassword(userId);
+      const user = await getUserWithPassword(userId);
       if (!user) {
         return res.status(404).json({ message: "Usuário não encontrado" });
       }
@@ -1056,7 +1068,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Hash da nova senha e atualização
       const hashedPassword = await hashPassword(newPassword);
-      await storage.updateUserPassword(userId, hashedPassword);
+      await updateUserPassword(userId, hashedPassword);
       
       res.json({ message: "Senha atualizada com sucesso" });
     } catch (error) {

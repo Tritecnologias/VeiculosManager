@@ -104,6 +104,40 @@ export async function getAllUsers() {
   });
 }
 
+export async function getUserWithPassword(id: number) {
+  return db.query.users.findFirst({
+    where: eq(users.id, id),
+    columns: {
+      id: true,
+      password: true
+    }
+  });
+}
+
+export async function updateUser(id: number, data: { name: string; email: string }) {
+  const [updatedUser] = await db.update(users)
+    .set({
+      ...data,
+      updatedAt: new Date()
+    })
+    .where(eq(users.id, id))
+    .returning();
+
+  if (!updatedUser) return null;
+
+  return getUser(id);
+}
+
+export async function updateUserPassword(id: number, hashedPassword: string) {
+  return db.update(users)
+    .set({
+      password: hashedPassword,
+      updatedAt: new Date()
+    })
+    .where(eq(users.id, id))
+    .execute();
+}
+
 export async function getAllRoles() {
   return db.query.userRoles.findMany();
 }
