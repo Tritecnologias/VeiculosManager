@@ -12,9 +12,39 @@ import { VersionWithModel } from "@/lib/types";
 
 export default function VersionList() {
   const [searchQuery, setSearchQuery] = useState("");
+  console.log("Renderizando o componente VersionList");
+  
+  const fetchVersions = async () => {
+    console.log("Função fetchVersions chamada");
+    try {
+      // Fazendo a mesma requisição que o menu de configurações faz durante o carregamento
+      const responses = await Promise.all([
+        fetch("/api/versions"),
+        fetch("/api/models"),
+        fetch("/api/brands")
+      ]);
+      
+      for (let i = 0; i < responses.length; i++) {
+        console.log(`Resposta ${i+1} obtida com status: ${responses[i].status}`);
+      }
+      
+      const [versionsResponse] = responses;
+      const data = await versionsResponse.json();
+      console.log(`Dados de versões recebidos: ${data.length} versões`);
+      return data;
+    } catch (error) {
+      console.error("Erro ao buscar versões:", error);
+      throw error;
+    }
+  };
   
   const { data: versions = [], isLoading } = useQuery<VersionWithModel[]>({
     queryKey: ["/api/versions"],
+    queryFn: fetchVersions,
+    staleTime: 0, // Sempre buscar novos dados
+    retry: 3, // Tentar novamente 3 vezes em caso de erro
+    onSuccess: (data) => console.log(`Query de versões concluída com sucesso: ${data.length} itens`),
+    onError: (error) => console.error("Erro na query de versões:", error),
   });
   
   const handleDelete = async (id: number) => {
