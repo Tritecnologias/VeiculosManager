@@ -1,13 +1,14 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Switch, Route } from "wouter";
-import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient, apiRequest } from "./lib/queryClient";
+import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import AdminLayout from "@/components/layout/AdminLayout";
 import { SidebarProvider } from "@/contexts/SidebarContext";
 import { AppHead } from "@/components/AppHead";
-import { AuthProvider } from "@/hooks/use-auth";
+import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/lib/protected-route";
+import { setCustomPermissions } from "@/lib/permissions";
 
 // Pages
 import Dashboard from "@/pages/dashboard/Dashboard";
@@ -90,6 +91,33 @@ function Router() {
 
 // Componente para envolver as rotas protegidas no layout de administração
 function ProtectedContent() {
+  const { user } = useAuth();
+  
+  // Carregar as permissões personalizadas
+  const { data: customPermissions } = useQuery({
+    queryKey: ['/api/permissions'],
+    queryFn: async () => {
+      try {
+        const response = await apiRequest('GET', '/api/permissions');
+        return await response.json();
+      } catch (error) {
+        console.error('Erro ao carregar permissões:', error);
+        return {};
+      }
+    },
+    // Só carregar se o usuário estiver autenticado
+    enabled: !!user,
+    // Não precisa recarregar com frequência
+    staleTime: 5 * 60 * 1000, // 5 minutos
+  });
+  
+  // Configurar as permissões personalizadas quando carregadas
+  useEffect(() => {
+    if (customPermissions) {
+      setCustomPermissions(customPermissions);
+    }
+  }, [customPermissions]);
+  
   return (
     <AdminLayout>
       <Router />

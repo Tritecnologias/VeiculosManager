@@ -47,6 +47,25 @@ export const ROUTE_PERMISSIONS: RoutePermission[] = [
   { path: "/admin/permissions", allowedRoles: ["Administrador", "Cadastrador", "Usuário"], description: "Visualizar permissões do sistema" }
 ];
 
+// Armazenar permissões personalizadas em cache
+let customPermissionsCache: Record<string, Record<string, boolean>> = {};
+
+/**
+ * Define as permissões personalizadas para uso no sistema
+ * @param permissions Objeto com permissões personalizadas por papel
+ */
+export function setCustomPermissions(permissions: Record<string, Record<string, boolean>>) {
+  customPermissionsCache = permissions;
+}
+
+/**
+ * Obtém as permissões personalizadas do cache
+ * @returns Objeto com permissões personalizadas
+ */
+export function getCustomPermissions(): Record<string, Record<string, boolean>> {
+  return customPermissionsCache;
+}
+
 /**
  * Verifica se um usuário tem permissão para acessar uma determinada rota
  * @param path Caminho da rota a ser verificada
@@ -59,36 +78,61 @@ export function hasPermission(path: string, userRole?: string): boolean {
   // Converter para o tipo UserRole (com verificação de tipo)
   const role = userRole as UserRole;
   
+  // Administrador sempre tem permissão total
+  if (role === "Administrador") return true;
+  
+  // Tentar encontrar a definição de permissão para o caminho exato
+  let matchingPermission: RoutePermission | undefined;
+  let permissionKey: string = "";
+  
   // Encontrar a definição de permissão para o caminho exato
   const exactPathPermission = ROUTE_PERMISSIONS.find(p => p.path === path);
   if (exactPathPermission) {
-    return exactPathPermission.allowedRoles.includes(role);
+    matchingPermission = exactPathPermission;
+    permissionKey = exactPathPermission.description;
   }
   
-  // Verificar caminhos com parâmetros (ex: /brands/:id/edit)
-  for (const permission of ROUTE_PERMISSIONS) {
-    if (permission.path.includes(':')) {
-      const regex = new RegExp(
-        '^' + permission.path.replace(/:[^\/]+/g, '[^/]+') + '$'
-      );
-      if (regex.test(path)) {
-        return permission.allowedRoles.includes(role);
+  // Se não achou um caminho exato, verificar caminhos com parâmetros (ex: /brands/:id/edit)
+  if (!matchingPermission) {
+    for (const permission of ROUTE_PERMISSIONS) {
+      if (permission.path.includes(':')) {
+        const regex = new RegExp(
+          '^' + permission.path.replace(/:[^\/]+/g, '[^/]+') + '$'
+        );
+        if (regex.test(path)) {
+          matchingPermission = permission;
+          permissionKey = permission.description;
+          break;
+        }
       }
     }
   }
   
-  // Verificar o prefixo mais próximo (para caminhos que começam com o mesmo prefixo)
-  // Por exemplo, /models/something deve herdar as permissões de /models
-  const basePathPermission = ROUTE_PERMISSIONS
-    .filter(p => !p.path.includes(':') && path.startsWith(p.path))
-    .sort((a, b) => b.path.length - a.path.length)[0]; // Pegar o prefixo mais longo
-  
-  if (basePathPermission) {
-    return basePathPermission.allowedRoles.includes(role);
+  // Se ainda não achou, verificar o prefixo mais próximo
+  if (!matchingPermission) {
+    const basePathPermission = ROUTE_PERMISSIONS
+      .filter(p => !p.path.includes(':') && path.startsWith(p.path))
+      .sort((a, b) => b.path.length - a.path.length)[0]; // Pegar o prefixo mais longo
+    
+    if (basePathPermission) {
+      matchingPermission = basePathPermission;
+      permissionKey = basePathPermission.description;
+    }
   }
   
   // Se não encontrou nenhuma regra, negar o acesso
-  return false;
+  if (!matchingPermission) return false;
+  
+  // Se encontrou a regra, verificar se existem permissões personalizadas
+  const rolePermissions = customPermissionsCache[role];
+  
+  // Se temos permissões personalizadas para este papel, usar estas
+  if (rolePermissions && permissionKey in rolePermissions) {
+    return rolePermissions[permissionKey];
+  }
+  
+  // Caso contrário, usar as permissões padrão
+  return matchingPermission.allowedRoles.includes(role);
 }
 
 /**
@@ -100,7 +144,24 @@ export function getAccessibleRoutes(userRole?: string): { path: string, descript
   if (!userRole) return [];
   
   const role = userRole as UserRole;
+  
+  // Administrador tem acesso a tudo
+  if (role === "Administrador") {
+    return ROUTE_PERMISSIONS.map(({ path, description }) => ({ path, description }));
+  }
+  
+  // Obtém as permissões personalizadas para este papel
+  const customPermissions = customPermissionsCache[role] || {};
+  
+  // Filtra as rotas com base nas permissões personalizadas ou padrão
   return ROUTE_PERMISSIONS
-    .filter(permission => permission.allowedRoles.includes(role))
+    .filter(permission => {
+      // Se temos uma configuração personalizada para esta permissão, usar ela
+      if (permission.description in customPermissions) {
+        return customPermissions[permission.description];
+      }
+      // Caso contrário, usar as permissões padrão
+      return permission.allowedRoles.includes(role);
+    })
     .map(({ path, description }) => ({ path, description }));
 }

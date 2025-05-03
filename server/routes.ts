@@ -1139,5 +1139,107 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Rotas para gerenciar permissões personalizadas
+  app.get(`${apiPrefix}/permissions`, isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      // Buscar todas as permissões personalizadas
+      const customPermissions = await storage.getCustomPermissions();
+      
+      // Transformar em um objeto organizado por papel
+      const result: Record<string, Record<string, boolean>> = {};
+      
+      customPermissions.forEach(permission => {
+        result[permission.roleName] = permission.permissions as Record<string, boolean>;
+      });
+      
+      res.json(result);
+    } catch (error) {
+      console.error("Erro ao buscar permissões:", error);
+      res.status(500).json({ message: "Erro ao buscar permissões" });
+    }
+  });
+
+  // Buscar permissões de um papel específico
+  app.get(`${apiPrefix}/permissions/:roleName`, isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const { roleName } = req.params;
+      const permissions = await storage.getCustomPermissionsByRole(roleName);
+      
+      if (!permissions) {
+        // Se não existem permissões personalizadas, retornar objeto vazio
+        return res.json({});
+      }
+      
+      res.json(permissions.permissions);
+    } catch (error) {
+      console.error(`Erro ao buscar permissões para ${req.params.roleName}:`, error);
+      res.status(500).json({ message: "Erro ao buscar permissões" });
+    }
+  });
+
+  // Criar ou atualizar permissões
+  app.post(`${apiPrefix}/permissions`, isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const { role, permissions } = req.body;
+      
+      if (!role || typeof role !== 'string') {
+        return res.status(400).json({ message: "Papel de usuário inválido" });
+      }
+      
+      if (!permissions || typeof permissions !== 'object') {
+        return res.status(400).json({ message: "Permissões inválidas" });
+      }
+      
+      // Verificar se o papel existe
+      const roles = await getAllRoles();
+      const roleExists = roles.some(r => r.name === role);
+      
+      if (!roleExists) {
+        return res.status(404).json({ message: "Papel de usuário não encontrado" });
+      }
+      
+      // Não permitir modificar permissões de Administrador
+      if (role === "Administrador") {
+        return res.status(403).json({ 
+          message: "Não é possível modificar permissões do Administrador, que sempre tem acesso total" 
+        });
+      }
+      
+      const result = await storage.createOrUpdateCustomPermissions({
+        roleName: role,
+        permissions: permissions
+      });
+      
+      res.status(200).json(result);
+    } catch (error) {
+      console.error("Erro ao salvar permissões:", error);
+      res.status(500).json({ message: "Erro ao salvar permissões" });
+    }
+  });
+
+  // Excluir permissões personalizadas (voltar ao padrão)
+  app.delete(`${apiPrefix}/permissions/:roleName`, isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const { roleName } = req.params;
+      
+      // Não permitir modificar permissões de Administrador
+      if (roleName === "Administrador") {
+        return res.status(403).json({ 
+          message: "Não é possível modificar permissões do Administrador, que sempre tem acesso total" 
+        });
+      }
+      
+      const result = await storage.deleteCustomPermissions(roleName);
+      
+      res.status(200).json({ 
+        message: "Permissões resetadas para o padrão",
+        result 
+      });
+    } catch (error) {
+      console.error(`Erro ao excluir permissões para ${req.params.roleName}:`, error);
+      res.status(500).json({ message: "Erro ao excluir permissões" });
+    }
+  });
+
   return httpServer;
 }
