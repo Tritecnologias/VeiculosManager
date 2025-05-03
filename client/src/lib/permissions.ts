@@ -113,22 +113,26 @@ export function hasPermission(path: string, userRole?: string): boolean {
   // Caso especial para a página de configuração de permissões
   // Esta página deve ser estritamente controlada
   if (path === "/admin/permission-settings") {
-    // Para não-administradores, verificar permissões personalizadas explicitamente
-    if (role !== "Administrador") {
+    // Verificar por papel específico
+    if (role === "Administrador") {
+      // Administradores sempre têm acesso
+      return true;
+    } else if (role === "Cadastrador" || role === "Usuário") {
+      // Para demais papéis, verificar permissões personalizadas explicitamente
       const rolePermissions = customPermissionsCache[role];
       if (rolePermissions) {
         // A chave de permissão específica para esta funcionalidade
         const permissionKey = "Configurar permissões do sistema";
         if (permissionKey in rolePermissions) {
-          // Retornar false se a permissão não estiver explicitamente ativada
+          // Só retorna true se a permissão estiver explicitamente ativada (true)
           return rolePermissions[permissionKey] === true;
         }
       }
-      // Se não existir configuração personalizada, negar o acesso
+      // Por padrão, esconder o menu
       return false;
     }
-    // Administradores sempre têm acesso
-    return true;
+    // Para qualquer outro papel não reconhecido, negar acesso
+    return false;
   }
   
   // Tentar encontrar a definição de permissão para o caminho exato
@@ -206,6 +210,27 @@ export function getAccessibleRoutes(userRole?: string): { path: string, descript
   // Filtra as rotas com base nas permissões personalizadas ou padrão
   return ROUTE_PERMISSIONS
     .filter(permission => {
+      // Caso especial para a página de configuração de permissões
+      if (permission.path === "/admin/permission-settings") {
+        // Verificar por papel específico
+        if (role === "Administrador") {
+          // Administradores sempre têm acesso
+          return true;
+        } else if (role === "Cadastrador" || role === "Usuário") {
+          // Para demais papéis, verificar explicitamente
+          const permissionKey = "Configurar permissões do sistema";
+          if (permissionKey in customPermissions) {
+            // Só incluir se a permissão estiver explicitamente ativada
+            return customPermissions[permissionKey] === true;
+          }
+          // Por padrão, não incluir esta rota
+          return false;
+        }
+        // Para qualquer outro papel não reconhecido, negar acesso
+        return false;
+      }
+      
+      // Para as demais rotas, verificação padrão
       // Se temos uma configuração personalizada para esta permissão, usar ela
       if (permission.description in customPermissions) {
         return customPermissions[permission.description];

@@ -148,15 +148,27 @@ export default function Sidebar() {
           const filtered = menuStructure.filter(item => {
             // Caso especial para o item "Configurar Permissões"
             if (item.path === "/admin/permission-settings") {
-              // Verifica se a permissão "Configurar permissões do sistema" está habilitada
-              const permissionsObj = customPermissionsCache;
               const roleName = user?.role?.name;
-              if (roleName && roleName !== "Administrador" && permissionsObj[roleName]) {
-                // Se o usuário não é administrador e existem permissões personalizadas para seu papel
-                const permissionValue = permissionsObj[roleName]["Configurar permissões do sistema"];
-                // Só exibe o menu se a permissão estiver explicitamente habilitada
-                return permissionValue === true;
+              // Administradores sempre têm acesso
+              if (roleName === "Administrador") {
+                return true;
               }
+              
+              // Para não-administradores, verificar explicitamente
+              if (roleName) {
+                const permissionsObj = getCustomPermissions();
+                if (permissionsObj[roleName]) {
+                  // Se o usuário tem permissões personalizadas definidas
+                  const permissionKey = "Configurar permissões do sistema";
+                  if (permissionKey in permissionsObj[roleName]) {
+                    // Só exibe o menu se a permissão estiver explicitamente ativada
+                    return permissionsObj[roleName][permissionKey] === true;
+                  }
+                }
+                // Para qualquer usuário não-administrador sem a permissão explícita, esconder o menu
+                return false;
+              }
+              return false; // Se não tem role, esconder o menu
             }
             
             // Para os demais itens, usa a verificação padrão
