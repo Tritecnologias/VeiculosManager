@@ -110,6 +110,27 @@ export function hasPermission(path: string, userRole?: string): boolean {
   // Administrador sempre tem permissão total
   if (role === "Administrador") return true;
   
+  // Caso especial para a página de configuração de permissões
+  // Esta página deve ser estritamente controlada
+  if (path === "/admin/permission-settings") {
+    // Para não-administradores, verificar permissões personalizadas explicitamente
+    if (role !== "Administrador") {
+      const rolePermissions = customPermissionsCache[role];
+      if (rolePermissions) {
+        // A chave de permissão específica para esta funcionalidade
+        const permissionKey = "Configurar permissões do sistema";
+        if (permissionKey in rolePermissions) {
+          // Retornar false se a permissão não estiver explicitamente ativada
+          return rolePermissions[permissionKey] === true;
+        }
+      }
+      // Se não existir configuração personalizada, negar o acesso
+      return false;
+    }
+    // Administradores sempre têm acesso
+    return true;
+  }
+  
   // Tentar encontrar a definição de permissão para o caminho exato
   let matchingPermission: RoutePermission | undefined;
   let permissionKey: string = "";

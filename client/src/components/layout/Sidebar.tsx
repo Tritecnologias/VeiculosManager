@@ -6,7 +6,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { hasPermission, getPermissions } from "@/lib/permissions";
+import { hasPermission, getPermissions, getCustomPermissions } from "@/lib/permissions";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -144,9 +144,25 @@ export default function Sidebar() {
           await getPermissions();
           
           // Filtra os itens do menu para os quais o usuário tem permissão
-          const filtered = menuStructure.filter(item => 
-            hasPermission(item.path, user?.role?.name)
-          );
+          // Para cada item, verifica especificamente a permissão
+          const filtered = menuStructure.filter(item => {
+            // Caso especial para o item "Configurar Permissões"
+            if (item.path === "/admin/permission-settings") {
+              // Verifica se a permissão "Configurar permissões do sistema" está habilitada
+              const permissionsObj = customPermissionsCache;
+              const roleName = user?.role?.name;
+              if (roleName && roleName !== "Administrador" && permissionsObj[roleName]) {
+                // Se o usuário não é administrador e existem permissões personalizadas para seu papel
+                const permissionValue = permissionsObj[roleName]["Configurar permissões do sistema"];
+                // Só exibe o menu se a permissão estiver explicitamente habilitada
+                return permissionValue === true;
+              }
+            }
+            
+            // Para os demais itens, usa a verificação padrão
+            return hasPermission(item.path, user?.role?.name);
+          });
+          
           setFilteredMenuItems(filtered);
           setPermissionsLoaded(true);
         } catch (error) {
