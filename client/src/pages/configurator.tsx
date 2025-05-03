@@ -66,19 +66,10 @@ function Configurator() {
   // Fetch version colors para a versão selecionada
   const { data: versionColors = [] } = useQuery<any[]>({
     queryKey: ["/api/version-colors", selectedVersionId],
-    queryFn: async () => {
-      if (!selectedVersionId) return [];
-      
-      console.log("Buscando cores para a versão:", selectedVersionId);
-      try {
-        const response = await apiRequest("GET", `/api/version-colors?versionId=${selectedVersionId}`);
-        console.log("Dados de cores para versão recebidos:", response);
-        return response;
-      } catch (error) {
-        console.error("Erro ao buscar cores para versão:", error);
-        return [];
-      }
-    },
+    queryFn: getQueryFn({
+      queryKey: ["/api/version-colors"],
+      params: selectedVersionId ? { versionId: selectedVersionId } : undefined
+    }),
     enabled: !!selectedVersionId,
     retry: 3, // Tentar novamente em caso de falha
     retryDelay: 1000, // Esperar 1 segundo entre as tentativas
@@ -87,19 +78,10 @@ function Configurator() {
   // Fetch version optionals para a versão selecionada
   const { data: versionOptionals = [] } = useQuery<any[]>({
     queryKey: ["/api/version-optionals", selectedVersionId],
-    queryFn: async () => {
-      if (!selectedVersionId) return [];
-      
-      console.log("Buscando opcionais para a versão:", selectedVersionId);
-      try {
-        const response = await apiRequest("GET", `/api/version-optionals?versionId=${selectedVersionId}`);
-        console.log("Dados de opcionais para versão recebidos:", response);
-        return response;
-      } catch (error) {
-        console.error("Erro ao buscar opcionais para versão:", error);
-        return [];
-      }
-    },
+    queryFn: getQueryFn({
+      queryKey: ["/api/version-optionals"],
+      params: selectedVersionId ? { versionId: selectedVersionId } : undefined
+    }),
     enabled: !!selectedVersionId,
     retry: 3, // Tentar novamente em caso de falha
     retryDelay: 1000, // Esperar 1 segundo entre as tentativas
