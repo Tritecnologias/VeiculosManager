@@ -163,6 +163,14 @@ export default function Sidebar() {
           </Link>
         </li>
       )}
+      
+      {/* Link para visualização de permissões - acessível a todos os usuários */}
+      <li>
+        <Link href="/admin/permissions" className={`sidebar-item ${location.startsWith('/admin/permissions') ? 'active' : ''}`}>
+          <Shield className="h-5 w-5 mr-2" />
+          Permissões
+        </Link>
+      </li>
     </ul>
   );
 
