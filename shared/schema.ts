@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, decimal, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, decimal, boolean, timestamp, json } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { relations } from "drizzle-orm";
 import { z } from "zod";
@@ -289,3 +289,17 @@ export const userInsertSchema = createInsertSchema(users, {
 export type UserInsert = z.infer<typeof userInsertSchema>;
 export const userSelectSchema = createSelectSchema(users);
 export type User = z.infer<typeof userSelectSchema>;
+
+// Tabela para permissões personalizadas por papel
+export const customPermissions = pgTable("custom_permissions", {
+  id: serial("id").primaryKey(),
+  roleName: text("role_name").notNull(),
+  permissions: json("permissions").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull()
+});
+
+export const customPermissionsInsertSchema = createInsertSchema(customPermissions);
+export type CustomPermissionsInsert = z.infer<typeof customPermissionsInsertSchema>;
+export const customPermissionsSelectSchema = createSelectSchema(customPermissions);
+export type CustomPermissions = z.infer<typeof customPermissionsSelectSchema>;

@@ -12,6 +12,7 @@ import {
   optionals,
   versionOptionals,
   directSales,
+  customPermissions,
   BrandInsert,
   ModelInsert,
   VersionInsert,
@@ -22,7 +23,8 @@ import {
   SettingsInsert,
   OptionalInsert,
   VersionOptionalInsert,
-  DirectSaleInsert
+  DirectSaleInsert,
+  CustomPermissionsInsert
 } from "@shared/schema";
 
 // Brands
