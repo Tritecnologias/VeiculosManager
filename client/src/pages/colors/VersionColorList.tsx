@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Edit, Trash2, RefreshCw } from "lucide-react";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest, queryClient, getQueryFn } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Brand, Model, Version } from "@/lib/types";
 import { 
@@ -57,40 +57,36 @@ export default function VersionColorList({ onEdit }: VersionColorListProps) {
   
   const { data: brands = [] } = useQuery<Brand[]>({
     queryKey: ["/api/brands"],
+    queryFn: getQueryFn()
   });
   
   const { data: models = [] } = useQuery<Model[]>({
     queryKey: ["/api/models"],
+    queryFn: getQueryFn()
   });
   
   const { data: versions = [] } = useQuery<Version[]>({
     queryKey: ["/api/versions"],
+    queryFn: getQueryFn()
   });
   
   const { data: versionColors = [], isLoading } = useQuery({
     queryKey: ["/api/version-colors", selectedModelId, selectedVersionId],
-    queryFn: async () => {
-      let url = "/api/version-colors";
-      const params = [];
-      
-      if (selectedModelId && selectedModelId !== "all") {
-        params.push(`modelId=${selectedModelId}`);
+    queryFn: getQueryFn({
+      transformParams: () => {
+        const params = new URLSearchParams();
+        
+        if (selectedModelId && selectedModelId !== "all") {
+          params.append("modelId", selectedModelId);
+        }
+        
+        if (selectedVersionId && selectedVersionId !== "all") {
+          params.append("versionId", selectedVersionId);
+        }
+        
+        return params.toString() ? `?${params.toString()}` : "";
       }
-      
-      if (selectedVersionId && selectedVersionId !== "all") {
-        params.push(`versionId=${selectedVersionId}`);
-      }
-      
-      if (params.length > 0) {
-        url = `${url}?${params.join("&")}`;
-      }
-      
-      console.log("Buscando version-colors:", url);
-      const response = await apiRequest("GET", url);
-      // Não usar .json() aqui porque apiRequest já retorna os dados JSON
-      console.log("API Response:", response);
-      return response;
-    },
+    }),
     enabled: true,
   });
   
