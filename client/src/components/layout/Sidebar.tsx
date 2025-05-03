@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Home, Car, Building, FileText, Palette, Settings, ListPlus, Menu, X, LogOut, User } from "lucide-react";
+import { Home, Car, Building, FileText, Palette, Settings, ListPlus, Menu, X, LogOut, User, Users } from "lucide-react";
 import { useState } from "react";
 import { useMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -147,6 +147,16 @@ export default function Sidebar() {
           Configurações
         </Link>
       </li>
+      
+      {/* Link para gerenciamento de usuários - apenas para administradores */}
+      {user?.role?.name === "Administrador" && (
+        <li>
+          <Link href="/admin/users" className={`sidebar-item ${location.startsWith('/admin/users') ? 'active' : ''}`}>
+            <Users className="h-5 w-5 mr-2" />
+            Usuários
+          </Link>
+        </li>
+      )}
     </ul>
   );
 
