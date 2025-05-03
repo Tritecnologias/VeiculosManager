@@ -662,6 +662,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // API para gerenciamento de permissões personalizadas
+  app.get(`${apiPrefix}/permissions`, isAuthenticated, async (req, res) => {
+    try {
+      const customPermissions = await storage.getCustomPermissions();
+      
+      // Transformar o resultado em um objeto para facilitar o uso no cliente
+      const permissionsMap: Record<string, Record<string, boolean>> = {};
+      
+      customPermissions.forEach(perm => {
+        permissionsMap[perm.roleName] = perm.permissions as Record<string, boolean>;
+      });
+      
+      res.json(permissionsMap);
+    } catch (error) {
+      console.error("Erro ao buscar permissões:", error);
+      res.status(500).json({ message: "Erro ao buscar permissões" });
+    }
+  });
+  
+  app.get(`${apiPrefix}/permissions/:roleName`, isAuthenticated, async (req, res) => {
+    try {
+      const { roleName } = req.params;
+      const permissions = await storage.getCustomPermissionsByRole(roleName);
+      
+      if (!permissions) {
+        return res.status(404).json({ message: "Permissões não encontradas para este papel" });
+      }
+      
+      res.json(permissions.permissions);
+    } catch (error) {
+      console.error("Erro ao buscar permissões por papel:", error);
+      res.status(500).json({ message: "Erro ao buscar permissões por papel" });
+    }
+  });
+  
+  app.post(`${apiPrefix}/permissions`, isAdmin, async (req, res) => {
+    try {
+      const { role, permissions } = req.body;
+      
+      if (!role || !permissions) {
+        return res.status(400).json({ message: "Papel e permissões são obrigatórios" });
+      }
+      
+      const result = await storage.createOrUpdateCustomPermissions({
+        roleName: role,
+        permissions: permissions
+      });
+      
+      res.json(result[0]);
+    } catch (error) {
+      console.error("Erro ao salvar permissões:", error);
+      res.status(500).json({ message: "Erro ao salvar permissões" });
+    }
+  });
+  
+  app.delete(`${apiPrefix}/permissions/:roleName`, isAdmin, async (req, res) => {
+    try {
+      const { roleName } = req.params;
+      const result = await storage.deleteCustomPermissions(roleName);
+      
+      if (!result) {
+        return res.status(404).json({ message: "Permissões não encontradas para este papel" });
+      }
+      
+      res.json({ message: "Permissões resetadas com sucesso" });
+    } catch (error) {
+      console.error("Erro ao resetar permissões:", error);
+      res.status(500).json({ message: "Erro ao resetar permissões" });
+    }
+  });
+
   // Settings API
   app.get(`${apiPrefix}/settings`, async (req, res) => {
     try {
