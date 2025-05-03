@@ -1,85 +1,59 @@
-import { QueryClient, QueryFunction } from "@tanstack/react-query";
-
-async function throwIfResNotOk(res: Response) {
-  if (!res.ok) {
-    const text = (await res.text()) || res.statusText;
-    throw new Error(`${res.status}: ${text}`);
-  }
-}
-
-export async function apiRequest<T = any>(
-  method: string,
-  url: string,
-  data?: unknown | undefined,
-): Promise<T> {
-  try {
-    console.log(`Sending ${method} request to ${url}`, data);
-    
-    const res = await fetch(url, {
-      method,
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-        "Cache-Control": "no-cache"
-      },
-      body: data ? JSON.stringify(data) : undefined,
-      credentials: "include",
-      mode: "cors"
-    });
-
-    console.log(`Response status: ${res.status} ${res.statusText}`);
-    
-    if (!res.ok) {
-      const errorText = await res.text();
-      console.error(`API Error (${res.status}): ${errorText}`);
-      throw new Error(`${res.status}: ${errorText || res.statusText}`);
-    }
-    
-    // Se o método for DELETE, pode não ter corpo na resposta
-    if (method.toUpperCase() === 'DELETE') {
-      return {} as T;
-    }
-    
-    const responseData = await res.json();
-    console.log("API Response:", responseData);
-    
-    // Para outros métodos, retorna o JSON da resposta
-    return responseData;
-  } catch (error) {
-    console.error("API Request failed:", error);
-    throw error;
-  }
-}
-
-type UnauthorizedBehavior = "returnNull" | "throw";
-export const getQueryFn: <T>(options: {
-  on401: UnauthorizedBehavior;
-}) => QueryFunction<T> =
-  ({ on401: unauthorizedBehavior }) =>
-  async ({ queryKey }) => {
-    const res = await fetch(queryKey[0] as string, {
-      credentials: "include",
-    });
-
-    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-      return null;
-    }
-
-    await throwIfResNotOk(res);
-    return await res.json();
-  };
+import { QueryClient } from "@tanstack/react-query";
 
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      queryFn: getQueryFn({ on401: "throw" }),
-      refetchInterval: false,
+      retry: 1,
       refetchOnWindowFocus: false,
-      staleTime: Infinity,
-      retry: false,
-    },
-    mutations: {
-      retry: false,
     },
   },
 });
+
+type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+
+export async function apiRequest(
+  method: Method,
+  url: string,
+  data?: unknown
+): Promise<Response> {
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+
+  const options: RequestInit = {
+    method,
+    headers,
+    credentials: "include",
+  };
+
+  if (data) {
+    options.body = JSON.stringify(data);
+  }
+
+  return fetch(url, options);
+}
+
+// Função auxiliar para obter dados de uma API com suporte para comportamento em 401
+export function getQueryFn({
+  on401 = "throw",
+}: {
+  on401?: "throw" | "returnNull";
+} = {}) {
+  return async ({ queryKey }: { queryKey: string[] }) => {
+    const url = queryKey[0];
+    const response = await apiRequest("GET", url);
+
+    if (response.status === 401) {
+      if (on401 === "returnNull") {
+        return null;
+      }
+      throw new Error("Não autenticado");
+    }
+
+    if (!response.ok) {
+      throw new Error(`Erro ao obter dados: ${response.statusText}`);
+    }
+
+    return response.json();
+  };
+}
