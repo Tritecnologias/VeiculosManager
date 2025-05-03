@@ -29,6 +29,7 @@ import OptionalForm from "@/pages/optionals/OptionalForm";
 import DirectSaleForm from "./pages/direct-sales/DirectSaleForm";
 import Configurator from "@/pages/configurator";
 import Settings from "@/pages/settings/Settings";
+import ProfilePage from "@/pages/user/profile";
 import NotFound from "@/pages/not-found";
 import AuthPage from "@/pages/auth-page";
 
@@ -71,6 +72,9 @@ function Router() {
       
       {/* Configurações - acessível apenas para Administradores */}
       <ProtectedRoute path="/settings" component={Settings} requiredRole="Administrador" />
+
+      {/* Perfil de usuário - acessível por todos os usuários autenticados */}
+      <ProtectedRoute path="/user/profile" component={ProfilePage} />
       
       {/* Rota para página não encontrada */}
       <Route component={NotFound} />

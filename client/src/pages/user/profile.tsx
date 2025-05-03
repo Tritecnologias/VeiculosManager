@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { Link, useLocation } from "wouter";
 
 // Schema para validação do formulário de perfil
 const profileSchema = z.object({
@@ -37,7 +38,12 @@ export default function ProfilePage() {
   const { toast } = useToast();
   const [updating, setUpdating] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
-  const [activeTab, setActiveTab] = useState<'profile' | 'password'>('profile');
+  // Obter parâmetro de query string para a aba ativa
+  const searchParams = new URLSearchParams(window.location.search);
+  const tabParam = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState<'profile' | 'password'>(
+    tabParam === 'password' ? 'password' : 'profile'
+  );
 
   // Form para o perfil
   const profileForm = useForm<ProfileFormData>({
@@ -138,20 +144,22 @@ export default function ProfilePage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Menu lateral */}
         <div className="space-y-2">
-          <Button 
-            variant={activeTab === 'profile' ? "default" : "outline"} 
-            className="w-full justify-start"
-            onClick={() => setActiveTab('profile')}
-          >
-            Perfil
-          </Button>
-          <Button 
-            variant={activeTab === 'password' ? "default" : "outline"} 
-            className="w-full justify-start"
-            onClick={() => setActiveTab('password')}
-          >
-            Alterar Senha
-          </Button>
+          <Link href="/user/profile">
+            <Button 
+              variant={activeTab === 'profile' ? "default" : "outline"} 
+              className="w-full justify-start"
+            >
+              Perfil
+            </Button>
+          </Link>
+          <Link href="/user/profile?tab=password">
+            <Button 
+              variant={activeTab === 'password' ? "default" : "outline"} 
+              className="w-full justify-start"
+            >
+              Alterar Senha
+            </Button>
+          </Link>
         </div>
         
         {/* Conteúdo */}
