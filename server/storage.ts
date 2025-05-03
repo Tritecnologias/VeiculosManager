@@ -715,5 +715,63 @@ export const storage = {
   createSetting,
   updateSetting,
   updateSettingByKey,
-  deleteSetting
+  deleteSetting,
+  
+  // Funções para gerenciar permissões personalizadas
+  getCustomPermissions,
+  getCustomPermissionsByRole,
+  createOrUpdateCustomPermissions,
+  deleteCustomPermissions
 };
+
+// Funções para gerenciar permissões personalizadas
+export async function getCustomPermissions() {
+  return await db.query.customPermissions.findMany();
+}
+
+export async function getCustomPermissionsByRole(roleName: string) {
+  return await db.query.customPermissions.findFirst({
+    where: eq(customPermissions.roleName, roleName)
+  });
+}
+
+export async function createOrUpdateCustomPermissions(data: {
+  roleName: string;
+  permissions: Record<string, boolean>;
+}) {
+  const { roleName, permissions } = data;
+  
+  // Verificar se já existem permissões para esse papel
+  const existingPermissions = await getCustomPermissionsByRole(roleName);
+  
+  if (existingPermissions) {
+    // Atualizar permissões existentes
+    return await db.update(customPermissions)
+      .set({
+        permissions: permissions as any,
+        updatedAt: new Date()
+      })
+      .where(eq(customPermissions.id, existingPermissions.id))
+      .returning();
+  } else {
+    // Criar novas permissões
+    return await db.insert(customPermissions)
+      .values({
+        roleName,
+        permissions: permissions as any,
+      })
+      .returning();
+  }
+}
+
+export async function deleteCustomPermissions(roleName: string) {
+  const existing = await getCustomPermissionsByRole(roleName);
+  
+  if (existing) {
+    return await db.delete(customPermissions)
+      .where(eq(customPermissions.id, existing.id))
+      .returning();
+  }
+  
+  return null;
+}
