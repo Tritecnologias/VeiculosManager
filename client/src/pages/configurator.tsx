@@ -110,15 +110,23 @@ function Configurator() {
   useEffect(() => {
     if (versionColors && versionColors.length > 0 && selectedVersionId) {
       console.log("Atualizando cores disponíveis com base em versionColors");
-      // Extrai os IDs de cores dos versionColors
-      const versionColorIds = versionColors.map(vc => vc.colorId);
-      console.log("IDs de cores associadas:", versionColorIds);
+      console.log("Version Colors recebido:", versionColors);
+      
+      // Extrai os IDs de cores dos versionColors QUE CORRESPONDEM à versão selecionada
+      const colorIdsForVersion = versionColors
+        .filter(vc => vc.versionId === parseInt(selectedVersionId))
+        .map(vc => vc.colorId);
+      
+      console.log("IDs de cores associadas a esta versão:", colorIdsForVersion);
       
       // Filtra as cores disponíveis pelo ID
-      const associatedColors = allColors.filter(c => versionColorIds.includes(c.id));
+      const associatedColors = allColors.filter(c => colorIdsForVersion.includes(c.id));
       console.log("Cores associadas encontradas para mostrar:", associatedColors);
       
       setAvailableColors(associatedColors);
+    } else {
+      // Se não temos cores associadas ou versão selecionada, limpa as cores disponíveis
+      setAvailableColors([]);
     }
   }, [versionColors, allColors, selectedVersionId]);
 
