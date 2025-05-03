@@ -1,13 +1,80 @@
 import { Link, useLocation } from "wouter";
-import { Home, Car, Building, FileText, Palette, Settings, ListPlus, Menu, X } from "lucide-react";
+import { Home, Car, Building, FileText, Palette, Settings, ListPlus, Menu, X, LogOut, User } from "lucide-react";
 import { useState } from "react";
 import { useMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useAuth } from "@/hooks/use-auth";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+// Componente para exibir o perfil do usuário logado
+const UserProfile = () => {
+  const { user, logoutMutation } = useAuth();
+  
+  if (!user) return null;
+  
+  // Obter as iniciais do nome para o avatar
+  const getInitials = (name: string) => {
+    return name.split(' ')
+      .map(part => part[0])
+      .join('')
+      .toUpperCase()
+      .substring(0, 2);
+  };
+  
+  const handleLogout = () => {
+    logoutMutation.mutate();
+  };
+
+  const userInitials = getInitials(user.name);
+  
+  return (
+    <div className="mb-6">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="flex items-center w-full justify-start p-2 hover:bg-gray-100 rounded-lg">
+            <Avatar className="h-8 w-8 mr-2">
+              <AvatarFallback className="bg-primary text-white">{userInitials}</AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col items-start">
+              <span className="text-sm font-medium truncate max-w-[140px]">{user.name}</span>
+              <span className="text-xs text-gray-500">{user.role?.name || "Usuário"}</span>
+            </div>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-56">
+          <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem className="cursor-pointer">
+            <User className="mr-2 h-4 w-4" />
+            <span>Perfil</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem className="cursor-pointer text-red-600" onClick={handleLogout}>
+            <LogOut className="mr-2 h-4 w-4" />
+            <span>Sair</span>
+            {logoutMutation.isPending && (
+              <span className="ml-2 animate-spin">⋯</span>
+            )}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+};
 
 export default function Sidebar() {
   const [location] = useLocation();
   const isMobile = useMobile();
   const [open, setOpen] = useState(false);
+  const { user } = useAuth();
   
   const MenuItems = () => (
     <ul className="space-y-1">
@@ -91,6 +158,10 @@ export default function Sidebar() {
                   <X className="h-5 w-5" />
                 </button>
               </div>
+              
+              {/* Perfil do usuário */}
+              {user && <UserProfile />}
+              
               <nav>
                 <MenuItems />
               </nav>
@@ -105,6 +176,10 @@ export default function Sidebar() {
     <aside className="w-64 bg-white shadow-md min-h-screen">
       <div className="p-4">
         <h2 className="text-lg font-semibold text-gray-800 mb-4">Administração</h2>
+        
+        {/* Perfil do usuário */}
+        {user && <UserProfile />}
+        
         <nav>
           <MenuItems />
         </nav>

@@ -1,12 +1,33 @@
 import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
-import { Redirect, Route } from "wouter";
+import { Redirect, Route, RouteComponentProps } from "wouter";
 
 interface ProtectedRouteProps {
   path: string;
-  component: React.ComponentType;
+  component: React.ComponentType<any>;
   requiredRole?: "Administrador" | "Cadastrador";
 }
+
+// Componente de acesso negado
+const AccessDenied = () => (
+  <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+    <h1 className="text-2xl font-bold text-red-600">Acesso Negado</h1>
+    <p className="text-gray-600">Você não tem permissão para acessar esta página.</p>
+    <button 
+      onClick={() => window.history.back()}
+      className="px-4 py-2 bg-primary text-white rounded-md"
+    >
+      Voltar
+    </button>
+  </div>
+);
+
+// Componente de carregamento
+const Loading = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <Loader2 className="h-8 w-8 animate-spin text-border" />
+  </div>
+);
 
 export function ProtectedRoute({
   path,
@@ -15,49 +36,38 @@ export function ProtectedRoute({
 }: ProtectedRouteProps) {
   const { user, isLoading } = useAuth();
 
-  if (isLoading) {
-    return (
-      <Route path={path}>
-        <div className="flex items-center justify-center min-h-screen">
-          <Loader2 className="h-8 w-8 animate-spin text-border" />
-        </div>
-      </Route>
-    );
-  }
+  return (
+    <Route path={path}>
+      {(params) => {
+        // Enquanto carrega o usuário, mostrar um indicador de carregamento
+        if (isLoading) {
+          return <Loading />;
+        }
 
-  if (!user) {
-    return (
-      <Route path={path}>
-        <Redirect to="/auth" />
-      </Route>
-    );
-  }
+        // Se o usuário não estiver autenticado, redirecionar para a página de login
+        if (!user) {
+          return <Redirect to="/auth" />;
+        }
 
-  // Verificar se o usuário tem o papel necessário para acessar a rota
-  if (requiredRole && user.role?.name !== requiredRole) {
-    // Se um papel específico for necessário e o usuário não tiver esse papel
-    // Permitir acesso se o usuário for administrador (sempre tem acesso total)
-    if (requiredRole === "Cadastrador" && user.role?.name === "Administrador") {
-      return <Route path={path} component={Component} />;
-    }
-    
-    // Redirecionar para acesso negado
-    return (
-      <Route path={path}>
-        <div className="flex flex-col items-center justify-center min-h-screen gap-4">
-          <h1 className="text-2xl font-bold text-red-600">Acesso Negado</h1>
-          <p className="text-gray-600">Você não tem permissão para acessar esta página.</p>
-          <button 
-            onClick={() => window.history.back()}
-            className="px-4 py-2 bg-primary text-white rounded-md"
-          >
-            Voltar
-          </button>
-        </div>
-      </Route>
-    );
-  }
+        // Verificar as permissões baseadas em papéis
+        if (requiredRole) {
+          // Se for Administrador, tem acesso a tudo
+          if (user.role?.name === "Administrador") {
+            return <Component {...params} />;
+          }
+          
+          // Se for Cadastrador e a rota requer Cadastrador, permitir acesso
+          if (user.role?.name === "Cadastrador" && requiredRole === "Cadastrador") {
+            return <Component {...params} />;
+          }
+          
+          // Em outros casos, quando a função requer papel específico, negar acesso
+          return <AccessDenied />;
+        }
 
-  // Se chegou aqui, o usuário está autenticado e tem permissão
-  return <Route path={path} component={Component} />;
+        // Se chegou aqui, o usuário está autenticado e não há requisito de papel ou tem o papel adequado
+        return <Component {...params} />;
+      }}
+    </Route>
+  );
 }

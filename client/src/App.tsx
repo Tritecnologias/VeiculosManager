@@ -6,6 +6,8 @@ import { Toaster } from "@/components/ui/toaster";
 import AdminLayout from "@/components/layout/AdminLayout";
 import { SidebarProvider } from "@/contexts/SidebarContext";
 import { AppHead } from "@/components/AppHead";
+import { AuthProvider } from "@/hooks/use-auth";
+import { ProtectedRoute } from "@/lib/protected-route";
 
 // Pages
 import Dashboard from "@/pages/dashboard/Dashboard";
@@ -28,46 +30,59 @@ import DirectSaleForm from "./pages/direct-sales/DirectSaleForm";
 import Configurator from "@/pages/configurator";
 import Settings from "@/pages/settings/Settings";
 import NotFound from "@/pages/not-found";
+import AuthPage from "@/pages/auth-page";
 
 function Router() {
   return (
+    <Switch>
+      {/* Rota de autenticação - acessível a todos */}
+      <Route path="/auth" component={AuthPage} />
+      
+      {/* Rotas protegidas - só podem ser acessadas por usuários autenticados */}
+      <ProtectedRoute path="/" component={Dashboard} />
+      
+      {/* Lista de marcas e configurador - acessível por todos os usuários autenticados */}
+      <ProtectedRoute path="/brands" component={BrandList} />
+      <ProtectedRoute path="/configurator" component={Configurator} />
+      
+      {/* Funcionalidades de cadastro - requer papel de Cadastrador ou Admin */}
+      <ProtectedRoute path="/brands/new" component={BrandForm} requiredRole="Cadastrador" />
+      <ProtectedRoute path="/brands/:id/edit" component={BrandForm} requiredRole="Cadastrador" />
+      <ProtectedRoute path="/models" component={ModelList} />
+      <ProtectedRoute path="/models/new" component={ModelForm} requiredRole="Cadastrador" />
+      <ProtectedRoute path="/models/:id/edit" component={ModelForm} requiredRole="Cadastrador" />
+      <ProtectedRoute path="/versions" component={VersionList} />
+      <ProtectedRoute path="/versions/new" component={VersionForm} requiredRole="Cadastrador" />
+      <ProtectedRoute path="/versions/:id/edit" component={VersionForm} requiredRole="Cadastrador" />
+      <ProtectedRoute path="/colors" component={ColorTabs} />
+      <ProtectedRoute path="/paint-types" component={PaintTypeList} />
+      <ProtectedRoute path="/paint-types/new" component={PaintTypeForm} requiredRole="Cadastrador" />
+      <ProtectedRoute path="/paint-types/:id/edit" component={PaintTypeForm} requiredRole="Cadastrador" />
+      <ProtectedRoute path="/optionals" component={OptionalTabs} />
+      <ProtectedRoute path="/optionals/new" component={OptionalForm} requiredRole="Cadastrador" />
+      <ProtectedRoute path="/optionals/:id/edit" component={OptionalForm} requiredRole="Cadastrador" />
+      <ProtectedRoute path="/vehicles" component={VehicleList} />
+      <ProtectedRoute path="/vehicles/new" component={VehicleForm} requiredRole="Cadastrador" />
+      <ProtectedRoute path="/vehicles/:id/edit" component={VehicleForm} requiredRole="Cadastrador" />
+      
+      {/* Direct sales routes */}
+      <ProtectedRoute path="/direct-sales/new" component={DirectSaleForm} requiredRole="Cadastrador" />
+      <ProtectedRoute path="/direct-sales/edit/:id" component={DirectSaleForm} requiredRole="Cadastrador" />
+      
+      {/* Configurações - acessível apenas para Administradores */}
+      <ProtectedRoute path="/settings" component={Settings} requiredRole="Administrador" />
+      
+      {/* Rota para página não encontrada */}
+      <Route component={NotFound} />
+    </Switch>
+  );
+}
+
+// Componente para envolver as rotas protegidas no layout de administração
+function ProtectedContent() {
+  return (
     <AdminLayout>
-      <Switch>
-        <Route path="/" component={Dashboard} />
-        <Route path="/brands" component={BrandList} />
-        <Route path="/brands/new" component={BrandForm} />
-        <Route path="/brands/:id/edit" component={BrandForm} />
-        <Route path="/models" component={ModelList} />
-        <Route path="/models/new" component={ModelForm} />
-        <Route path="/models/:id/edit" component={ModelForm} />
-        <Route path="/versions" component={VersionList} />
-        <Route path="/versions/new" component={VersionForm} />
-        <Route path="/versions/:id/edit" component={VersionForm} />
-        <Route path="/colors" component={ColorTabs} />
-        <Route path="/paint-types" component={PaintTypeList} />
-        <Route path="/paint-types/new">
-          {() => <PaintTypeForm />}
-        </Route>
-        <Route path="/paint-types/:id/edit">
-          {(params) => <PaintTypeForm id={parseInt(params.id)} />}
-        </Route>
-        <Route path="/optionals" component={OptionalTabs} />
-        <Route path="/optionals/new">
-          {() => <OptionalForm />}
-        </Route>
-        <Route path="/optionals/:id/edit">
-          {(params) => <OptionalForm id={parseInt(params.id)} />}
-        </Route>
-        <Route path="/vehicles" component={VehicleList} />
-        <Route path="/vehicles/new" component={VehicleForm} />
-        <Route path="/vehicles/:id/edit" component={VehicleForm} />
-        {/* Direct sales routes */}
-        <Route path="/direct-sales/new" component={DirectSaleForm} />
-        <Route path="/direct-sales/edit/:id" component={DirectSaleForm} />
-        <Route path="/configurator" component={Configurator} />
-        <Route path="/settings" component={Settings} />
-        <Route component={NotFound} />
-      </Switch>
+      <Router />
     </AdminLayout>
   );
 }
@@ -75,12 +90,14 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <SidebarProvider>
-        {/* Componente para gerenciar o título e favicon da aplicação */}
-        <AppHead />
-        <Router />
-        <Toaster />
-      </SidebarProvider>
+      <AuthProvider>
+        <SidebarProvider>
+          {/* Componente para gerenciar o título e favicon da aplicação */}
+          <AppHead />
+          <ProtectedContent />
+          <Toaster />
+        </SidebarProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
