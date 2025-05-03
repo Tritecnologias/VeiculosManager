@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trash2, RefreshCw } from "lucide-react";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest, queryClient, getQueryFn } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Brand, Model, Version } from "@/lib/types";
 import { 
@@ -66,18 +66,22 @@ export default function VersionOptionalList() {
 
   const { data: brands = [] } = useQuery<Brand[]>({
     queryKey: ["/api/brands"],
+    queryFn: getQueryFn(),
   });
   
   const { data: models = [] } = useQuery<Model[]>({
     queryKey: ["/api/models"],
+    queryFn: getQueryFn(),
   });
   
   const { data: versions = [] } = useQuery<Version[]>({
     queryKey: ["/api/versions"],
+    queryFn: getQueryFn(),
   });
   
   const { data: versionOptionals = [], isLoading, refetch } = useQuery<VersionOptional[]>({
     queryKey: ["/api/version-optionals"],
+    queryFn: getQueryFn(),
   });
 
   // Filter models based on selected brand

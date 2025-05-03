@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Search, Pencil, Trash } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest, queryClient, getQueryFn } from "@/lib/queryClient";
 import { Optional } from "@/lib/types";
 import { formatBRCurrency } from "@/lib/formatters";
 
@@ -20,6 +20,7 @@ export default function OptionalList({ onEdit }: OptionalListProps) {
   
   const { data: optionals = [], isLoading } = useQuery<Optional[]>({
     queryKey: ["/api/optionals"],
+    queryFn: getQueryFn(),
   });
   
   const handleDelete = async (id: number) => {
