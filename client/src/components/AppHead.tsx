@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { getQueryFn } from "@/lib/queryClient";
 
 type Setting = {
   id: number;
@@ -15,6 +16,7 @@ export function AppHead() {
   // Buscar configurações da aplicação com prioridade máxima
   const { data: settings = [] } = useQuery<Setting[]>({
     queryKey: ["/api/settings"],
+    queryFn: getQueryFn(),
     staleTime: 60 * 1000, // 1 minuto antes de considerar os dados obsoletos
     refetchOnWindowFocus: true, // Recarregar quando a janela ganhar foco
   });

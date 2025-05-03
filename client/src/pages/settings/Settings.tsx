@@ -1,8 +1,7 @@
 import * as React from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
-import { queryClient } from "@/lib/queryClient";
-import { apiRequest } from "@/lib/queryClient";
+import { queryClient, getQueryFn, apiRequest } from "@/lib/queryClient";
 import DirectSaleList from "../../pages/direct-sales/DirectSaleList";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,6 +29,7 @@ export default function Settings() {
   // Buscar configurações do servidor
   const { data: settings = [], isLoading, error } = useQuery<Setting[]>({
     queryKey: ["/api/settings"],
+    queryFn: getQueryFn(),
   });
   
   // Inicializa o formulário quando as configurações são carregadas
