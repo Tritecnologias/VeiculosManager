@@ -50,25 +50,12 @@ export function ProtectedRoute({
           return <Redirect to="/auth" />;
         }
 
-        // Verificar as permissões baseadas no novo sistema de permissões
+        // Verificar as permissões baseadas no sistema de permissões
         const userRole = user.role?.name;
         const currentPath = path; // Para rotas estáticas
         
-        // Manter a compatibilidade com a prop requiredRole
-        if (requiredRole) {
-          if (userRole === "Administrador") {
-            // Administradores têm acesso a tudo
-            return <Component {...params} />;
-          } else if (userRole === "Cadastrador" && requiredRole === "Cadastrador") {
-            // Cadastradores têm acesso às rotas que exigem Cadastrador
-            return <Component {...params} />;
-          } else {
-            // Negado para outras combinações
-            return <AccessDenied />;
-          }
-        }
-        
-        // Para rotas sem requiredRole, usar o sistema centralizado de permissões
+        // Em todos os casos, priorizar o sistema de permissões para verificação
+        // Isso permite que permissões personalizadas funcionem para todos os papéis
         if (hasPermission(currentPath, userRole)) {
           return <Component {...params} />;
         } else {
