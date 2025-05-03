@@ -5,11 +5,13 @@ import { useQuery } from "@tanstack/react-query";
 import { useMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function Header() {
   const [location] = useLocation();
   const isMobile = useMobile();
   const [menuOpen, setMenuOpen] = useState(false);
+  const { user } = useAuth();
   
   // Buscar todas as configurações
   const { data: settings = [] } = useQuery<Array<{key: string, value: string}>>({
@@ -63,8 +65,20 @@ export default function Header() {
         </div>
         
         <div className="flex items-center space-x-4">
-          {!isMobile && (
-            <span className="text-sm text-gray-600">Olá Rodrigo (9640-59), seu último acesso foi em 25/02/2025 18:06h</span>
+          {!isMobile && user && (
+            <span className="text-sm text-gray-600">
+              Olá {user.name} ({user.id}), 
+              {user.lastLogin 
+                ? ` seu último acesso foi em ${new Date(user.lastLogin).toLocaleString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}h` 
+                : " bem-vindo ao sistema"
+              }
+            </span>
           )}
           <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center text-sm font-medium text-gray-700 hover:text-gray-800">

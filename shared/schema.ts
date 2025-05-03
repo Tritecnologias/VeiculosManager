@@ -262,6 +262,7 @@ export const users = pgTable("users", {
   password: text("password").notNull(),
   roleId: integer("role_id").references(() => userRoles.id).notNull(),
   isActive: boolean("is_active").default(true).notNull(),
+  lastLogin: timestamp("last_login"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

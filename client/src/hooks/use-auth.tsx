@@ -14,6 +14,7 @@ type UserWithRole = {
   email: string;
   roleId: number;
   isActive: boolean;
+  lastLogin?: string | Date | null;
   role?: {
     id: number;
     name: string;
