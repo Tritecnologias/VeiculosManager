@@ -5,6 +5,20 @@ export const queryClient = new QueryClient({
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
+      queryFn: async ({ queryKey }) => {
+        if (typeof queryKey[0] === 'string') {
+          console.log(`[Default QueryFn] Carregando: ${queryKey[0]}`);
+          const response = await fetch(queryKey[0] as string);
+          console.log(`[Default QueryFn] Status: ${response.status}`);
+          
+          if (!response.ok) {
+            throw new Error(`Erro ao buscar dados: ${response.statusText}`);
+          }
+          
+          return response.json();
+        }
+        throw new Error('QueryKey inválida para o queryFn padrão');
+      }
     },
   },
 });
