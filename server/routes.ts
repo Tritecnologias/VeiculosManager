@@ -15,7 +15,10 @@ import {
   getUserWithPassword,
   comparePasswords,
   hashPassword,
-  updateUserPassword
+  updateUserPassword,
+  updateUserRole,
+  updateUserStatus,
+  getAllRoles
 } from "./auth";
 import { 
   brandInsertSchema, 
