@@ -70,12 +70,18 @@ function Configurator() {
       if (!selectedVersionId) return [];
       
       console.log("Buscando cores para a versão:", selectedVersionId);
-      const response = await apiRequest("GET", `/api/version-colors?versionId=${selectedVersionId}`);
-      // Não é necessário chamar response.json() aqui, pois apiRequest já retorna os dados processados
-      console.log("Dados de cores para versão recebidos:", response);
-      return response;
+      try {
+        const response = await apiRequest("GET", `/api/version-colors?versionId=${selectedVersionId}`);
+        console.log("Dados de cores para versão recebidos:", response);
+        return response;
+      } catch (error) {
+        console.error("Erro ao buscar cores para versão:", error);
+        return [];
+      }
     },
     enabled: !!selectedVersionId,
+    retry: 3, // Tentar novamente em caso de falha
+    retryDelay: 1000, // Esperar 1 segundo entre as tentativas
   });
   
   // Fetch version optionals para a versão selecionada
@@ -85,11 +91,18 @@ function Configurator() {
       if (!selectedVersionId) return [];
       
       console.log("Buscando opcionais para a versão:", selectedVersionId);
-      const response = await apiRequest("GET", `/api/version-optionals?versionId=${selectedVersionId}`);
-      console.log("Dados de opcionais para versão recebidos:", response);
-      return response;
+      try {
+        const response = await apiRequest("GET", `/api/version-optionals?versionId=${selectedVersionId}`);
+        console.log("Dados de opcionais para versão recebidos:", response);
+        return response;
+      } catch (error) {
+        console.error("Erro ao buscar opcionais para versão:", error);
+        return [];
+      }
     },
     enabled: !!selectedVersionId,
+    retry: 3, // Tentar novamente em caso de falha
+    retryDelay: 1000, // Esperar 1 segundo entre as tentativas
   });
   
   // Debug logs
