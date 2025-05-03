@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PlusCircle, Edit, Trash } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { queryClient, apiRequest } from "@/lib/queryClient";
+import { queryClient, apiRequest, getQueryFn } from "@/lib/queryClient";
 
 export default function DirectSaleList() {
   const { toast } = useToast();
@@ -15,6 +15,7 @@ export default function DirectSaleList() {
   // Fetch direct sales
   const { data: directSales = [], isLoading, error } = useQuery<any[]>({
     queryKey: ["/api/direct-sales"],
+    queryFn: getQueryFn(),
   });
 
   // Delete direct sale
