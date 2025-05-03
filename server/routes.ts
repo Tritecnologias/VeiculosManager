@@ -1129,32 +1129,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put(`${apiPrefix}/users/:id/password`, isAuthenticated, async (req, res) => {
     const userId = parseInt(req.params.id);
+    console.log(`Solicitação de alteração de senha recebida para o usuário ${userId}`);
     
     // Verificar se o usuário está tentando alterar sua própria senha
     // @ts-ignore - Sabemos que req.user existe devido ao middleware isAuthenticated
     if (req.user.id !== userId) {
+      console.log(`Tentativa de alteração de senha rejeitada: usuário ${req.user.id} tentou alterar senha do usuário ${userId}`);
       return res.status(403).json({ message: "Você não tem permissão para alterar esta senha" });
     }
     
     try {
+      console.log(`Verificando dados para alteração de senha do usuário ${userId}`);
       const { currentPassword, newPassword } = req.body;
       
+      if (!currentPassword || !newPassword) {
+        console.log(`Dados de senha incompletos: currentPassword=${!!currentPassword}, newPassword=${!!newPassword}`);
+        return res.status(400).json({ message: "Senha atual e nova senha são obrigatórias" });
+      }
+      
       // Obter usuário com senha
+      console.log(`Buscando informações do usuário ${userId} no banco de dados`);
       const user = await getUserWithPassword(userId);
       if (!user) {
+        console.log(`Usuário ${userId} não encontrado no banco de dados`);
         return res.status(404).json({ message: "Usuário não encontrado" });
       }
       
       // Verificar senha atual
+      console.log(`Verificando se a senha atual está correta para o usuário ${userId}`);
       const isPasswordCorrect = await comparePasswords(currentPassword, user.password);
       if (!isPasswordCorrect) {
+        console.log(`Senha atual incorreta para o usuário ${userId}`);
         return res.status(400).json({ message: "Senha atual incorreta" });
       }
       
       // Hash da nova senha e atualização
+      console.log(`Gerando hash para a nova senha do usuário ${userId}`);
       const hashedPassword = await hashPassword(newPassword);
-      await updateUserPassword(userId, hashedPassword);
       
+      console.log(`Atualizando senha do usuário ${userId} no banco de dados`);
+      const updateResult = await updateUserPassword(userId, hashedPassword);
+      console.log(`Resultado da atualização de senha: ${JSON.stringify(updateResult)}`);
+      
+      console.log(`Senha atualizada com sucesso para o usuário ${userId}`);
       res.json({ message: "Senha atualizada com sucesso" });
     } catch (error) {
       console.error("Erro ao atualizar senha:", error);

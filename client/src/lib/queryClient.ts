@@ -28,9 +28,22 @@ export async function apiRequest(
 
   if (data) {
     options.body = JSON.stringify(data);
+    console.log(`[API ${method}] ${url}`, data);
+  } else {
+    console.log(`[API ${method}] ${url}`);
   }
 
-  return fetch(url, options);
+  try {
+    const response = await fetch(url, options);
+    
+    // Logar resultado básico
+    console.log(`[API Response] ${url} - Status: ${response.status}`);
+    
+    return response;
+  } catch (error) {
+    console.error(`[API Error] ${url}:`, error);
+    throw error;
+  }
 }
 
 // Função auxiliar para obter dados de uma API com suporte para comportamento em 401

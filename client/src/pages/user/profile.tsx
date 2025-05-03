@@ -96,29 +96,55 @@ export default function ProfilePage() {
   const onPasswordSubmit = async (data: PasswordFormData) => {
     if (!user) return;
     
+    console.log("Iniciando alteração de senha para usuário ID:", user.id);
+    console.log("Dados do formulário:", { 
+      currentPassword: data.currentPassword ? "***" : undefined, 
+      newPassword: data.newPassword ? "***" : undefined,
+      confirmPassword: data.confirmPassword ? "***" : undefined
+    });
+    
     setChangingPassword(true);
     try {
+      // Validar dados antes de enviar
+      if (!data.currentPassword || !data.newPassword || !data.confirmPassword) {
+        throw new Error("Todos os campos são obrigatórios");
+      }
+      
+      if (data.newPassword !== data.confirmPassword) {
+        throw new Error("As senhas não coincidem");
+      }
+      
+      // Enviar requisição
+      console.log(`Enviando requisição para /api/users/${user.id}/password`);
       const response = await apiRequest("PUT", `/api/users/${user.id}/password`, {
         currentPassword: data.currentPassword,
         newPassword: data.newPassword,
       });
       
+      // Analisar resposta
+      console.log(`Resposta recebida com status ${response.status}`);
+      
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Erro ao alterar senha");
+        const errorData = await response.json();
+        console.error("Erro na resposta:", errorData);
+        throw new Error(errorData.message || "Erro ao alterar senha");
       }
       
+      // Resetar formulário em caso de sucesso
       passwordForm.reset({
         currentPassword: "",
         newPassword: "",
         confirmPassword: "",
       });
       
+      // Mensagem de sucesso
+      console.log("Senha alterada com sucesso!");
       toast({
         title: "Senha alterada",
         description: "Sua senha foi alterada com sucesso!",
       });
     } catch (error) {
+      console.error("Erro durante alteração de senha:", error);
       toast({
         title: "Erro ao alterar senha",
         description: error instanceof Error ? error.message : "Ocorreu um erro ao alterar a senha",
