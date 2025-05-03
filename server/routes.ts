@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { z } from "zod";
 import { db } from "@db";
 import { eq } from "drizzle-orm";
+import { setupAuth, isAuthenticated, isAdmin, isCadastrador } from "./auth";
 import { 
   brandInsertSchema, 
   modelInsertSchema, 
@@ -24,6 +25,9 @@ import {
 export async function registerRoutes(app: Express): Promise<Server> {
   const apiPrefix = '/api';
   const httpServer = createServer(app);
+  
+  // Configurar autenticação
+  setupAuth(app);
   
   // Middleware para logar todas as solicitações de API
   app.use(apiPrefix, (req, res, next) => {

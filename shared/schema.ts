@@ -245,3 +245,47 @@ export const directSalesInsertSchema = createInsertSchema(directSales, {
 export type DirectSaleInsert = z.infer<typeof directSalesInsertSchema>;
 export const directSalesSelectSchema = createSelectSchema(directSales);
 export type DirectSale = z.infer<typeof directSalesSelectSchema>;
+
+// Sistema de autenticação e controle de acesso
+export const userRoles = pgTable("user_roles", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull().unique(),
+  password: text("password").notNull(),
+  roleId: integer("role_id").references(() => userRoles.id).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const userRolesRelations = relations(userRoles, ({ many }) => ({
+  users: many(users),
+}));
+
+export const usersRelations = relations(users, ({ one }) => ({
+  role: one(userRoles, { fields: [users.roleId], references: [userRoles.id] }),
+}));
+
+export const userRoleInsertSchema = createInsertSchema(userRoles, {
+  name: (schema) => schema.min(3, "Nome do papel deve ter pelo menos 3 caracteres")
+});
+export type UserRoleInsert = z.infer<typeof userRoleInsertSchema>;
+export const userRoleSelectSchema = createSelectSchema(userRoles);
+export type UserRole = z.infer<typeof userRoleSelectSchema>;
+
+export const userInsertSchema = createInsertSchema(users, {
+  name: (schema) => schema.min(3, "Nome deve ter pelo menos 3 caracteres"),
+  email: (schema) => schema.email("Email inválido"),
+  password: (schema) => schema.min(6, "Senha deve ter pelo menos 6 caracteres"),
+});
+export type UserInsert = z.infer<typeof userInsertSchema>;
+export const userSelectSchema = createSelectSchema(users);
+export type User = z.infer<typeof userSelectSchema>;
