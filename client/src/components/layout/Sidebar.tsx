@@ -1,12 +1,12 @@
 import { Link, useLocation } from "wouter";
-import { Home, Car, Building, FileText, Palette, Settings, ListPlus, Menu, X, LogOut, User, Users, Shield, ShieldCheck } from "lucide-react";
+import { Home, Car, Building, FileText, Palette, Settings, ListPlus, Menu, X, LogOut, User, Users, Shield, ShieldCheck, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { hasPermission } from "@/lib/permissions";
+import { hasPermission, getPermissions } from "@/lib/permissions";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +19,7 @@ import {
 // Componente para exibir o perfil do usuário logado
 const UserProfile = () => {
   const { user, logoutMutation } = useAuth();
+  const [filteredProfileItems, setFilteredProfileItems] = useState<Array<{path: string, label: string, icon: JSX.Element}>>([]);
   
   if (!user) return null;
   
@@ -56,10 +57,17 @@ const UserProfile = () => {
     }
   ];
 
-  // Filtra os itens do menu para os quais o usuário tem permissão
-  const filteredProfileItems = profileMenuItems.filter(item => 
-    hasPermission(item.path.split('?')[0], user?.role?.name)
-  );
+  // Atualiza os itens do menu quando o usuário mudar
+  useEffect(() => {
+    if (user) {
+      const filtered = profileMenuItems.filter(item => 
+        hasPermission(item.path.split('?')[0], user?.role?.name)
+      );
+      setFilteredProfileItems(filtered);
+    } else {
+      setFilteredProfileItems([]);
+    }
+  }, [user]);
   
   return (
     <div className="mb-6">
@@ -102,35 +110,68 @@ const UserProfile = () => {
   );
 };
 
+// Define a estrutura do menu com path, label e ícone
+const menuStructure = [
+  { path: "/", label: "Dashboard", icon: <Home className="h-5 w-5 mr-2" /> },
+  { path: "/vehicles", label: "Veículos", icon: <Car className="h-5 w-5 mr-2" /> },
+  { path: "/brands", label: "Marcas", icon: <Building className="h-5 w-5 mr-2" /> },
+  { path: "/models", label: "Modelos", icon: <FileText className="h-5 w-5 mr-2" /> },
+  { path: "/versions", label: "Versões", icon: <FileText className="h-5 w-5 mr-2" /> },
+  { path: "/colors", label: "Cores/Pinturas", icon: <Palette className="h-5 w-5 mr-2" /> },
+  { path: "/paint-types", label: "Tipos de Pintura", icon: <Palette className="h-5 w-5 mr-2" /> },
+  { path: "/optionals", label: "Opcionais", icon: <ListPlus className="h-5 w-5 mr-2" /> },
+  { path: "/configurator", label: "Configurador", icon: <Car className="h-5 w-5 mr-2" /> },
+  { path: "/settings", label: "Configurações", icon: <Settings className="h-5 w-5 mr-2" /> },
+  { path: "/admin/users", label: "Usuários", icon: <Users className="h-5 w-5 mr-2" /> },
+  { path: "/admin/permissions", label: "Visualizar Permissões", icon: <Shield className="h-5 w-5 mr-2" /> },
+  { path: "/admin/permission-settings", label: "Configurar Permissões", icon: <ShieldCheck className="h-5 w-5 mr-2" /> },
+];
+
 export default function Sidebar() {
   const [location] = useLocation();
   const isMobile = useMobile();
   const [open, setOpen] = useState(false);
   const { user } = useAuth();
+  const [permissionsLoaded, setPermissionsLoaded] = useState(false);
+  const [filteredMenuItems, setFilteredMenuItems] = useState<Array<{path: string, label: string, icon: JSX.Element}>>([]);
+  
+  // Carregar permissões e atualizar o menu quando o usuário mudar
+  useEffect(() => {
+    async function loadPermissions() {
+      if (user) {
+        try {
+          // Garantir que as permissões foram carregadas
+          await getPermissions();
+          
+          // Filtra os itens do menu para os quais o usuário tem permissão
+          const filtered = menuStructure.filter(item => 
+            hasPermission(item.path, user?.role?.name)
+          );
+          setFilteredMenuItems(filtered);
+          setPermissionsLoaded(true);
+        } catch (error) {
+          console.error("Erro ao carregar permissões:", error);
+          setPermissionsLoaded(true); // Marcar como carregado mesmo em caso de erro para não bloquear a interface
+        }
+      } else {
+        setFilteredMenuItems([]);
+        setPermissionsLoaded(true);
+      }
+    }
+    
+    setPermissionsLoaded(false);
+    loadPermissions();
+  }, [user]);
   
   const MenuItems = () => {
-    // Define a estrutura do menu com path, label e ícone
-    const menuStructure = [
-      { path: "/", label: "Dashboard", icon: <Home className="h-5 w-5 mr-2" /> },
-      { path: "/vehicles", label: "Veículos", icon: <Car className="h-5 w-5 mr-2" /> },
-      { path: "/brands", label: "Marcas", icon: <Building className="h-5 w-5 mr-2" /> },
-      { path: "/models", label: "Modelos", icon: <FileText className="h-5 w-5 mr-2" /> },
-      { path: "/versions", label: "Versões", icon: <FileText className="h-5 w-5 mr-2" /> },
-      { path: "/colors", label: "Cores/Pinturas", icon: <Palette className="h-5 w-5 mr-2" /> },
-      { path: "/paint-types", label: "Tipos de Pintura", icon: <Palette className="h-5 w-5 mr-2" /> },
-      { path: "/optionals", label: "Opcionais", icon: <ListPlus className="h-5 w-5 mr-2" /> },
-      { path: "/configurator", label: "Configurador", icon: <Car className="h-5 w-5 mr-2" /> },
-      { path: "/settings", label: "Configurações", icon: <Settings className="h-5 w-5 mr-2" /> },
-      { path: "/admin/users", label: "Usuários", icon: <Users className="h-5 w-5 mr-2" /> },
-      { path: "/admin/permissions", label: "Visualizar Permissões", icon: <Shield className="h-5 w-5 mr-2" /> },
-      { path: "/admin/permission-settings", label: "Configurar Permissões", icon: <ShieldCheck className="h-5 w-5 mr-2" /> },
-    ];
-
-    // Filtra os itens do menu para os quais o usuário tem permissão
-    const filteredMenuItems = menuStructure.filter(item => 
-      hasPermission(item.path, user?.role?.name)
-    );
-
+    if (!permissionsLoaded) {
+      return (
+        <div className="flex justify-center items-center py-4">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        </div>
+      );
+    }
+    
     return (
       <ul className="space-y-1">
         {filteredMenuItems.map((item, index) => (

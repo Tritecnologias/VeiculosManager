@@ -49,6 +49,7 @@ export const ROUTE_PERMISSIONS: RoutePermission[] = [
 
 // Armazenar permissões personalizadas em cache
 let customPermissionsCache: Record<string, Record<string, boolean>> = {};
+let permissionsLoaded = false;
 
 /**
  * Define as permissões personalizadas para uso no sistema
@@ -56,6 +57,7 @@ let customPermissionsCache: Record<string, Record<string, boolean>> = {};
  */
 export function setCustomPermissions(permissions: Record<string, Record<string, boolean>>) {
   customPermissionsCache = permissions;
+  permissionsLoaded = true;
 }
 
 /**
@@ -64,6 +66,31 @@ export function setCustomPermissions(permissions: Record<string, Record<string, 
  */
 export function getCustomPermissions(): Record<string, Record<string, boolean>> {
   return customPermissionsCache;
+}
+
+/**
+ * Carrega as permissões do servidor e as armazena em cache
+ * @returns Promise que resolve quando as permissões forem carregadas
+ */
+export async function getPermissions(): Promise<Record<string, Record<string, boolean>>> {
+  if (permissionsLoaded) {
+    return customPermissionsCache;
+  }
+  
+  try {
+    const response = await fetch('/api/permissions');
+    if (!response.ok) {
+      throw new Error('Falha ao carregar permissões');
+    }
+    
+    const permissions = await response.json();
+    setCustomPermissions(permissions);
+    return permissions;
+  } catch (error) {
+    console.error('Erro ao carregar permissões:', error);
+    permissionsLoaded = true; // Marcar como carregado mesmo em caso de erro para evitar múltiplas tentativas
+    return {};
+  }
 }
 
 /**
