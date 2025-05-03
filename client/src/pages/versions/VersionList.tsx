@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Search, Pencil, Trash } from "lucide-react";
+import { Plus, Search, Pencil, Trash, RefreshCw } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { VersionWithModel } from "@/lib/types";
@@ -38,7 +38,7 @@ export default function VersionList() {
     }
   };
   
-  const { data: versions = [], isLoading } = useQuery<VersionWithModel[]>({
+  const { data: versions = [], isLoading, refetch, isRefetching } = useQuery<VersionWithModel[]>({
     queryKey: ["/api/versions"],
     queryFn: fetchVersions,
     staleTime: 0, // Sempre buscar novos dados
@@ -80,7 +80,7 @@ export default function VersionList() {
           <CardDescription>
             Gerencie as versões de veículos disponíveis
           </CardDescription>
-          <div className="flex mt-4">
+          <div className="flex mt-4 gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
               <Input
@@ -91,6 +91,16 @@ export default function VersionList() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className="flex-shrink-0" 
+              onClick={() => refetch()}
+              disabled={isRefetching}
+              title="Recarregar versões"
+            >
+              <RefreshCw className={`h-4 w-4 ${isRefetching ? 'animate-spin' : ''}`} />
+            </Button>
           </div>
         </CardHeader>
         <CardContent>

@@ -113,6 +113,42 @@ function ProtectedContent() {
     staleTime: 5 * 60 * 1000, // 5 minutos
   });
   
+  // Prefetch de dados essenciais para todas as páginas quando o usuário está autenticado
+  useEffect(() => {
+    if (user) {
+      console.log("Prefetching essential data for all pages...");
+      
+      // Dados essenciais que serão carregados uma vez que o usuário estiver autenticado
+      const essentialQueries = [
+        '/api/versions',   // Versões para o menu de versões
+        '/api/brands',     // Marcas para vários componentes
+        '/api/models',     // Modelos para vários componentes
+        '/api/colors'      // Cores para o configurador
+      ];
+      
+      // Prefetch de todos os dados essenciais
+      essentialQueries.forEach(query => {
+        console.log(`Pre-loading data for: ${query}`);
+        queryClient.prefetchQuery({
+          queryKey: [query],
+          queryFn: async () => {
+            try {
+              const response = await fetch(query);
+              console.log(`Prefetch response for ${query}: ${response.status}`);
+              if (!response.ok) {
+                throw new Error(`Error prefetching ${query}: ${response.statusText}`);
+              }
+              return response.json();
+            } catch (error) {
+              console.error(`Error during prefetch for ${query}:`, error);
+              throw error;
+            }
+          }
+        });
+      });
+    }
+  }, [user]);
+  
   // Configurar as permissões personalizadas quando carregadas
   useEffect(() => {
     if (customPermissions) {
