@@ -1,6 +1,7 @@
 import { useAuth } from "@/hooks/use-auth";
 import { Loader2 } from "lucide-react";
 import { Redirect, Route, RouteComponentProps } from "wouter";
+import { hasPermission } from "./permissions";
 
 interface ProtectedRouteProps {
   path: string;
@@ -49,24 +50,30 @@ export function ProtectedRoute({
           return <Redirect to="/auth" />;
         }
 
-        // Verificar as permissões baseadas em papéis
+        // Verificar as permissões baseadas no novo sistema de permissões
+        const userRole = user.role?.name;
+        const currentPath = path; // Para rotas estáticas
+        
+        // Manter a compatibilidade com a prop requiredRole
         if (requiredRole) {
-          // Se for Administrador, tem acesso a tudo
-          if (user.role?.name === "Administrador") {
+          if (userRole === "Administrador") {
+            // Administradores têm acesso a tudo
             return <Component {...params} />;
-          }
-          
-          // Se for Cadastrador e a rota requer Cadastrador, permitir acesso
-          if (user.role?.name === "Cadastrador" && requiredRole === "Cadastrador") {
+          } else if (userRole === "Cadastrador" && requiredRole === "Cadastrador") {
+            // Cadastradores têm acesso às rotas que exigem Cadastrador
             return <Component {...params} />;
+          } else {
+            // Negado para outras combinações
+            return <AccessDenied />;
           }
-          
-          // Em outros casos, quando a função requer papel específico, negar acesso
+        }
+        
+        // Para rotas sem requiredRole, usar o sistema centralizado de permissões
+        if (hasPermission(currentPath, userRole)) {
+          return <Component {...params} />;
+        } else {
           return <AccessDenied />;
         }
-
-        // Se chegou aqui, o usuário está autenticado e não há requisito de papel ou tem o papel adequado
-        return <Component {...params} />;
       }}
     </Route>
   );
