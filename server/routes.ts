@@ -468,7 +468,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Version Colors API
-  app.get(`${apiPrefix}/version-colors`, async (req, res) => {
+  app.get(`${apiPrefix}/version-colors`, isAuthenticated, async (req, res) => {
     try {
       const modelId = req.query.modelId ? parseInt(req.query.modelId as string) : undefined;
       const versionId = req.query.versionId ? parseInt(req.query.versionId as string) : undefined;
