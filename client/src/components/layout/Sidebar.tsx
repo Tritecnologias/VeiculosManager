@@ -1,11 +1,12 @@
 import { Link, useLocation } from "wouter";
 import { Home, Car, Building, FileText, Palette, Settings, ListPlus, Menu, X, LogOut, User, Users, Shield, ShieldCheck } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { hasPermission } from "@/lib/permissions";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,6 +36,30 @@ const UserProfile = () => {
   };
 
   const userInitials = getInitials(user.name);
+
+  // Define os itens do dropdown de perfil
+  const profileMenuItems = [
+    { 
+      path: "/user/profile", 
+      label: "Perfil", 
+      icon: <User className="mr-2 h-4 w-4" /> 
+    },
+    { 
+      path: "/user/profile?tab=password", 
+      label: "Alterar Senha", 
+      icon: <FileText className="mr-2 h-4 w-4" /> 
+    },
+    { 
+      path: "/admin/permissions", 
+      label: "Permissões de Acesso", 
+      icon: <Shield className="mr-2 h-4 w-4" /> 
+    }
+  ];
+
+  // Filtra os itens do menu para os quais o usuário tem permissão
+  const filteredProfileItems = profileMenuItems.filter(item => 
+    hasPermission(item.path.split('?')[0], user?.role?.name)
+  );
   
   return (
     <div className="mb-6">
@@ -53,24 +78,16 @@ const UserProfile = () => {
         <DropdownMenuContent align="start" className="w-56">
           <DropdownMenuLabel>Meus Dados</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <Link href="/user/profile">
-            <DropdownMenuItem className="cursor-pointer">
-              <User className="mr-2 h-4 w-4" />
-              <span>Perfil</span>
-            </DropdownMenuItem>
-          </Link>
-          <Link href="/user/profile?tab=password">
-            <DropdownMenuItem className="cursor-pointer">
-              <FileText className="mr-2 h-4 w-4" />
-              <span>Alterar Senha</span>
-            </DropdownMenuItem>
-          </Link>
-          <Link href="/admin/permissions">
-            <DropdownMenuItem className="cursor-pointer">
-              <Shield className="mr-2 h-4 w-4" />
-              <span>Permissões de Acesso</span>
-            </DropdownMenuItem>
-          </Link>
+          
+          {filteredProfileItems.map((item, index) => (
+            <Link key={index} href={item.path}>
+              <DropdownMenuItem className="cursor-pointer">
+                {item.icon}
+                <span>{item.label}</span>
+              </DropdownMenuItem>
+            </Link>
+          ))}
+          
           <DropdownMenuSeparator />
           <DropdownMenuItem className="cursor-pointer text-red-600" onClick={handleLogout}>
             <LogOut className="mr-2 h-4 w-4" />
@@ -91,98 +108,46 @@ export default function Sidebar() {
   const [open, setOpen] = useState(false);
   const { user } = useAuth();
   
-  const MenuItems = () => (
-    <ul className="space-y-1">
-      <li>
-        <Link href="/" className={`sidebar-item ${location === '/' ? 'active' : ''}`}>
-          <Home className="h-5 w-5 mr-2" />
-          Dashboard
-        </Link>
-      </li>
-      <li>
-        <Link href="/vehicles" className={`sidebar-item ${location.startsWith('/vehicles') ? 'active' : ''}`}>
-          <Car className="h-5 w-5 mr-2" />
-          Veículos
-        </Link>
-      </li>
-      <li>
-        <Link href="/brands" className={`sidebar-item ${location.startsWith('/brands') ? 'active' : ''}`}>
-          <Building className="h-5 w-5 mr-2" />
-          Marcas
-        </Link>
-      </li>
-      <li>
-        <Link href="/models" className={`sidebar-item ${location.startsWith('/models') ? 'active' : ''}`}>
-          <FileText className="h-5 w-5 mr-2" />
-          Modelos
-        </Link>
-      </li>
-      <li>
-        <Link href="/versions" className={`sidebar-item ${location.startsWith('/versions') ? 'active' : ''}`}>
-          <FileText className="h-5 w-5 mr-2" />
-          Versões
-        </Link>
-      </li>
-      <li>
-        <Link href="/colors" className={`sidebar-item ${location.startsWith('/colors') ? 'active' : ''}`}>
-          <Palette className="h-5 w-5 mr-2" />
-          Cores/Pinturas
-        </Link>
-      </li>
-      <li>
-        <Link href="/paint-types" className={`sidebar-item ${location.startsWith('/paint-types') ? 'active' : ''}`}>
-          <Palette className="h-5 w-5 mr-2" />
-          Tipos de Pintura
-        </Link>
-      </li>
-      <li>
-        <Link href="/optionals" className={`sidebar-item ${location.startsWith('/optionals') ? 'active' : ''}`}>
-          <ListPlus className="h-5 w-5 mr-2" />
-          Opcionais
-        </Link>
-      </li>
-      <li>
-        <Link href="/configurator" className={`sidebar-item ${location.startsWith('/configurator') ? 'active' : ''}`}>
-          <Car className="h-5 w-5 mr-2" />
-          Configurador
-        </Link>
-      </li>
-      <li>
-        <Link href="/settings" className={`sidebar-item ${location.startsWith('/settings') ? 'active' : ''}`}>
-          <Settings className="h-5 w-5 mr-2" />
-          Configurações
-        </Link>
-      </li>
-      
-      {/* Link para gerenciamento de usuários - apenas para administradores */}
-      {user?.role?.name === "Administrador" && (
-        <li>
-          <Link href="/admin/users" className={`sidebar-item ${location.startsWith('/admin/users') ? 'active' : ''}`}>
-            <Users className="h-5 w-5 mr-2" />
-            Usuários
-          </Link>
-        </li>
-      )}
-      
-      {/* Link para visualização de permissões - acessível a todos os usuários */}
-      <li>
-        <Link href="/admin/permissions" className={`sidebar-item ${location === '/admin/permissions' ? 'active' : ''}`}>
-          <Shield className="h-5 w-5 mr-2" />
-          Visualizar Permissões
-        </Link>
-      </li>
+  const MenuItems = () => {
+    // Define a estrutura do menu com path, label e ícone
+    const menuStructure = [
+      { path: "/", label: "Dashboard", icon: <Home className="h-5 w-5 mr-2" /> },
+      { path: "/vehicles", label: "Veículos", icon: <Car className="h-5 w-5 mr-2" /> },
+      { path: "/brands", label: "Marcas", icon: <Building className="h-5 w-5 mr-2" /> },
+      { path: "/models", label: "Modelos", icon: <FileText className="h-5 w-5 mr-2" /> },
+      { path: "/versions", label: "Versões", icon: <FileText className="h-5 w-5 mr-2" /> },
+      { path: "/colors", label: "Cores/Pinturas", icon: <Palette className="h-5 w-5 mr-2" /> },
+      { path: "/paint-types", label: "Tipos de Pintura", icon: <Palette className="h-5 w-5 mr-2" /> },
+      { path: "/optionals", label: "Opcionais", icon: <ListPlus className="h-5 w-5 mr-2" /> },
+      { path: "/configurator", label: "Configurador", icon: <Car className="h-5 w-5 mr-2" /> },
+      { path: "/settings", label: "Configurações", icon: <Settings className="h-5 w-5 mr-2" /> },
+      { path: "/admin/users", label: "Usuários", icon: <Users className="h-5 w-5 mr-2" /> },
+      { path: "/admin/permissions", label: "Visualizar Permissões", icon: <Shield className="h-5 w-5 mr-2" /> },
+      { path: "/admin/permission-settings", label: "Configurar Permissões", icon: <ShieldCheck className="h-5 w-5 mr-2" /> },
+    ];
 
-      {/* Link para configuração de permissões - apenas para administradores */}
-      {user?.role?.name === "Administrador" && (
-        <li>
-          <Link href="/admin/permission-settings" className={`sidebar-item ${location === '/admin/permission-settings' ? 'active' : ''}`}>
-            <ShieldCheck className="h-5 w-5 mr-2" />
-            Configurar Permissões
-          </Link>
-        </li>
-      )}
-    </ul>
-  );
+    // Filtra os itens do menu para os quais o usuário tem permissão
+    const filteredMenuItems = menuStructure.filter(item => 
+      hasPermission(item.path, user?.role?.name)
+    );
+
+    return (
+      <ul className="space-y-1">
+        {filteredMenuItems.map((item, index) => (
+          <li key={index}>
+            <Link 
+              href={item.path} 
+              className={`sidebar-item ${location.startsWith(item.path) || 
+                (item.path !== '/' && location === item.path) ? 'active' : ''}`}
+            >
+              {item.icon}
+              {item.label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    );
+  };
 
   if (isMobile) {
     return (
