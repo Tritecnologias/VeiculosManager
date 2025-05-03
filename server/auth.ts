@@ -137,13 +137,22 @@ export async function updateUser(id: number, data: { name: string; email: string
 }
 
 export async function updateUserPassword(id: number, hashedPassword: string) {
-  return db.update(users)
-    .set({
-      password: hashedPassword,
-      updatedAt: new Date()
-    })
-    .where(eq(users.id, id))
-    .execute();
+  console.log(`Atualizando senha do usuário ID: ${id}`);
+  try {
+    const result = await db.update(users)
+      .set({
+        password: hashedPassword,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, id))
+      .returning();
+    
+    console.log(`Resultado da atualização: ${JSON.stringify(result)}`);
+    return result[0];
+  } catch (error) {
+    console.error("Erro ao atualizar senha:", error);
+    throw error;
+  }
 }
 
 export async function updateUserRole(id: number, roleId: number) {
