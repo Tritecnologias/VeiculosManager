@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Brand, Model, Version, Color, Vehicle } from "@/lib/types";
 import { formatCurrency, formatConfiguratorCurrency } from "@/lib/formatters";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, getQueryFn } from "@/lib/queryClient";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -30,31 +30,37 @@ function Configurator() {
   // Fetch brands
   const { data: brands = [], isLoading: brandsLoading } = useQuery<Brand[]>({
     queryKey: ["/api/brands"],
+    queryFn: getQueryFn()
   });
 
   // Fetch models
   const { data: allModels = [], isLoading: modelsLoading } = useQuery<Model[]>({
     queryKey: ["/api/models"],
+    queryFn: getQueryFn()
   });
 
   // Fetch versions
   const { data: allVersions = [], isLoading: versionsLoading } = useQuery<Version[]>({
     queryKey: ["/api/versions"],
+    queryFn: getQueryFn()
   });
 
   // Fetch colors
   const { data: allColors = [], isLoading: colorsLoading } = useQuery<Color[]>({
     queryKey: ["/api/colors"],
+    queryFn: getQueryFn()
   });
 
   // Fetch vehicles
   const { data: allVehicles = [], isLoading: vehiclesLoading } = useQuery<Vehicle[]>({
     queryKey: ["/api/vehicles"],
+    queryFn: getQueryFn()
   });
   
   // Fetch direct sales
   const { data: directSales = [] } = useQuery<any[]>({
     queryKey: ["/api/direct-sales"],
+    queryFn: getQueryFn()
   });
   
   // Fetch version colors para a versão selecionada
