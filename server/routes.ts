@@ -987,5 +987,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Rotas de gerenciamento de usuários
+  app.get(`${apiPrefix}/users`, isAdmin, async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      res.json(users);
+    } catch (error) {
+      console.error("Erro ao buscar usuários:", error);
+      res.status(500).json({ message: "Erro ao buscar usuários" });
+    }
+  });
+
+  app.put(`${apiPrefix}/users/:id`, isAuthenticated, async (req, res) => {
+    const userId = parseInt(req.params.id);
+    
+    // Verificar se o usuário está tentando editar seu próprio perfil
+    // @ts-ignore - Sabemos que req.user existe devido ao middleware isAuthenticated
+    if (req.user.id !== userId && req.user.role.name !== "Administrador") {
+      return res.status(403).json({ message: "Você não tem permissão para editar este perfil" });
+    }
+    
+    try {
+      const { name, email } = req.body;
+      
+      // Verificar se o e-mail já existe (exceto para o próprio usuário)
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser && existingUser.id !== userId) {
+        return res.status(400).json({ message: "Este e-mail já está em uso" });
+      }
+      
+      // Atualizar usuário
+      const updatedUser = await storage.updateUser(userId, { name, email });
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "Usuário não encontrado" });
+      }
+      
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("Erro ao atualizar usuário:", error);
+      res.status(500).json({ message: "Erro ao atualizar usuário" });
+    }
+  });
+
+  app.put(`${apiPrefix}/users/:id/password`, isAuthenticated, async (req, res) => {
+    const userId = parseInt(req.params.id);
+    
+    // Verificar se o usuário está tentando alterar sua própria senha
+    // @ts-ignore - Sabemos que req.user existe devido ao middleware isAuthenticated
+    if (req.user.id !== userId) {
+      return res.status(403).json({ message: "Você não tem permissão para alterar esta senha" });
+    }
+    
+    try {
+      const { currentPassword, newPassword } = req.body;
+      
+      // Obter usuário com senha
+      const user = await storage.getUserWithPassword(userId);
+      if (!user) {
+        return res.status(404).json({ message: "Usuário não encontrado" });
+      }
+      
+      // Verificar senha atual
+      const isPasswordCorrect = await comparePasswords(currentPassword, user.password);
+      if (!isPasswordCorrect) {
+        return res.status(400).json({ message: "Senha atual incorreta" });
+      }
+      
+      // Hash da nova senha e atualização
+      const hashedPassword = await hashPassword(newPassword);
+      await storage.updateUserPassword(userId, hashedPassword);
+      
+      res.json({ message: "Senha atualizada com sucesso" });
+    } catch (error) {
+      console.error("Erro ao atualizar senha:", error);
+      res.status(500).json({ message: "Erro ao atualizar senha" });
+    }
+  });
+
   return httpServer;
 }
