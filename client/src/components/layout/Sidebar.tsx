@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Home, Car, Building, FileText, Palette, Settings, ListPlus, Menu, X, LogOut, User, Users, Shield } from "lucide-react";
+import { Home, Car, Building, FileText, Palette, Settings, ListPlus, Menu, X, LogOut, User, Users, Shield, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { useMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -166,11 +166,21 @@ export default function Sidebar() {
       
       {/* Link para visualização de permissões - acessível a todos os usuários */}
       <li>
-        <Link href="/admin/permissions" className={`sidebar-item ${location.startsWith('/admin/permissions') ? 'active' : ''}`}>
+        <Link href="/admin/permissions" className={`sidebar-item ${location === '/admin/permissions' ? 'active' : ''}`}>
           <Shield className="h-5 w-5 mr-2" />
-          Permissões
+          Visualizar Permissões
         </Link>
       </li>
+
+      {/* Link para configuração de permissões - apenas para administradores */}
+      {user?.role?.name === "Administrador" && (
+        <li>
+          <Link href="/admin/permission-settings" className={`sidebar-item ${location === '/admin/permission-settings' ? 'active' : ''}`}>
+            <ShieldCheck className="h-5 w-5 mr-2" />
+            Configurar Permissões
+          </Link>
+        </li>
+      )}
     </ul>
   );
 

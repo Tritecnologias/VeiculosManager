@@ -33,6 +33,7 @@ import Settings from "@/pages/settings/Settings";
 import ProfilePage from "@/pages/user/profile";
 import UserManagement from "@/pages/admin/UserManagement";
 import AccessPermissions from "@/pages/admin/AccessPermissions";
+import PermissionSettings from "@/pages/admin/PermissionSettings";
 import NotFound from "@/pages/not-found";
 import AuthPage from "@/pages/auth-page";
 
@@ -79,6 +80,7 @@ function Router() {
       {/* Gerenciamento de usuários - acessível apenas para Administradores */}
       <ProtectedRoute path="/admin/users" component={UserManagement} requiredRole="Administrador" />
       <ProtectedRoute path="/admin/permissions" component={AccessPermissions} />
+      <ProtectedRoute path="/admin/permission-settings" component={PermissionSettings} requiredRole="Administrador" />
 
       {/* Perfil de usuário - acessível por todos os usuários autenticados */}
       <ProtectedRoute path="/user/profile" component={ProfilePage} />

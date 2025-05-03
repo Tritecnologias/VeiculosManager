@@ -264,7 +264,7 @@ export default function PermissionSettings() {
                 </div>
 
                 {isEditing && (
-                  <Alert variant="warning">
+                  <Alert>
                     <Info className="h-4 w-4" />
                     <AlertTitle className="text-sm">Alterações não salvas</AlertTitle>
                     <AlertDescription className="text-xs">
