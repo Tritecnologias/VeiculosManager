@@ -110,6 +110,12 @@ export function hasPermission(path: string, userRole?: string): boolean {
   // Administrador sempre tem permissão total
   if (role === "Administrador") return true;
   
+  // Caso especial para o configurador - garantir acesso irrestrito para todos os usuários
+  // Isto inclui acesso a cores, opcionais e outras funcionalidades do configurador
+  if (path === "/configurator" || path.startsWith("/api/version-colors") || path.startsWith("/api/version-optionals")) {
+    return true;
+  }
+  
   // Caso especial para a página de configuração de permissões
   // Esta página deve ser estritamente controlada
   if (path === "/admin/permission-settings") {
@@ -210,6 +216,11 @@ export function getAccessibleRoutes(userRole?: string): { path: string, descript
   // Filtra as rotas com base nas permissões personalizadas ou padrão
   return ROUTE_PERMISSIONS
     .filter(permission => {
+      // Caso especial para o configurador - garantir acesso irrestrito para todos os usuários
+      if (permission.path === "/configurator") {
+        return true;
+      }
+      
       // Caso especial para a página de configuração de permissões
       if (permission.path === "/admin/permission-settings") {
         // Verificar por papel específico

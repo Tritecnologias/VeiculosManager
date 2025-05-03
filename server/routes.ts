@@ -481,7 +481,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get(`${apiPrefix}/version-colors/:id`, async (req, res) => {
+  app.get(`${apiPrefix}/version-colors/:id`, isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const versionColor = await storage.getVersionColorById(id);
@@ -497,7 +497,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post(`${apiPrefix}/version-colors`, async (req, res) => {
+  app.post(`${apiPrefix}/version-colors`, isAuthenticated, async (req, res) => {
     try {
       const validatedData = versionColorInsertSchema.parse(req.body);
       const newVersionColor = await storage.createVersionColor(validatedData);
@@ -511,7 +511,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch(`${apiPrefix}/version-colors/:id`, async (req, res) => {
+  app.patch(`${apiPrefix}/version-colors/:id`, isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const validatedData = versionColorInsertSchema.parse(req.body);
@@ -532,7 +532,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete(`${apiPrefix}/version-colors/:id`, async (req, res) => {
+  app.delete(`${apiPrefix}/version-colors/:id`, isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteVersionColor(id);
