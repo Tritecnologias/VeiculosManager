@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Home, Car, Building, FileText, Palette, Settings, ListPlus, Menu, X, LogOut, User, Users } from "lucide-react";
+import { Home, Car, Building, FileText, Palette, Settings, ListPlus, Menu, X, LogOut, User, Users, Shield } from "lucide-react";
 import { useState } from "react";
 import { useMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -67,7 +67,7 @@ const UserProfile = () => {
           </Link>
           <Link href="/admin/permissions">
             <DropdownMenuItem className="cursor-pointer">
-              <ShieldCheck className="mr-2 h-4 w-4" />
+              <Shield className="mr-2 h-4 w-4" />
               <span>Permissões de Acesso</span>
             </DropdownMenuItem>
           </Link>

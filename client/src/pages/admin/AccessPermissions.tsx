@@ -2,7 +2,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ROUTE_PERMISSIONS, UserRole, getAccessibleRoutes } from "@/lib/permissions";
-import { Info, Lock, ShieldCheck, ShieldX } from "lucide-react";
+import { Check, Info, Lock, Shield, X } from "lucide-react";
 
 export default function AccessPermissions() {
   const roles: UserRole[] = ["Administrador", "Cadastrador", "Usuário"];
@@ -57,9 +57,9 @@ export default function AccessPermissions() {
                             return (
                               <td key={role} className="py-2 px-4 text-center">
                                 {hasAccess ? (
-                                  <ShieldCheck className="inline-block text-green-500 h-5 w-5" />
+                                  <Check className="inline-block text-green-500 h-5 w-5" />
                                 ) : (
-                                  <ShieldX className="inline-block text-red-500 h-5 w-5" />
+                                  <X className="inline-block text-red-500 h-5 w-5" />
                                 )}
                               </td>
                             );
@@ -87,8 +87,8 @@ export default function AccessPermissions() {
                     role === "Cadastrador" ? "bg-blue-50" : "bg-gray-50"
                   }>
                     <CardTitle className="flex items-center">
-                      {role === "Administrador" && <ShieldCheck className="mr-2 h-5 w-5 text-green-600" />}
-                      {role === "Cadastrador" && <ShieldCheck className="mr-2 h-5 w-5 text-blue-600" />}
+                      {role === "Administrador" && <Shield className="mr-2 h-5 w-5 text-green-600" />}
+                      {role === "Cadastrador" && <Shield className="mr-2 h-5 w-5 text-blue-600" />}
                       {role === "Usuário" && <Lock className="mr-2 h-5 w-5 text-gray-600" />}
                       {role}
                     </CardTitle>
