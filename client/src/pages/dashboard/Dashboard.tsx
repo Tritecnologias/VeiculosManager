@@ -3,23 +3,28 @@ import { Building, Car, Palette, FileText, Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { Vehicle, Brand, Model, Color } from "@/lib/types";
 import { formatBRCurrencyWithSymbol } from "@/lib/formatters";
+import { getQueryFn } from "@/lib/queryClient";
 
 export default function Dashboard() {
   // Buscar dados reais do banco de dados
   const { data: vehicles = [], isLoading: loadingVehicles } = useQuery<Vehicle[]>({
     queryKey: ["/api/vehicles"],
+    queryFn: getQueryFn(),
   });
   
   const { data: brands = [], isLoading: loadingBrands } = useQuery<Brand[]>({
     queryKey: ["/api/brands"],
+    queryFn: getQueryFn(),
   });
   
   const { data: models = [], isLoading: loadingModels } = useQuery<Model[]>({
     queryKey: ["/api/models"],
+    queryFn: getQueryFn(),
   });
   
   const { data: colors = [], isLoading: loadingColors } = useQuery<Color[]>({
     queryKey: ["/api/colors"],
+    queryFn: getQueryFn(),
   });
   
   // Verificar se está carregando dados
@@ -64,7 +69,7 @@ export default function Dashboard() {
               <CardContent>
                 <div className="text-2xl font-bold">{vehicles.length}</div>
                 <p className="text-xs text-muted-foreground">
-                  {vehicles.filter(v => new Date(v.createdAt || 0) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length} adicionados este mês
+                  Total de veículos cadastrados no sistema
                 </p>
               </CardContent>
             </Card>
@@ -77,7 +82,7 @@ export default function Dashboard() {
               <CardContent>
                 <div className="text-2xl font-bold">{brands.length}</div>
                 <p className="text-xs text-muted-foreground">
-                  {brands.filter(b => new Date(b.createdAt || 0) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length} adicionadas este mês
+                  Total de marcas cadastradas no sistema
                 </p>
               </CardContent>
             </Card>
@@ -90,7 +95,7 @@ export default function Dashboard() {
               <CardContent>
                 <div className="text-2xl font-bold">{models.length}</div>
                 <p className="text-xs text-muted-foreground">
-                  {models.filter(m => new Date(m.createdAt || 0) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length} adicionados este mês
+                  Total de modelos cadastrados no sistema
                 </p>
               </CardContent>
             </Card>
@@ -103,7 +108,7 @@ export default function Dashboard() {
               <CardContent>
                 <div className="text-2xl font-bold">{colors.length}</div>
                 <p className="text-xs text-muted-foreground">
-                  {colors.filter(c => new Date(c.createdAt || 0) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length} adicionadas este mês
+                  Total de cores cadastradas no sistema
                 </p>
               </CardContent>
             </Card>
