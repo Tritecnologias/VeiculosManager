@@ -1009,6 +1009,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Erro ao buscar usuários" });
     }
   });
+  
+  // Rota para obter todos os papéis de usuário
+  app.get(`${apiPrefix}/roles`, isAuthenticated, async (req, res) => {
+    try {
+      const roles = await getAllRoles();
+      res.json(roles);
+    } catch (error) {
+      console.error("Erro ao buscar papéis:", error);
+      res.status(500).json({ message: "Erro ao buscar papéis de usuário" });
+    }
+  });
 
   app.put(`${apiPrefix}/users/:id`, isAuthenticated, async (req, res) => {
     const userId = parseInt(req.params.id);
@@ -1074,6 +1085,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Erro ao atualizar senha:", error);
       res.status(500).json({ message: "Erro ao atualizar senha" });
+    }
+  });
+
+  // Rota para atualizar o papel de um usuário (apenas para administradores)
+  app.put(`${apiPrefix}/users/:id/role`, isAuthenticated, isAdmin, async (req, res) => {
+    const userId = parseInt(req.params.id);
+    const { roleId } = req.body;
+    
+    // Validação básica
+    if (!roleId || typeof roleId !== 'number') {
+      return res.status(400).json({ message: "ID do papel inválido" });
+    }
+    
+    try {
+      const updatedUser = await updateUserRole(userId, roleId);
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "Usuário não encontrado" });
+      }
+      
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("Erro ao atualizar papel do usuário:", error);
+      res.status(500).json({ message: "Erro ao atualizar papel do usuário" });
+    }
+  });
+
+  // Rota para atualizar o status de um usuário (apenas para administradores)
+  app.put(`${apiPrefix}/users/:id/status`, isAuthenticated, isAdmin, async (req, res) => {
+    const userId = parseInt(req.params.id);
+    const { isActive } = req.body;
+    
+    // Validação básica
+    if (typeof isActive !== 'boolean') {
+      return res.status(400).json({ message: "Status inválido" });
+    }
+    
+    try {
+      const updatedUser = await updateUserStatus(userId, isActive);
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "Usuário não encontrado" });
+      }
+      
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("Erro ao atualizar status do usuário:", error);
+      res.status(500).json({ message: "Erro ao atualizar status do usuário" });
     }
   });
 

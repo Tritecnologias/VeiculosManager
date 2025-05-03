@@ -138,6 +138,34 @@ export async function updateUserPassword(id: number, hashedPassword: string) {
     .execute();
 }
 
+export async function updateUserRole(id: number, roleId: number) {
+  const [updatedUser] = await db.update(users)
+    .set({
+      roleId,
+      updatedAt: new Date()
+    })
+    .where(eq(users.id, id))
+    .returning();
+
+  if (!updatedUser) return null;
+
+  return getUser(id);
+}
+
+export async function updateUserStatus(id: number, isActive: boolean) {
+  const [updatedUser] = await db.update(users)
+    .set({
+      isActive,
+      updatedAt: new Date()
+    })
+    .where(eq(users.id, id))
+    .returning();
+
+  if (!updatedUser) return null;
+
+  return getUser(id);
+}
+
 export async function getAllRoles() {
   return db.query.userRoles.findMany();
 }
