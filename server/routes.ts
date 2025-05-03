@@ -922,7 +922,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Versão-Opcionais API
-  app.get(`${apiPrefix}/version-optionals`, async (req, res) => {
+  app.get(`${apiPrefix}/version-optionals`, isAuthenticated, async (req, res) => {
     try {
       const { modelId, versionId } = req.query;
       const options: any = {};
@@ -938,7 +938,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get(`${apiPrefix}/version-optionals/:id`, async (req, res) => {
+  app.get(`${apiPrefix}/version-optionals/:id`, isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const versionOptional = await storage.getVersionOptionalById(id);
@@ -1001,7 +1001,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Direct Sales API
-  app.get(`${apiPrefix}/direct-sales`, async (req, res) => {
+  app.get(`${apiPrefix}/direct-sales`, isAuthenticated, async (req, res) => {
     try {
       const directSales = await storage.getDirectSales();
       res.json(directSales);
@@ -1011,7 +1011,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get(`${apiPrefix}/direct-sales/:id`, async (req, res) => {
+  app.get(`${apiPrefix}/direct-sales/:id`, isAuthenticated, async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const directSale = await storage.getDirectSaleById(id);
