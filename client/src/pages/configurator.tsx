@@ -161,7 +161,12 @@ function Configurator() {
     setSelectedVersionId("");
     setSelectedColorId("");
     setSelectedVehicle(null);
+    
+    // Resetar campos de desconto e ágio
     setSelectedDirectSaleId("0"); // Reset direct sale selection when brand changes
+    handleDiscountPercentChange("0"); // Limpar desconto percentual
+    handleDiscountAmountChange("0"); // Limpar desconto em valor
+    setMarkupAmount("0"); // Limpar ágio
     
     if (brandId) {
       const brandModels = allModels.filter(model => model.brandId === parseInt(brandId));
@@ -169,6 +174,8 @@ function Configurator() {
     } else {
       setFilteredModels([]);
     }
+    
+    console.log("Marca alterada: valores de desconto e ágio foram limpos");
   };
   
   // Select a model
@@ -178,12 +185,20 @@ function Configurator() {
     setSelectedColorId("");
     setSelectedVehicle(null);
     
+    // Resetar campos de desconto e ágio
+    setSelectedDirectSaleId("0"); // Reset direct sale selection when model changes
+    handleDiscountPercentChange("0"); // Limpar desconto percentual
+    handleDiscountAmountChange("0"); // Limpar desconto em valor
+    setMarkupAmount("0"); // Limpar ágio
+    
     if (modelId) {
       const modelVersions = allVersions.filter(version => version.modelId === parseInt(modelId));
       setFilteredVersions(modelVersions);
     } else {
       setFilteredVersions([]);
     }
+    
+    console.log("Modelo alterado: valores de desconto e ágio foram limpos");
   };
   
   // Select a version
@@ -191,11 +206,18 @@ function Configurator() {
     setSelectedVersionId(versionId);
     setSelectedColorId("");
     
+    // Resetar campos de desconto e ágio
+    setSelectedDirectSaleId("0"); // Reset direct sale selection when version changes
+    handleDiscountPercentChange("0"); // Limpar desconto percentual
+    handleDiscountAmountChange("0"); // Limpar desconto em valor
+    setMarkupAmount("0"); // Limpar ágio
+    
     if (versionId) {
       const parsedVersionId = parseInt(versionId);
       
       console.log("Selected version ID:", parsedVersionId);
       console.log("Available vehicles:", allVehicles);
+      console.log("Versão alterada: valores de desconto e ágio foram limpos");
       
       // Find vehicle with this version
       const vehicle = allVehicles.find(v => v.versionId === parsedVersionId);
