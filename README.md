@@ -67,4 +67,3 @@ Para versionar este projeto no GitHub:
 ## Usuário Administrador
 
 - Email: wanderson.martins.silva@gmail.com
-- Senha: admin123 (altere após o primeiro acesso)
