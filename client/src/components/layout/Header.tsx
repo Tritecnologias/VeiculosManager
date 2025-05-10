@@ -1,16 +1,31 @@
 import { Link, useLocation } from "wouter";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import { ChevronDown, LogOut, User, FileText } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/hooks/use-auth";
 import { hasPermission } from "@/lib/permissions";
 import { useEffect, useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Header() {
   const [location] = useLocation();
   const isMobile = useMobile();
   const { user, logoutMutation } = useAuth();
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const { toast } = useToast();
   
   // Buscar todas as configurações
   const { data: settings = [] } = useQuery<Array<{key: string, value: string}>>({
@@ -46,8 +61,23 @@ export default function Header() {
     }
   }, [user]);
   
-  // Função para realizar logout
+  // Função para abrir o diálogo de confirmação de logout
+  const showLogoutConfirmation = () => {
+    setShowLogoutDialog(true);
+  };
+  
+  // Função para realizar logout efetivamente
   const handleLogout = () => {
+    // Registra a tentativa no console para debug
+    console.log("Iniciando o processo de logout no componente Header");
+    
+    // Adiciona uma mensagem de feedback para o usuário
+    toast({
+      title: "Encerrando sessão...",
+      description: "Sua sessão está sendo encerrada com segurança",
+    });
+    
+    // Executa a mutação de logout
     logoutMutation.mutate();
   };
   
@@ -103,7 +133,7 @@ export default function Header() {
                   <span>Alterar senha</span>
                 </DropdownMenuItem>
               </Link>
-              <DropdownMenuItem className="cursor-pointer text-red-600" onClick={handleLogout}>
+              <DropdownMenuItem className="cursor-pointer text-red-600" onClick={showLogoutConfirmation}>
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Sair</span>
                 {logoutMutation.isPending && (
