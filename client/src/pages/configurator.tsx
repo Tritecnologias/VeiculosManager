@@ -303,19 +303,16 @@ function Configurator() {
     if (directSaleId && directSaleId !== "0") {
       // Find the selected direct sale
       const directSale = directSales.find(ds => ds.id.toString() === directSaleId);
-      if (directSale && selectedBrandId) {
-        // Check if the selected direct sale applies to the current brand
-        if (directSale.brandId === parseInt(selectedBrandId)) {
-          // Apply the discount percentage
-          handleDiscountPercentChange(directSale.discountPercentage.toString());
-        } else {
-          // Reset discount if brand doesn't match
-          handleDiscountPercentChange("0");
-        }
+      if (directSale) {
+        // Como agora só mostramos descontos compatíveis com a marca, 
+        // não precisamos verificar novamente se a marca corresponde
+        handleDiscountPercentChange(directSale.discountPercentage.toString());
+        console.log(`Aplicando desconto de ${directSale.name} (${directSale.discountPercentage}%)`);
       }
     } else {
       // Reset discount if no direct sale is selected
       handleDiscountPercentChange("0");
+      console.log("Nenhum desconto de venda direta selecionado");
     }
   };
   
@@ -558,15 +555,17 @@ function Configurator() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="0">Nenhum</SelectItem>
-                          {directSales.map(sale => (
-                            <SelectItem 
-                              key={sale.id} 
-                              value={sale.id.toString()}
-                              disabled={sale.brandId !== parseInt(selectedBrandId)}
-                            >
-                              {sale.name} ({sale.discountPercentage}%)
-                            </SelectItem>
-                          ))}
+                          {/* Filtrar para mostrar apenas os descontos específicos da marca selecionada */}
+                          {directSales
+                            .filter(sale => sale.brandId === parseInt(selectedBrandId) || sale.brandId === null)
+                            .map(sale => (
+                              <SelectItem 
+                                key={sale.id} 
+                                value={sale.id.toString()}
+                              >
+                                {sale.name} ({sale.discountPercentage}%)
+                              </SelectItem>
+                            ))}
                         </SelectContent>
                       </Select>
                     </div>
