@@ -166,6 +166,33 @@ export default function Header() {
           )}
         </div>
       </nav>
+
+      {/* Diálogo de confirmação de logout */}
+      <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Logout</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja sair do sistema? Sua sessão será encerrada completamente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleLogout}
+              disabled={logoutMutation.isPending}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              {logoutMutation.isPending ? (
+                <>
+                  <span className="mr-2">Encerrando...</span>
+                  <span className="animate-spin">⋯</span>
+                </>
+              ) : "Sair do Sistema"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </header>
   );
 }

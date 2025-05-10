@@ -194,8 +194,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Solução adicional: Redirecionar para página de login com um pequeno delay
       // para garantir que tudo seja limpo
       setTimeout(() => {
+        console.log("Redirecionando para página de autenticação após logout");
         window.location.href = "/auth";
-      }, 100);
+      }, 300);
     },
     onError: (error) => {
       console.error("Erro durante o logout:", error);
