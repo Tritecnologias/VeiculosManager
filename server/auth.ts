@@ -198,13 +198,18 @@ export function setupAuth(app: Express) {
     saveUninitialized: false,
     cookie: {
       secure: process.env.NODE_ENV === "production",
+      httpOnly: true,
+      sameSite: 'lax',
       maxAge: 1000 * 60 * 60 * 24 * 7, // 1 semana
     },
     store: new PostgresStore({
       pool,
       tableName: 'user_sessions',
-      createTableIfMissing: true
+      createTableIfMissing: true,
+      // Configurações adicionais para garantir que sessões expiradas sejam limpas
+      pruneSessionInterval: 60 // Limpa sessões a cada 60 segundos
     }),
+    name: 'auto-plus.sid' // Nome personalizado do cookie para melhor segurança
   };
 
   app.set("trust proxy", 1);
@@ -331,11 +336,38 @@ export function setupAuth(app: Express) {
   });
 
   app.post("/api/logout", (req, res) => {
+    // Registramos o usuário atual para log
+    const userId = req.user?.id;
+    console.log(`Tentativa de logout para usuário ID: ${userId || 'desconhecido'}`);
+    
+    // Primeiro, fazemos logout pela função do Passport
     req.logout((err) => {
       if (err) {
+        console.error(`Erro no processo de logout:`, err);
         return res.status(500).json({ message: "Erro ao fazer logout" });
       }
-      res.status(200).json({ message: "Logout realizado com sucesso" });
+      
+      console.log(`Logout do Passport realizado para usuário ID: ${userId || 'desconhecido'}`);
+      
+      // Depois, explicitamente destruímos a sessão para garantir que todos os dados sejam removidos
+      req.session.destroy((sessionErr) => {
+        if (sessionErr) {
+          console.error(`Erro ao destruir sessão:`, sessionErr);
+          return res.status(500).json({ message: "Erro ao destruir sessão" });
+        }
+        
+        console.log(`Sessão destruída com sucesso para usuário ID: ${userId || 'desconhecido'}`);
+        
+        // Limpa o cookie da sessão no cliente com o nome personalizado
+        res.clearCookie('auto-plus.sid', { 
+          path: '/',
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: 'lax'
+        });
+        
+        res.status(200).json({ message: "Logout realizado com sucesso" });
+      });
     });
   });
 

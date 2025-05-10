@@ -158,18 +158,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Mutação para logout
   const logoutMutation = useMutation<void, Error, void>({
     mutationFn: async () => {
+      console.log("Iniciando processo de logout no cliente");
       const response = await apiRequest("POST", "/api/logout");
+      console.log(`Resposta do servidor para logout: ${response.status}`);
+      
       if (!response.ok) {
         throw new Error("Falha ao realizar logout");
       }
+      
+      // Retorna os dados da resposta para log
+      try {
+        const data = await response.json();
+        console.log("Dados da resposta de logout:", data);
+      } catch (e) {
+        console.log("Sem dados JSON na resposta de logout");
+      }
+      
+      return;
     },
     onSuccess: () => {
+      console.log("Logout bem-sucedido, limpando cache");
+      
+      // Limpa os dados do usuário na cache
       queryClient.setQueryData(["/api/user"], null);
+      
+      // Limpa toda a cache para garantir que todos os dados protegidos sejam removidos
+      queryClient.clear();
+      
+      // Mensagem de sucesso
       toast({
         title: "Logout realizado com sucesso",
+        description: "Sua sessão foi encerrada com segurança"
       });
+      
+      // Solução adicional: Redirecionar para página de login com um pequeno delay
+      // para garantir que tudo seja limpo
+      setTimeout(() => {
+        window.location.href = "/auth";
+      }, 100);
     },
     onError: (error) => {
+      console.error("Erro durante o logout:", error);
       toast({
         title: "Falha no logout",
         description: error.message,
